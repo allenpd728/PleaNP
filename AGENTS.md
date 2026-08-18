@@ -26,7 +26,7 @@ PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** o
 
 | Rung | Goal | Status |
 |---|---|---|
-| 1 | Gap audit of Mathlib complexity coverage | In progress |
+| 1 | Gap audit of Mathlib complexity coverage | Done (see `docs/GAP_AUDIT.md`; track upstream changes) |
 | 2 | Computational model + canonical P/NP (upstream-tracked) | Blocked on upstream |
 | 3 | Formalize the barrier theorems | Not started |
 | 4 | Formalize lower-bound techniques + their failures | Not started |
@@ -44,7 +44,15 @@ PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** o
 | `docs/ROADMAP.md` | The rung ladder with detail |
 | `docs/ARCHITECTURE.md` | The gate pipeline (integrity architecture) |
 | `docs/FAILURE_AUDIT.md` | Prior attempts at "formalized P vs NP" and how they failed |
-| `docs/UPSTREAM_TRACKING.md` | Tracking the 3–4 active Mathlib complexity efforts |
+| `docs/PRIOR_ART.md` | Cross-assistant prior-art survey + AI-tooling landscape (validates "no barriers formalized anywhere") |
+| `docs/UPSTREAM_TRACKING.md` | Tracking the active Mathlib complexity efforts (currently #1–#8) |
+| `docs/STATEMENTS/` | **Frozen, human-verified statement specs (Gate 1 anchors / Gate 4 read-back refs).** One per barrier theorem, plus the oracle-machine design spec. Six-part template, prose-only (no Lean rendering — that's the local agent's job). Start here when beginning Rung 2 (oracle substrate) or Rung 3. |
+| `docs/STATEMENTS/README.md` | Why a non-Lean driver writes the specs; the template; index of the specs |
+| `docs/STATEMENTS/Oracle.lean.spec.md` | Rung 2 local piece — oracle-machine design spec (totality discipline, Mathlib composition, acceptance criteria). **Unblocked — the first thing to build.** |
+| `docs/STATEMENTS/Relativization.md` | Rung 3a spec (Baker–Gill–Solovay 1975) — cleanest first barrier target; waits on Oracle.lean.spec |
+| `docs/STATEMENTS/NaturalProofs.md` | Rung 3b spec (Razborov–Rudich 1994) — OWF as hypothesis, not constructed |
+| `docs/STATEMENTS/Algebrization.md` | Rung 3c spec (Aaronson–Wigderson 2008) — AW09 multiquadratic v1 pinned |
+| `docs/STATEMENTS/LOCAL_AGENT_WORKFLOW.md` | The test-as-you-go loop the local agent follows to turn specs into validated Lean (Steps 0–6: substrate check → render → hygiene → model-consistency → read-back → freeze → proof search). **Read before any Lean execution.** |
 | `docs/decisions/LOG.md` | Chronological decision log (DEC-0XX) |
 
 ## Build and test
