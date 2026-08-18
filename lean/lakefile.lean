@@ -5,10 +5,10 @@ package «PleaNP» where
 
 @[default_target]
 lean_lib «PleaNP» where
-  globs := #[.subDecl `PleaNP]
+  globs := #[.andSubmodules `PleaNP]
 
 lean_exe tests where
   root := `tests
 
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git" @ "master"
+  "https://github.com/leanprover-community/mathlib4.git" @ "v4.33.0"
