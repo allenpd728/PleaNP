@@ -71,3 +71,13 @@ Chronological record of design decisions. Append-only. Format: `### DEC-0XX` wit
 **Scope:** Build workflow
 **Decision:** The Lean build runs on a local machine (not in this authoring environment). The authoring environment maintains the source of truth (the repo); build feedback comes via the local toolchain.
 **Rationale:** The authoring environment lacks a Lean toolchain and is ephemeral (reinstalls would be painful, especially Mathlib). A hybrid model — source-of-truth here, build-server local — keeps the repo portable while maintaining a fast edit→compile→goal-state feedback loop. Machine specifics are per DEC-006.
+
+---
+
+### DEC-008
+
+**Date:** 2026-08-18
+**Status:** Active
+**Scope:** Prior art, rung specs
+**Decision:** Conducted a literature review and repo audit to broaden `docs/PRIOR_ART.md` beyond the Lean Zulip, and to sharpen the rung specs in `docs/ROADMAP.md`. Added: (a) cross-assistant survey confirming the three barriers are formalized in *no* proof assistant (Lean/Coq/Isabelle/AFP); (b) the original barrier papers as the informal source of truth for Gate 4 read-back; (c) recent theoretical refinements (ITCS 2026 multilinear algebrization barriers; arXiv:2601.09702 "semi-relativization"; Williams STOC 2025 √-space); (d) two new tracked Lean efforts (Reitwiessner space-bounded, Keßler Mathlib fork) added to `docs/UPSTREAM_TRACKING.md` as #7 and #8; (e) the crypto-substrate finding that no importable OWF/PRF exists; (f) the AI proof-search tooling landscape (LeanDojo/ReProver, AlphaProof, the 2025–2026 prover wave) as Rung 6 context. Clarified rung "done" criteria (Rung 3b OWF-as-hypothesis; Rung 3c pin AW09 v1; Rung 6 reference LeanDojo baselines; Rung 7 de-scope Williams √-space). No rung goals or ordering changed.
+**Rationale:** The prior-art doc was Lean-Zulip-centric; its headline claim ("no barriers in any proof assistant") was only verified against one archive. The audit corroborates the claim across the major ecosystems and the AI-tooling landscape, and surfaces two upstream efforts (Reitwiessner, Keßler) and one already-claimed Rung-7 target (Williams √-space) that the rungs must account for to avoid duplication and to pick importable substrates correctly. The rung clarifications make the "done" criteria defensible against the moving barrier landscape (e.g., not formalizing a folk theorem that ITCS 2026 has since strengthened) without rewriting the ladder's goals or dependencies — which the evidence supports as sound.
