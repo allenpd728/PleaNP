@@ -100,7 +100,7 @@ Chronological record of design decisions. Append-only. Format: `### DEC-0XX` wit
 ### DEC-010
 
 **Date:** 2026-08-18
-**Status:** Pending decision (user to choose A, B, or C)
+**Status:** Active - Option B chosen (core TM2ComputableInTime, no dependency change)
 **Scope:** Step-counting substrate for oracle complexity (P^A / NP^A)
 
 **Decision:** This DEC records the architectural fork in how PleaNP obtains the step-counting layer needed to define P^A and NP^A (the complexity classes the relativization barrier requires). Three options are laid out; the user picks one, and the local agent records the choice and executes.
