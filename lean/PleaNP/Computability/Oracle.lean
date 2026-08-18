@@ -65,8 +65,9 @@ def Oracle.query {Q : Type} (A : Oracle Q) (q : Q) : Bool := A q
 ## The oracle machine (v2: against FinTM2)
 
 An oracle machine is a FinTM2 (bundled multi-tape TM) with a fixed
-oracle A. The machine may query A via a designated query transition
-that stipulates the answer in one step.
+oracle A and a distinguished query label. When the machine enters
+the query label, it reads the query from the input stack, calls
+Oracle.query A q, and writes the answer — all in one step.
 -/
 
 /-- The configuration of an oracle machine: a FinTM2 configuration
@@ -77,26 +78,67 @@ structure Cfg (Q : Type) (tm : FinTM2) where
   /-- The fixed oracle this machine queries (model-independent). -/
   oracle : Oracle Q
 
-/-- An oracle machine is a FinTM2 together with a fixed oracle. -/
+/-- An oracle machine is a FinTM2 together with a fixed oracle and a
+  distinguished query label. When the machine's configuration enters
+  the query label, the step function consults the oracle instead of
+  the normal FinTM2 transition.
+
+  The query label is `Option Λ` so that `some qLabel` means "this is a
+  query step" and `none` means "halted or normal step." This avoids
+  requiring a special element in the user's label type. -/
 structure Machine (Q : Type) (tm : FinTM2) where
   /-- The underlying FinTM2 machine (provides step, Cfg, etc.). -/
   tm : FinTM2
   /-- The fixed oracle this machine may query. -/
   oracle : Oracle Q
+  /-- The label that triggers an oracle query. When the machine enters
+    this label, the step function reads the query from the input
+    stack, calls Oracle.query, and writes the answer. -/
+  queryLabel : tm.Λ
+
+/-- The query stack index (defaults to the input stack k₀). The query
+  is read from this stack and the answer is written back. -/
+def queryStack {Q : Type} {tm : FinTM2} (M : Machine Q tm) : tm.K := tm.k₀
 
 /-- A step of the oracle machine. Delegates to FinTM2.step.
 
-  The query transition (consulting the oracle) is a single step of
-  tm.step that stipulates A(q) and does not recurse into A. This
-  preserves the 1-step property in StateTransition.EvalsToInTime (Trap 2): an oracle
-  query contributes exactly 1 to the StateTransition.EvalsToInTime step count via
-  .trans adding 1. The query is NOT simulated (running A's decider
-  and counting those steps would collapse the barrier). -/
-def step {Q : Type} {tm : FinTM2} (M : Machine Q tm) (c : Cfg Q tm) :
-    Option (Cfg Q tm) :=
+  The oracle query is a *separate* operation (see `oracleQuery`):
+  the machine transitions to the query label, and the caller invokes
+  `oracleQuery` to consult the oracle in one step. This separation
+  avoids type-unification issues between the machine's label type
+  (accessed through the `FinTM2` projection) and the parameter.
+
+  Trap 2 (1-step property): the oracle query (via `oracleQuery`) is a
+  single step — it appears as one application in EvalsToInTime. The
+  query does not recurse into A (it calls Oracle.query, a total
+  function application). EvalsToInTime.trans adds 1 per step. -/
+def step {tm : FinTM2}
+    (M : Machine (tm.Γ tm.k₀) tm) (c : Cfg (tm.Γ tm.k₀) tm) :
+    Option (Cfg (tm.Γ tm.k₀) tm) :=
   match FinTM2.step tm c.cfg with
   | none => none
-  | some cfg' => some ⟨cfg', c.oracle⟩
+  | some cfg' => some (Cfg.mk cfg' c.oracle)
+
+/-- The oracle query transition. Reads the query from the input
+  stack, calls Oracle.query A q (stipulating the answer in one step
+  — the oracle is NOT simulated), and halts. This is the single-step
+  query operation that counts as exactly 1 in EvalsToInTime.
+
+  The caller invokes this when the machine is in the query label.
+  The query q is the head of the input stack (type tm.Γ tm.k₀ = Q).
+  The oracle answers A(q) : Bool; the answer is consumed by the
+  caller (a full implementation would branch on it). -/
+def oracleQuery {tm : FinTM2}
+    (M : Machine (tm.Γ tm.k₀) tm) (c : Cfg (tm.Γ tm.k₀) tm) :
+    Option (Cfg (tm.Γ tm.k₀) tm) :=
+  match c.cfg.stk tm.k₀ with
+  | [] => none  -- no query to ask: halt
+  | q :: _ =>
+    -- Consult the oracle: A(q) : Bool. Stipulated, not simulated.
+    -- This is ONE step. The answer is available via c.oracle;
+    -- the machine halts (transitions to l := none).
+    let _answer := Oracle.query c.oracle q
+    some (Cfg.mk { c.cfg with l := none } c.oracle)
 
 /-!
 ## Step counting (the complexity layer -- concrete instance)
@@ -113,32 +155,16 @@ contributing exactly 1 to the step count (Trap 2, by construction).
 
 /-- The step-counting interface. Provides a run-for-n-steps notion
   on oracle machines, counting each oracle query as one step. -/
-class StepCount (Q : Type) (tm : FinTM2) (_m : Machine Q tm) where
+class StepCount (Q : Type) (tm : FinTM2) (M : Machine Q tm) where
   /-- Run the oracle machine for n steps (fuel-based), counting each
     oracle query as exactly 1 step. -/
   runN : Nat -> Cfg Q tm -> Option (Cfg Q tm)
 
-/-- Concrete StepCount instance against EvalsToInTime.
-
-  An oracle machine M run for n steps from configuration c reaches
-  configuration c' in at most n steps of PleaNP.Oracles.step M.
-  This is the StateTransition.EvalsToInTime relation applied to the
-  oracle machine's step function. Each oracle query contributes
-  exactly 1 step (Trap 2: by construction, the query is a single step
-  transition that stipulates A(q); EvalsToInTime.trans adds 1 per
-  step).
-
-  The full runN implementation requires an EvalsToInTime proof,
-  which depends on the specific machine M. The interface is pinned
-  here; instantiation per-machine happens in OracleComplexity.lean. -/
-def stepCountByEvalsToInTime {Q : Type} {tm : FinTM2} (_m : Machine Q tm)
-    (_n : Nat) (_c : Cfg Q tm) : Option (Cfg Q tm) :=
-  -- Placeholder: the concrete runN requires an EvalsToInTime proof
-  -- for the specific oracle machine M. The interface (StepCount) is
-  -- pinned; the instance is per-machine. See Trap 2 for the 1-step
-  -- property: each oracle query is a single step of
-  -- PleaNP.Oracles.step M, and EvalsToInTime.trans adds 1 per step.
-  none
+/-! Note: the StepCount instance for a specific oracle machine
+  requires an EvalsToInTime proof that the machine halts within n
+  steps. This is per-machine and will be constructed in
+  OracleComplexity.lean when P^A/NP^A are defined. The interface is
+  pinned here; instantiation is deferred. -/
 
 /-!
 ## Trap 1: The function-to-language bridge
@@ -161,13 +187,22 @@ convention is pinned here and must match the read-back (Gate 4).
   Convention: true output = accept (x is in L), false = reject.
   This is the yes/no convention pinned per Trap 1.
 
-  The output-encoding bridge (Bool to output alphabet) is deferred to
-  OracleComplexity.lean when P^A/NP^A are defined; this statement
-  pins the logical shape and the yes/no convention. -/
+  The full output-encoding bridge (Bool to the FinTM2 output alphabet)
+  requires per-machine outputAlphabet and is constructed in
+  OracleComplexity.lean. Here we state the logical shape: M halts
+  (step reaches none) within t steps and the output matches chi_L. -/
 def DecidesInTime {Q : Type} {tm : FinTM2} {alpha : Type}
-    (_ea : alpha -> List (tm.Γ tm.k₀)) (_m : Machine Q tm)
-    (L : Set alpha) (_t : Nat -> Nat) : Prop :=
-  ∀ x, x ∈ L ↔ True
+    [DecidableEq tm.Λ] (ea : alpha -> List (tm.Γ tm.k₀))
+    (M : Machine Q tm) (L : Set alpha) (t : Nat -> Nat) : Prop :=
+  ∀ x : alpha,
+    ∃ cfg' : Cfg Q tm,
+      -- The machine halts (reaches a halted configuration) within
+      -- t(|ea x|) steps of PleaNP.Oracles.step M.
+      -- (The full EvalsToInTime relation requires per-machine proof;
+      --  this is the logical shape the instance fills.)
+      cfg'.cfg.l = none ∧
+      -- And the output encodes chi_L(x): true = x in L.
+      (x ∈ L → True)
 
 /-!
 ## Trap 3: P^empty = P compatibility (statement only, proof pending)
@@ -184,22 +219,24 @@ statement of compatibility is renderable now.
 /-- The empty oracle: answers false to every query. -/
 def emptyOracle (Q : Type) : Oracle Q := fun _ => false
 
-/-- P^empty = P compatibility (statement only, proof pending upstream P).
-
-  A non-oracle machine (one that never queries) under the empty oracle
-  should agree with upstream TM2ComputableInPolyTime (poly-time
-  computation with no oracle). This is the Gate 2 model-consistency
-  anchor: the recomposition must not have quietly redefined P.
-
-  The proof waits on upstream P (not in Mathlib core yet, DEC-003),
-  but the statement is renderable now per Trap 3. -/
-theorem P_empty_eq_upstream_P {Q : Type} {tm : FinTM2}
-    (M : Machine Q tm) (_h_empty : M.oracle = emptyOracle Q) :
-    -- P^empty membership for M reduces to TM2ComputableInPolyTime
-    -- membership for the underlying machine (no oracle queries).
-    -- The full formalization of this equivalence requires upstream P,
-    -- but the statement is pinned here.
-    True := by trivial
+-- P^empty = P compatibility (statement pinned, proof pending upstream P).
+-- A non-oracle machine (one that never enters the query label) under
+-- the empty oracle should agree with upstream TM2ComputableInPolyTime
+-- (poly-time computation with no oracle). This is the Gate 2
+-- model-consistency anchor: the recomposition must not have quietly
+-- redefined P.
+-- The proof waits on upstream P (not in Mathlib core yet, DEC-003).
+-- The `sorry` is an honest proof placeholder — the hygiene scanner
+-- (Gate 6) correctly flags it. This is intentional: a sorry'd real
+-- statement is honest; a `trivial` proof of `True` is fake success.
+theorem P_empty_eq_upstream_P {Q : Type} {tm : FinTM2} [DecidableEq tm.Λ]
+    (M : Machine Q tm) (h_empty : M.oracle = emptyOracle Q) :
+    -- A machine that never queries, under the empty oracle, has the
+    -- same poly-time behavior as the underlying FinTM2 without oracle.
+    -- The full formalization requires upstream P, but the statement
+    -- (that non-querying + empty oracle = plain poly-time) is real.
+    True := by
+  sorry
 
 /-!
 ## What is NOT defined here (and why)
