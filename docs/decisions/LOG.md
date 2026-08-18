@@ -93,3 +93,38 @@ Chronological record of design decisions. Append-only. Format: `### DEC-0XX` wit
 **Scope:** Build/CI hygiene enforcement
 **Decision:** Hygiene is enforced via (1) per-file `set_option warningAsError true` pragmas in all PleaNP .lean files (making `sorry` a hard build error), and (2) a CI workflow (`.github/workflows/ci.yml`) that runs `lake build` + the hygiene scanner on every push/PR to main. The per-file pragma was chosen over a package-level `moreLeanArgs` flag because the latter caused "unknown configuration option" errors in lake v4.31.0 (the `warningAsError` option needs to be registered by Lean's stdlib, which loads after `-D` parsing). The per-file approach scopes unambiguously to PleaNP files only (not Mathlib), per the spec's section 3 caveat. `lake exe lint` is not available in Mathlib v4.31.0; a `#lint` test file is the fallback path (not yet wired).
 **Rationale:** Makes Gate 6 Tier 1 structural (CI-gated) rather than aspirational. A `sorry`-laden PR now fails CI. This catches mechanical failures (sorry, axioms) but not semantic ones (wrong statement, vacuity) — those remain Gates 1-5. See `docs/STATEMENTS/HygieneEnforcement.spec.md`.
+
+
+---
+
+### DEC-010
+
+**Date:** 2026-08-18
+**Status:** Pending decision (user to choose A, B, or C)
+**Scope:** Step-counting substrate for oracle complexity (P^A / NP^A)
+
+**Decision:** This DEC records the architectural fork in how PleaNP obtains the step-counting layer needed to define P^A and NP^A (the complexity classes the relativization barrier requires). Three options are laid out; the user picks one, and the local agent records the choice and executes.
+
+**Context:** Oracle.lean (DEC-008) is built against core Turing.TM1, which has no step counting. The StepCount typeclass interface isolates this dependency. The question is what instantiates StepCount:
+
+**Option A — Pin v4.30.0, import complexitylib**
+- complexitylib (Schlesinger) provides P, NP, BPP, PSPACE, Cook-Levin, a circuit model, Fourier analysis, and multi-tape TMs with step counting. All available today.
+- complexitylib is pinned to Lean v4.30.0 / Mathlib v4.30.0. It does NOT compile under v4.31.0 (23 of 4033 modules fail with Mathlib API drift — verified empirically). Under v4.30.0 (its native toolchain), it builds cleanly — no re-verification needed; the failures were v4.31.0-only.
+- Pro: unblocks the critical path immediately — P/NP/reductions/Cook-Levin/circuits/step-counting all available. P^A/NP^A, the relativization statement, and a chunk of Rung 4 become runnable now.
+- Con: PleaNP (and the sibling maith project) must downgrade to v4.30.0, behind Mathlib core. Accepts a non-Mathlib-core dependency (Apache 2.0, importable as a git dependency — allowed by UPSTREAM_TRACKING rule 3). When a v4.31.0+ complexitylib release lands or #35366 lands, bump back up — the StepCount interface makes this surgical.
+- Verdict: highest unblock, highest cost (toolchain downgrade + non-core dependency).
+
+**Option B — Use core TM2ComputableInTime (no dependency change)**
+- Mathlib core (v4.31.0) already has a time-bounded computation framework: TM2ComputableInTime (in Mathlib/Computability/TuringMachine/Computable.lean) bundles a TM2 with a time: Nat -> Nat function and a proof it outputs f in at most time(input.length) steps. TM2ComputableInPolyTime is the polynomial-time variant (time: Polynomial Nat). The underlying step-counted relation is TM2OutputsInTime, built on EvalsToInTime (in StateTransition.lean), which tracks a steps count with a steps_le_m proof and has refl/trans (additive step counting).
+- A StepCount instance can be written against TM2ComputableInTime's time field, without waiting for #35366's runN or importing complexitylib.
+- Pro: stays on core Mathlib, no toolchain change, no external dependency. Consistent with DEC-003 (import, dont define) spirit.
+- Con: this is a TM2 (multi-tape) function-computability framing (computing f: alpha -> beta in time), not a language-decision framing with a clean runN counter. Requires recomposing Oracle.lean against TM2 instead of TM1, and bridging from function-computability to language-decision (deciding L: Set alpha). More instance-writing work than Option A, but unblocked now.
+- Verdict: conservative, no dependency change, more local work.
+
+**Option C — Local throwaway step counter (stopgap)**
+- The local agent writes a minimal fuel-based counter to instantiate StepCount, marked temporary. Unblocks statement-freeze (Gate 1 anchor) for the relativization statement without unblocking the proof.
+- Pro: cheapest, fastest, no dependency or toolchain change.
+- Con: unblocks only statement-freeze, not proof. The counter is throwaway and will be replaced when a real step-counting substrate lands.
+- Verdict: cheapest stopgap, least ambitious.
+
+**Rationale for recording this as a DEC:** The choice changes the project's dependency posture (A: non-core dependency + toolchain downgrade; B: stay on core, more local work; C: stopgap only). This is a genuine architectural fork — the kind the decision log exists for. The user picks; the local agent records the choice and executes.
