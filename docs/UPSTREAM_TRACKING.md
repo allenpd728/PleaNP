@@ -2,7 +2,7 @@
 
 The computational-model substrate (Rung 2) is *not* PleaNP's to build — it's being actively contested by multiple efforts upstreaming into Mathlib. This document tracks them so PleaNP imports the right thing rather than reinventing or picking sides.
 
-Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-computability finding; added complexitylib (Schlesinger) as tracked effort #6; verified no OWF/PRF infrastructure). This is a living document — update when upstream lands.
+Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-computability finding; added complexitylib (Schlesinger) as tracked effort #6; verified no OWF/PRF infrastructure; prior-art review added Reitwiessner as #7 and Keßler as #8). This is a living document — update when upstream lands.
 
 ---
 
@@ -56,6 +56,20 @@ Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-
   ```
   (Note: the repo's default branch is `master`, not `main`; the entry above matches the requested form but should be `@ "master"` — or a tagged release — before being added.)
 
+### 7. Reitwiessner — multi-tape + space-bounded complexity (Lean Together 2026)
+
+- **Source:** Christian Reitwiessner, talk *Formalizing (space) complexity theory in Lean* (`leaning.in/2026/slides/reitwiessner.pdf`, Lean Together 2026). Surfaced via the 2026-08-18 prior-art review (see `docs/PRIOR_ART.md`).
+- **Approach:** Extends Mathlib's single-tape `TM` to a *multi-tape* version, plus a toolbox of computation primitives and composition connectives for reasoning about space *and* time. The motivating horizon goal is to formalize **Williams's 2025 *Simulating Time With Square-Root Space*** (`arXiv:2502.17779`, STOC 2025 Best Paper).
+- **Status:** Talk stage (early); no public repo/PR identified yet.
+- **PleaNP stance:** A *fourth* candidate computational-model substrate — and notably the **only** tracked effort explicitly targeting *space* bounds, which the time-focused efforts (#35366, #33132, complexitylib) lack. PleaNP's relativization work is time-bounded, so Reitwiessner's multi-tape model is a candidate base if it lands. Also affects Rung 7: Williams's √-space result is *already* a Lean target by someone else — PleaNP's Rung 7 should track this and pick a *different* open problem (see `docs/ROADMAP.md` Rung 7 scope note).
+
+### 8. Keßler — Mathlib fork formalizing P and NP
+
+- **Source:** Maximilian Keßler's Mathlib fork (`git.abstractnonsen.se/max/mathlib4`), README dated Feb 2026; progress notes at a public Hedgedoc pad. Surfaced via the 2026-08-18 prior-art review (see `docs/PRIOR_ART.md`).
+- **Approach:** Working on computability theory; formalizing the P and NP classes and proving facts about them, directly in a Mathlib fork.
+- **Status:** In-progress fork; not a Mathlib PR.
+- **PleaNP stance:** Corroborates that the P/NP substrate is contested across *at least* seven independent efforts now. Reinforces DEC-003 (import, don't define). Watch for whether it converges with #35366/#33132 or diverges.
+
 ---
 
 ## What none of the upstream efforts provide
@@ -74,8 +88,9 @@ This is PleaNP's gap to fill, regardless of which model lands:
 
 1. **Do not define P, NP, or reductions locally.** Import from whichever upstream effort lands first in Mathlib core.
 2. **Do define oracle machines locally** (under `PleaNP.Barriers.Relativization` or a dedicated `PleaNP.Oracles` namespace), since no upstream effort provides them.
-3. **Track the computational-model choice.** When P/NP lands in Mathlib, record the chosen model in `docs/decisions/LOG.md` and update this document.
-4. **If the chosen model makes oracle-machine definition painful**, evaluate the synthetic approach (Church's Thesis as axiom) as a fallback — per the Coq precedent, it dramatically lowers overhead.
+3. **Do not fork any tracked effort.** Forking would mean maintaining a divergent P/NP substrate through ongoing Mathlib churn — exactly the coordination overhead DEC-001/DEC-003 exist to avoid. Import from Mathlib core once landed, or import as a git dependency with a pinned release (e.g. complexitylib, *pending the toolchain-reconciliation check*). Never maintain a divergent local copy of P/NP or the computational model.
+4. **Track the computational-model choice.** When P/NP lands in Mathlib, record the chosen model in `docs/decisions/LOG.md` and update this document.
+5. **If the chosen model makes oracle-machine definition painful**, evaluate the synthetic approach (Church's Thesis as axiom) as a fallback — per the Coq precedent, it dramatically lowers overhead.
 
 ---
 
