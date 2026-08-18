@@ -28,8 +28,11 @@ For the **operating procedure** the local agent follows to turn these specs into
 | [`Oracle.lean.spec.md`](./Oracle.lean.spec.md) | Oracle-machine substrate (PleaNP-local) | 2 (local piece) | v1 built (TM1, partial); §4 superseded by TM2 recompose |
 | [`OracleTM2Recompose.spec.md`](./OracleTM2Recompose.spec.md) | Oracle.lean v2 recomposition against core TM2ComputableInTime (DEC-010 Option B) | 2 (local piece) | Draft — spec; local agent's job |
 | [`Relativization.md`](./Relativization.md) | Baker–Gill–Solovay (1975) | 3a | Draft — scaffold |
+| [`Relativization.proof-strategy.md`](./Relativization.proof-strategy.md) | BGS informal proof strategy (sandwich (a) + diagonalization (b)) | 3a | Informal — NOT a frozen proof spec |
 | [`NaturalProofs.md`](./NaturalProofs.md) | Razborov–Rudich (1994) | 3b | Draft — scaffold |
+| [`NaturalProofs.proof-strategy.md`](./NaturalProofs.proof-strategy.md) | RR informal proof strategy (natural property → distinguisher reduction) | 3b | Informal — NOT a frozen proof spec |
 | [`Algebrization.md`](./Algebrization.md) | Aaronson–Wigderson (2008) | 3c | Draft — scaffold |
+| [`Algebrization.proof-strategy.md`](./Algebrization.proof-strategy.md) | AW09 informal proof strategy (low-degree extension + hiding lemma + two-sided oracles) | 3c | Informal — NOT a frozen proof spec |
 | [`HygieneEnforcement.spec.md`](./HygieneEnforcement.spec.md) | CI hygiene enforcement (sorry-as-error + linters + CI) | cross-cutting | Draft — spec; local agent's job |
 
 **Order of work** (per `docs/GAP_AUDIT.md` prioritization): `Oracle.lean.spec.md` first (the unblocked Rung-2 local piece — no upstream dependency, everything else keys off it) → 3a (relativization, cleanest, depends only on oracle machines) → 3b (natural proofs, depends on circuits + OWF-as-hypothesis) → 3c (algebrization, depends on 3a's oracles + finite fields). Relativization is the first *barrier* because GAP_AUDIT §4 calls it "the most foundational barrier and the one with the cleanest formalization target"; the oracle substrate is the *first thing to build* because it's unblocked and the relativization statement waits on it.
