@@ -1,7 +1,7 @@
 # Recomposition spec: `Oracle.lean` v2 (against core `TM2ComputableInTime`)
 
 **Rung:** 2 (local piece) — the recomposition mandated by DEC-010 (Option B chosen: stay on core Mathlib v4.31.0, recompose against `TM2ComputableInTime`'s step-counting machinery, no external dependency, no toolchain change).
-**Status:** Spec — the frozen target for the local agent's recomposition of `lean/PleaNP/Computability/Oracle.lean`. The actual Lean rendering is the local agent's job (`lake build` validation required, per DEC-007). This document contains **no Lean code** — only the design, the constraints, the acceptance criteria, and the specific traps. A separate trust boundary from the proof work, per `docs/ARCHITECTURE.md`.
+**Status:** Recomposed (v2 against TM2ComputableInTime). Steps 0-2 passed (build green, hygiene clean). Steps 3-5 (model-consistency, read-back, freeze) pending review. See lean/PleaNP/Computability/Oracle.lean.
 
 This spec *supersedes* the TM1-specific composition guidance in `Oracle.lean.spec.md` §4. The oracle-type and totality-discipline requirements of that spec are **unchanged** (see §3 below); only the machine substrate and step-counting instantiation change.
 
