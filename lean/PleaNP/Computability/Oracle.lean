@@ -1,4 +1,5 @@
 import Mathlib.Computability.TuringMachine.PostTuringMachine
+set_option warningAsError true
 
 /-!
 # Oracle machines

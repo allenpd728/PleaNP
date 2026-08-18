@@ -71,3 +71,25 @@ Chronological record of design decisions. Append-only. Format: `### DEC-0XX` wit
 **Scope:** Build workflow
 **Decision:** The Lean build runs on a local machine (not in this authoring environment). The authoring environment maintains the source of truth (the repo); build feedback comes via the local toolchain.
 **Rationale:** The authoring environment lacks a Lean toolchain and is ephemeral (reinstalls would be painful, especially Mathlib). A hybrid model — source-of-truth here, build-server local — keeps the repo portable while maintaining a fast edit→compile→goal-state feedback loop. Machine specifics are per DEC-006.
+
+
+---
+
+### DEC-008
+
+**Date:** 2026-08-18
+**Status:** Active
+**Scope:** Computational model choice (Rung 2 local piece)
+**Decision:** Oracle.lean is built against Mathlib core `Turing.TM1` (PostTuringMachine.lean) as a partial prototype, with a `StepCount` typeclass interface isolating the step-counting dependency. The complexity classes P^A and NP^A are NOT defined yet — they require the step-counting layer that core TM1 lacks (GAP_AUDIT section 1). The `StepCount` interface means when upstream step counting lands (#35366 runN, #33132 EvalsToInTime, or complexitylib reconciliation), only the counting glue changes — not the Oracle type, Cfg, Machine, or step definitions.
+**Rationale:** complexitylib was tested and does NOT reconcile under v4.31.0 (23/4033 modules fail with Mathlib API drift; see UPSTREAM_TRACKING section 6). No upstream P/NP model has landed in Mathlib core. Core Turing.TM1 is present in Mathlib v4.31.0 and provides the machine model (Stmt, Cfg, step) needed to define the oracle-machine substrate, but lacks step counting — so the prototype is labeled "Substrate confirmed (partial — oracle machine only; P^A/NP^A blocked on step counting)." This follows decision rule 4 (UPSTREAM_TRACKING): record the chosen model so the next agent knows why TM1 was chosen and that the interface exists to swap it.
+
+
+---
+
+### DEC-009
+
+**Date:** 2026-08-18
+**Status:** Active
+**Scope:** Build/CI hygiene enforcement
+**Decision:** Hygiene is enforced via (1) per-file `set_option warningAsError true` pragmas in all PleaNP .lean files (making `sorry` a hard build error), and (2) a CI workflow (`.github/workflows/ci.yml`) that runs `lake build` + the hygiene scanner on every push/PR to main. The per-file pragma was chosen over a package-level `moreLeanArgs` flag because the latter caused "unknown configuration option" errors in lake v4.31.0 (the `warningAsError` option needs to be registered by Lean's stdlib, which loads after `-D` parsing). The per-file approach scopes unambiguously to PleaNP files only (not Mathlib), per the spec's section 3 caveat. `lake exe lint` is not available in Mathlib v4.31.0; a `#lint` test file is the fallback path (not yet wired).
+**Rationale:** Makes Gate 6 Tier 1 structural (CI-gated) rather than aspirational. A `sorry`-laden PR now fails CI. This catches mechanical failures (sorry, axioms) but not semantic ones (wrong statement, vacuity) — those remain Gates 1-5. See `docs/STATEMENTS/HygieneEnforcement.spec.md`.
