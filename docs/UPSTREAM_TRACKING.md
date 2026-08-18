@@ -88,8 +88,9 @@ This is PleaNP's gap to fill, regardless of which model lands:
 
 1. **Do not define P, NP, or reductions locally.** Import from whichever upstream effort lands first in Mathlib core.
 2. **Do define oracle machines locally** (under `PleaNP.Barriers.Relativization` or a dedicated `PleaNP.Oracles` namespace), since no upstream effort provides them.
-3. **Track the computational-model choice.** When P/NP lands in Mathlib, record the chosen model in `docs/decisions/LOG.md` and update this document.
-4. **If the chosen model makes oracle-machine definition painful**, evaluate the synthetic approach (Church's Thesis as axiom) as a fallback — per the Coq precedent, it dramatically lowers overhead.
+3. **Do not fork any tracked effort.** Forking would mean maintaining a divergent P/NP substrate through ongoing Mathlib churn — exactly the coordination overhead DEC-001/DEC-003 exist to avoid. Import from Mathlib core once landed, or import as a git dependency with a pinned release (e.g. complexitylib, *pending the toolchain-reconciliation check*). Never maintain a divergent local copy of P/NP or the computational model.
+4. **Track the computational-model choice.** When P/NP lands in Mathlib, record the chosen model in `docs/decisions/LOG.md` and update this document.
+5. **If the chosen model makes oracle-machine definition painful**, evaluate the synthetic approach (Church's Thesis as axiom) as a fallback — per the Coq precedent, it dramatically lowers overhead.
 
 ---
 
