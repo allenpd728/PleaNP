@@ -45,6 +45,7 @@ PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** o
 | `docs/ARCHITECTURE.md` | The gate pipeline (integrity architecture) |
 | `docs/FAILURE_AUDIT.md` | Prior attempts at "formalized P vs NP" and how they failed |
 | `docs/PRIOR_ART.md` | Cross-assistant prior-art survey + AI-tooling landscape (validates "no barriers formalized anywhere") |
+| `docs/SORRY_TRACKER.md` | Tracks every open `sorry` in the Lean codebase — what it's pending on, what unblocks it, and its priority. Prevents `sorry`s from being forgotten or filled in wrong. **Update when adding/resolving a `sorry`.** |
 | `docs/UPSTREAM_TRACKING.md` | Tracking the active Mathlib complexity efforts (currently #1–#8) |
 | `docs/STATEMENTS/` | **Frozen, human-verified statement specs (Gate 1 anchors / Gate 4 read-back refs).** One per barrier theorem, plus the oracle-machine design spec. Six-part template, prose-only (no Lean rendering — that's the local agent's job). Start here when beginning Rung 2 (oracle substrate) or Rung 3. |
 | `docs/STATEMENTS/README.md` | Why a non-Lean driver writes the specs; the template; index of the specs |
