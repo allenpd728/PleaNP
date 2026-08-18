@@ -8,4 +8,7 @@ project scaffolding is sound. Real tests are added as the library develops.
 -/
 
 -- Smoke test: the project compiles and Mathlib is available.
-#guard_msgs (whitespace := exact) ""
+example : True := trivial
+
+-- Entry point for `lake exe tests`.
+def main (_ : List String) : IO Unit := pure ()
