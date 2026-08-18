@@ -23,10 +23,13 @@ For the **operating procedure** the local agent follows to turn these specs into
 
 ## Index
 
-| Spec | Barrier | Rung | Status |
+| Spec | Barrier / substrate | Rung | Status |
 |---|---|---|---|
+| [`Oracle.lean.spec.md`](./Oracle.lean.spec.md) | Oracle-machine substrate (PleaNP-local) | 2 (local piece) | Draft — design spec; unblocked |
 | [`Relativization.md`](./Relativization.md) | Baker–Gill–Solovay (1975) | 3a | Draft — scaffold |
 | [`NaturalProofs.md`](./NaturalProofs.md) | Razborov–Rudich (1994) | 3b | Draft — scaffold |
 | [`Algebrization.md`](./Algebrization.md) | Aaronson–Wigderson (2008) | 3c | Draft — scaffold |
 
-**Order of formalization** (per `docs/GAP_AUDIT.md` prioritization): 3a (relativization, cleanest, depends only on oracle machines) → 3b (natural proofs, depends on circuits + OWF-as-hypothesis) → 3c (algebrization, depends on 3a's oracles + finite fields). Relativization is first because GAP_AUDIT §4 calls it "the most foundational barrier and the one with the cleanest formalization target."
+**Order of work** (per `docs/GAP_AUDIT.md` prioritization): `Oracle.lean.spec.md` first (the unblocked Rung-2 local piece — no upstream dependency, everything else keys off it) → 3a (relativization, cleanest, depends only on oracle machines) → 3b (natural proofs, depends on circuits + OWF-as-hypothesis) → 3c (algebrization, depends on 3a's oracles + finite fields). Relativization is the first *barrier* because GAP_AUDIT §4 calls it "the most foundational barrier and the one with the cleanest formalization target"; the oracle substrate is the *first thing to build* because it's unblocked and the relativization statement waits on it.
+
+The `Oracle.lean.spec.md` is a *design* doc (not a frozen theorem statement like the three barrier specs) — it specifies what `lean/PleaNP/Computability/Oracle.lean` must be, the totality discipline, and acceptance criteria for the local agent.
