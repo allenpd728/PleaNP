@@ -19,12 +19,14 @@ Each statement spec follows the same template:
 5. **Read-back check (Gate 4)** — the natural-language sentence that an auto-generated read-back of the formal Lean statement must match; disagreement blocks the claim.
 6. **Prior art / references** — the source papers and the closest existing formalizations (from `docs/PRIOR_ART.md`), with where they stop.
 
+For the **operating procedure** the local agent follows to turn these specs into validated Lean (statement rendering → `lake build` → hygiene scan → model-consistency → read-back → freeze → proof search), see [`LOCAL_AGENT_WORKFLOW.md`](./LOCAL_AGENT_WORKFLOW.md).
+
 ## Index
 
 | Spec | Barrier | Rung | Status |
 |---|---|---|---|
 | [`Relativization.md`](./Relativization.md) | Baker–Gill–Solovay (1975) | 3a | Draft — scaffold |
-| `NaturalProofs.md` | Razborov–Rudich (1994) | 3b | Not yet created |
-| `Algebrization.md` | Aaronson–Wigderson (2008) | 3c | Not yet created |
+| [`NaturalProofs.md`](./NaturalProofs.md) | Razborov–Rudich (1994) | 3b | Draft — scaffold |
+| [`Algebrization.md`](./Algebrization.md) | Aaronson–Wigderson (2008) | 3c | Draft — scaffold |
 
-Relativization is first because `docs/GAP_AUDIT.md` §4 identifies it as "the most foundational barrier and the one with the cleanest formalization target (it's an existence result about oracles, not a deep property of proof techniques)," and the GAP_AUDIT prioritization lists Rung 3a as "the first barrier to formalize."
+**Order of formalization** (per `docs/GAP_AUDIT.md` prioritization): 3a (relativization, cleanest, depends only on oracle machines) → 3b (natural proofs, depends on circuits + OWF-as-hypothesis) → 3c (algebrization, depends on 3a's oracles + finite fields). Relativization is first because GAP_AUDIT §4 calls it "the most foundational barrier and the one with the cleanest formalization target."

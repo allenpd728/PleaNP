@@ -42,30 +42,21 @@ These are the canonical witnesses from the literature (e.g. Arora–Barak §3; t
 
 ---
 
-## 3. Formalization target (provisional Lean shape)
+## 3. Formalization target (statement shape — no Lean rendering)
 
-Pinned to the **1975 BGS statement** (per the rung-3c precedent in `docs/ROADMAP.md`: pin the original, dated formulation; track later strengthenings separately). The exact type syntax depends on the Rung 2 model that lands; the *logical shape* is:
+Pinned to the **1975 BGS statement** (per the rung-3c precedent in `docs/ROADMAP.md`: pin the original, dated formulation; track later strengthenings separately). The actual Lean rendering is the local agent's job (it requires a landed Rung 2 model and `lake build` validation, which is out of scope for this spec). What follows is the *logical shape* the Lean must express, so the local agent has an unambiguous target:
 
-```lean
--- All names provisional. P/NP/oracle types come from Rung 2 (upstream + PleaNP.Oracles).
--- Namespace: PleaNP.Barriers.Relativization  (per DEC-002, not Complexity.*)
+**Clause (a) — equalizing oracle.** There exists an oracle `A` such that `P^A = NP^A`.
+**Clause (b) — separating oracle.** There exists an oracle `B` such that `P^B ≠ NP^B`.
 
--- (a) Existence of a separating oracle:
-theorem exists_oracle_p_ne_np :
-    ∃ B : Oracle,  -- B total & computable (recursive), see §2
-      P^B ≠ NP^B := by sorry
-
--- (b) Existence of an equalizing oracle:
-theorem exists_oracle_p_eq_np :
-    ∃ A : Oracle,  -- A total & computable (recursive)
-      P^A = NP^A := by sorry
-```
-
-**Quantifier order and shape notes (for the eventual Lean author):**
-- The oracle `A`/`B` is *existential* and *total* (answers every query in one step). This is not the partial-function oracle of `RecursiveIn`.
-- `P^A = NP^A` is *set extensional equality* of two oracle-relative language classes; `P^B ≠ NP^B` is the negation. Confirm the upstream `P`/`NP` are *language classes* (sets of languages), not decision-problem predicates, so the equality is extensional — a Gate 2 (model-consistency) check item.
-- Both witnesses must be **recursive** (computable), not arbitrary. BGS 1975 constructs computable A and B. The Lean statement must include the recursiveness hypothesis on the oracle; a statement that quantifies over *all* oracles (including noncomputable ones) would be a different (and in (a)'s case trivial) theorem — a Gate 5 (non-triviality) check item.
+**Constraints the Lean rendering must encode (acceptance criteria for the local agent):**
+- The oracle is *existential* and *total* — it answers every query in one step. This is **not** the partial-function oracle of Mathlib's `RecursiveIn`; the local agent must not reuse that type. (See `docs/PRIOR_ART.md` §1, the Park/Carneiro totality discussion.)
+- Both witnesses must be **recursive** (computable), not arbitrary. BGS 1975 constructs computable A and B. A statement that quantifies over *all* oracles (including noncomputable ones) is a *different* (and in clause (a)'s case, trivial) theorem — a Gate 5 (non-triviality) failure.
+- `P^A = NP^A` is *set extensional equality* of two oracle-relative language classes; `P^B ≠ NP^B` is its negation. The local agent must confirm the upstream `P`/`NP` are *language classes* (sets of languages), not bare decision-problem predicates, so the equality is extensional — a Gate 2 (model-consistency) check item.
 - The `U_B` / diagonalization construction for B is the *proof*, not the statement. The statement is pure existence.
+- Namespace: `PleaNP.Barriers.Relativization` (per DEC-002, not `Complexity.*`).
+
+The local agent renders this into Lean, runs `lake build`, and the resulting statement is checked against §5 (read-back) before any proof search begins.
 
 ---
 

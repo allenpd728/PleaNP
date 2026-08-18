@@ -92,3 +92,7 @@ The key insight: **the statement-fidelity gates (3, 4) must not be AI-driven in 
 - **Rungs 7–8** produce claims that must pass the full pipeline.
 
 The gates are not a Rung — they're a cross-cutting concern that applies from Rung 3 onward, whenever a formal claim is made.
+
+## How the gates become operational
+
+The frozen, human-verified statement specs that the gates run against live in `docs/STATEMENTS/` (one per barrier theorem, following a six-part template). The local-agent operating procedure for turning those specs into validated Lean — statement rendering → `lake build` → hygiene scan → model-consistency → read-back → freeze → proof search — is defined in `docs/STATEMENTS/LOCAL_AGENT_WORKFLOW.md`. That workflow is what makes the gates executable rather than aspirational: the remote authoring agent writes the spec; the local agent (with the Lean toolchain) renders and validates it; the two are separate trust boundaries by design (DEC-007).
