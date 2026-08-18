@@ -2,15 +2,15 @@
 
 **Rung 1 deliverable.** This is the spec for Rungs 2–4. It catalogues, domain by domain, what Mathlib currently has for complexity theory and what the barrier theorems (relativization, natural proofs, algebrization) require.
 
-Last reviewed: 2026-08-18. Update when upstream lands (see `docs/UPSTREAM_TRACKING.md`).
+Last reviewed: 2026-08-18 (deepened: verified against Mathlib master via code search; `RecursiveIn.lean` oracle-computability finding recorded). Update when upstream lands (see `docs/UPSTREAM_TRACKING.md`).
 
 ---
 
 ## Executive summary
 
-Mathlib has **computability** (Turing machines, computable functions, partial computability) but essentially **no complexity theory** — no P, no NP, no reductions, no complexity classes as objects, no oracles, no circuit complexity, no proof complexity, and none of the three barriers.
+Mathlib has **computability** (Turing machines, computable functions, partial computability, and — as of 2025 — *oracle computability* via `RecursiveIn.lean`) but essentially **no complexity theory** — no P, no NP, no reductions, no complexity classes as objects, no *time-bounded* oracle computation, no circuit complexity, no proof complexity, and none of the three barriers.
 
-The complexity substrate is being actively built by 3–4 upstream efforts (tracked in `docs/UPSTREAM_TRACKING.md`), none of which has landed in Mathlib core yet. Once one lands, PleaNP imports it and fills the gaps none of them cover: oracles, the barriers, circuit complexity, and proof complexity.
+The complexity substrate (P/NP/reductions with step counting) is being actively built by 3–4 upstream efforts (tracked in `docs/UPSTREAM_TRACKING.md`), none of which has landed in Mathlib core yet. Once one lands, PleaNP imports it and fills the gaps none of them cover: *time-bounded* oracle machines (the complexity layer on top of `RecursiveIn`'s computability layer), the barriers, circuit complexity, and proof complexity.
 
 **The barrier theorems are open ground in every proof assistant, in every model.** That is PleaNP's core contribution.
 
@@ -44,11 +44,12 @@ The complexity substrate is being actively built by 3–4 upstream efforts (trac
 
 | Need | Mathlib status | Gap |
 |---|---|---|
-| Oracle TMs (TM + oracle tape answering a fixed function in 1 step) | Not present | **Missing entirely — PleaNP builds this** |
-| Oracle complexity classes P^A, NP^A | Not present | **Missing — PleaNP builds this** |
+| Oracle *computability* (relative recursion: a function computable given a set of oracles) | **Present** — `Mathlib/Computability/RecursiveIn.lean` (Duve/Roth, 2025) defines `Nat.RecursiveIn O f` via the recursion-theoretic closure (`oracle` constructor, closed under `pair`/`comp`/`prec`/`rfind`). Unbounded time. | Reusable as the *computability* substrate, but no time bounds |
+| Oracle *machines* (a TM with an oracle tape answering a fixed function in 1 step) | Not present | **Missing — PleaNP builds this** (a machine-level oracle, distinct from the recursion-theoretic `RecursiveIn`) |
+| Oracle *complexity* classes P^A, NP^A (polynomial-*time*-bounded oracle computation) | Not present | **Missing — PleaNP builds this** (the core gap; `RecursiveIn` has no step counting or polynomial bounds) |
 | Oracle-separation results (Baker-Gill-Solovay) | Not present | **Missing — Rung 3** |
 
-**PleaNP stance:** This is ours regardless of which upstream model lands. None of the 4 tracked efforts provide oracle machines. Lives under `PleaNP.Oracles` / `PleaNP.Barriers.Relativization`.
+**PleaNP stance:** `RecursiveIn` is necessary but insufficient: it gives oracle *computability* (the "what is computable" question), but relativization needs oracle *complexity* (the "what is computable in polynomial time" question). PleaNP adds the time-complexity layer (step counting + polynomial bounds) on top of the chosen machine model. None of the 4 tracked upstream efforts provide time-bounded oracle computation. Lives under `PleaNP.Oracles` / `PleaNP.Barriers.Relativization`.
 
 ### 4. Relativization barrier (Baker-Gill-Solovay 1975)
 
@@ -144,6 +145,6 @@ Given the gap analysis, the build order is:
 
 ## Open questions to resolve
 
-1. Does Mathlib's existing cryptography infrastructure provide a base for pseudorandom functions / one-way functions (needed for natural proofs)? *To verify.*
-2. When P/NP lands upstream, does the chosen model make oracle-machine definition tractable? If not, evaluate the synthetic approach (Church's Thesis as axiom).
+1. Does Mathlib's existing cryptography infrastructure provide a base for pseudorandom functions / one-way functions (needed for natural proofs)? *Resolved (2026-08-18): No. Code search of Mathlib master for `one-way`/`oneway`/`pseudorandom`/`PRF` returns 0 hits. Mathlib has no cryptography directory (`Mathlib/Cryptography` does not exist); the `Computability` directory is computability only. The natural-proofs barrier must build its OWF/PRFF substrate from scratch (or import a separate crypto library).*
+2. When P/NP lands upstream, does the chosen model make oracle-machine definition tractable? If not, evaluate the synthetic approach (Church's Thesis as axiom). *Partially resolved (2026-08-18): Mathlib already has oracle **computability** via `RecursiveIn.lean` (recursion-theoretic, unbounded time), so the oracle concept is not greenfield. The open sub-question that remains is whether the chosen upstream machine model (TM1 or FinTM0) composes cleanly with an oracle tape under time bounds — i.e. whether `P^A`/`NP^A` are tractable to state. This is now a Rung 2 design task rather than an open research question.*
 3. Is there overlap with the `descriptive-complexity` approach (Senellart) for NP-completeness results, even though it avoids machines?

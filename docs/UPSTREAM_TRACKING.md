@@ -2,7 +2,7 @@
 
 The computational-model substrate (Rung 2) is *not* PleaNP's to build — it's being actively contested by multiple efforts upstreaming into Mathlib. This document tracks them so PleaNP imports the right thing rather than reinventing or picking sides.
 
-Last reviewed: 2026-08-18. This is a living document — update when upstream lands.
+Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-computability finding; verified no OWF/PRF infrastructure). This is a living document — update when upstream lands.
 
 ---
 
@@ -47,10 +47,11 @@ Last reviewed: 2026-08-18. This is a living document — update when upstream la
 
 This is PleaNP's gap to fill, regardless of which model lands:
 
-- **Oracle machines.** A TM (or λ-term) with an oracle tape — a magic black box answering a fixed question in one step. Required to state relativization. None of #35366, #33132, descriptive-complexity, or Simas define this.
+- **Time-bounded oracle computation.** Mathlib already has *oracle computability* — `Mathlib/Computability/RecursiveIn.lean` (Duve/Roth, 2025) defines `Nat.RecursiveIn O f` (a function partial-recursive given an oracle set `O`), the recursion-theoretic substrate. But this is *unbounded-time*. What relativization (Baker-Gill-Solovay) needs is a machine with an oracle tape answering a fixed function in one step **under a polynomial time bound** — i.e. `P^A` / `NP^A`. None of #35366, #33132, descriptive-complexity, Simas, or `RecursiveIn` provide this time-bounded oracle-machine layer.
 - **Oracle complexity classes** (P^A, NP^A) and oracle-separation results (Baker-Gill-Solovay).
 - **The barrier theorems themselves** (natural proofs, algebrization) — none of these efforts touch them.
 - **Circuit complexity** (AC⁰, TC⁰, NC) and **proof complexity** (resolution, Frege).
+- **Cryptographic primitives for natural proofs** (one-way functions, pseudorandom function families) — code search of Mathlib master confirms none exist (see `docs/GAP_AUDIT.md` §6, open question 1).
 
 ---
 
