@@ -89,9 +89,13 @@ IFF_TRUE_RE = re.compile(r"\u2194\s*True\b")
 # A def with `:= True` (bare equality to True as a body).
 EQ_TRUE_DEF_RE = re.compile(r":=\s*True\b")
 
-# A def whose body is a bare `none` (constant failure). The body is the text
-# after `:=`; we check it is whitespace-then-none (no other tokens).
-DEF_NONE_RE = re.compile(r":=\s*none\b")
+# A def whose body is a BARE `none` or `Option.none` (constant failure) —
+# meaning none/Option.none IS the whole body, not embedded in a larger
+# expression like `some (Cfg.mk { l := Option.none })`. We require the
+# body (after :=, skipping whitespace) to be exactly `none` or `Option.none`
+# followed by a newline (end of statement). This avoids false-flagging
+# legitimate uses of Option.none inside larger terms.
+DEF_NONE_RE = re.compile(r":=\s*(?:Option\.)?none\s*$", re.MULTILINE | re.DOTALL)
 
 
 def scan_file(path: Path) -> list[Finding]:
