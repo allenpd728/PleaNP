@@ -42,14 +42,15 @@ Run Mathlib's linters (style, naming, docstrings, unused args, etc.) on every bu
 
 ### 2.3 CI as the enforcement layer
 
-A `.github/workflows/ci.yml` that gates merges on hygiene + lint + build. This is the structural enforcement — local builds can be lax, but a PR doesn't merge unless CI is green.
+A `.github/workflows/ci.yml` that gates merges on hygiene + lint + build + vacuity. This is the structural enforcement — local builds can be lax, but a PR doesn't merge unless CI is green.
 
 **Logical shape (the local agent renders the YAML for the GitHub Actions runner):**
 - Checkout.
 - Set up the Lean toolchain (`leanprover/lean-toolchain` action, pinned to `leanprover/lean4:v4.31.0` per `lean/lean-toolchain`).
 - Run `lake build` (which now fails on sorry, per §2.1).
 - Run the Mathlib linter (per §2.2).
-- Run `python3 tooling/gates/hygiene_scan.py --prove-stage lean/PleaNP` (the Gate 6 Tier 1 scanner, in `--prove-stage` mode so any `sorry` is a violation).
+- Run `python3 tooling/gates/hygiene_scan.py --prove-stage lean/PleaNP` (the Gate 6 Tier 1 scanner).
+- Run `python3 tooling/gates/vacuity_scan.py lean/PleaNP` (the Gate 5 Tier 1 vacuity scanner — catches dishonest placeholders like `theorem : True := by trivial`, `def := iff True`, `def := none`).
 - The workflow fails on any non-zero exit from any step.
 
 **Acceptance criterion:** a PR adding a `sorry` to a PleaNP file fails CI; a PR without one passes. The CI must run on `main` (the default branch — note: the repo default is `main`, not `master`; verify `.github/workflows/ci.yml` triggers on `main`).
