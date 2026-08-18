@@ -29,6 +29,7 @@ For the **operating procedure** the local agent follows to turn these specs into
 | [`Relativization.md`](./Relativization.md) | Baker–Gill–Solovay (1975) | 3a | Draft — scaffold |
 | [`NaturalProofs.md`](./NaturalProofs.md) | Razborov–Rudich (1994) | 3b | Draft — scaffold |
 | [`Algebrization.md`](./Algebrization.md) | Aaronson–Wigderson (2008) | 3c | Draft — scaffold |
+| [`HygieneEnforcement.spec.md`](./HygieneEnforcement.spec.md) | CI hygiene enforcement (sorry-as-error + linters + CI) | cross-cutting | Draft — spec; local agent's job |
 
 **Order of work** (per `docs/GAP_AUDIT.md` prioritization): `Oracle.lean.spec.md` first (the unblocked Rung-2 local piece — no upstream dependency, everything else keys off it) → 3a (relativization, cleanest, depends only on oracle machines) → 3b (natural proofs, depends on circuits + OWF-as-hypothesis) → 3c (algebrization, depends on 3a's oracles + finite fields). Relativization is the first *barrier* because GAP_AUDIT §4 calls it "the most foundational barrier and the one with the cleanest formalization target"; the oracle substrate is the *first thing to build* because it's unblocked and the relativization statement waits on it.
 

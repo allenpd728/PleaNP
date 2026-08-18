@@ -53,6 +53,7 @@ PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** o
 | `docs/STATEMENTS/NaturalProofs.md` | Rung 3b spec (Razborov–Rudich 1994) — OWF as hypothesis, not constructed |
 | `docs/STATEMENTS/Algebrization.md` | Rung 3c spec (Aaronson–Wigderson 2008) — AW09 multiquadratic v1 pinned |
 | `docs/STATEMENTS/LOCAL_AGENT_WORKFLOW.md` | The test-as-you-go loop the local agent follows to turn specs into validated Lean (Steps 0–6: substrate check → render → hygiene → model-consistency → read-back → freeze → proof search). **Read before any Lean execution.** |
+| `docs/STATEMENTS/HygieneEnforcement.spec.md` | CI hygiene enforcement spec — sorry-as-error + Mathlib linters + `.github/workflows/ci.yml`. The "stricter compiler" lever; local agent's job (needs `lake` + CI run). |
 | `docs/decisions/LOG.md` | Chronological decision log (DEC-0XX) |
 
 ## Build and test
