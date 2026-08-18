@@ -1,0 +1,27 @@
+# Lean build artifacts
+.lake/
+build/
+*.olean
+*.trace
+
+# Local machine-specific configuration — never commit
+# (contains Lean toolchain paths, build-server connection details)
+AGENTS_LOCAL.md
+
+# Python tooling
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# OS/editor
+.DS_Store
+*.swp
+*~
+.idea/
+.vscode/
+
+# Experiment outputs (keep tooling, not results)
+tooling/**/results/
+tooling/**/runs/
