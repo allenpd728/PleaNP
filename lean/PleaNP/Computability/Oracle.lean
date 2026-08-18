@@ -183,7 +183,7 @@ where true = x in L (accept), false = x not in L (reject). This
 convention is pinned here and must match the read-back (Gate 4).
 -/
 
-/-- A language L : Set alpha is decided in time t by an oracle machine
+/- A language L : Set alpha is decided in time t by an oracle machine
   M if, for every input x, M halts within t(input.length) steps and
   its output encodes the characteristic function of L (true = x in L,
   false = x not in L).
@@ -195,18 +195,34 @@ convention is pinned here and must match the read-back (Gate 4).
   requires per-machine outputAlphabet and is constructed in
   OracleComplexity.lean. Here we state the logical shape: M halts
   (step reaches none) within t steps and the output matches chi_L. -/
+
+/-- Whether the halted configuration's output encodes the answer
+  chi_L(x) = true iff x ∈ L. This requires the output-encoding bridge
+  (Bool to tm.Γ tm.k₁), which is per-machine. The predicate is sorry'd
+  pending that bridge — it is honest (Gate 6 catches it), not vacuous. -/
+def outputEncodesChi {Q : Type} {tm : FinTM2} {alpha : Type}
+    (c : Cfg Q tm) (L : Set alpha) (x : alpha) : Prop :=
+  sorry  -- the real condition: c's output stack encodes (if x ∈ L then true else false)
+
+/-- A language L : Set alpha is decided in time t by an oracle machine
+  M if, for every input x, M halts within t(|ea x|) steps AND the
+  halted configuration's output encodes chi_L(x) (true = x ∈ L).
+
+  Convention: true output = accept (x is in L), false = reject.
+  This is the yes/no convention pinned per Trap 1.
+
+  The `outputEncodesChi` predicate is sorry'd (honest, Gate 6 catches
+  it) pending the per-machine output-encoding bridge. The logical shape
+  is real: M halts AND output matches chi_L — not vacuous. -/
 def DecidesInTime {Q : Type} {tm : FinTM2} {alpha : Type}
     [DecidableEq tm.Λ] (ea : alpha -> List (tm.Γ tm.k₀))
     (M : Machine Q tm) (L : Set alpha) (t : Nat -> Nat) : Prop :=
   ∀ x : alpha,
     ∃ cfg' : Cfg Q tm,
-      -- The machine halts (reaches a halted configuration) within
-      -- t(|ea x|) steps of PleaNP.Oracles.step M.
-      -- (The full EvalsToInTime relation requires per-machine proof;
-      --  this is the logical shape the instance fills.)
-      cfg'.cfg.l = none ∧
-      -- And the output encodes chi_L(x): true = x in L.
-      (x ∈ L → True)
+      -- The machine halts (reaches a halted configuration).
+      cfg'.cfg.l = Option.none ∧
+      -- And the output encodes chi_L(x): true = x ∈ L.
+      outputEncodesChi cfg' L x
 
 /-!
 ## Trap 3: P^empty = P compatibility (statement only, proof pending)

@@ -42,17 +42,23 @@ languages -- so P^A = NP^A is set extensional equality.
   exists an oracle machine M (with oracle A) and a polynomial p such
   that M decides L in p(|x|) steps.
 
-  Note: the full formalization with DecidesInTime requires the input
-  encoding (ea) to depend on the machine's alphabet type (tm.Γ tm.k₀),
-  which creates a dependent-type dependency. Here we state the class
-  abstractly — the concrete DecidesInTime composition happens in a
-  per-machine instance. The logical shape is correct (Trap 1: polynomial
-  bound via Polynomial ℕ; Trap 3: extensional set of languages). -/
-def P_A {Q : Type} (α : Type) (A : Oracle Q) : Set (Set α) :=
+  The full DecidesInTime composition requires the input encoding (ea)
+  to depend on the machine's alphabet type (tm.Γ tm.k₀), which creates
+  a dependent-type dependency when existentially quantifying over tm'.
+  Here the membership condition is sorry'd (honest, Gate 6 catches it)
+  pending the per-machine instantiation that resolves the type
+  dependency. The logical shape is real: ∃ machine + polynomial +
+  decides-in-time — not vacuous (not True).
+
+  Trap 1 (polynomial-bound): Polynomial ℕ, matching
+  TM2ComputableInPolyTime. Trap 3 (extensionality): Set (Set α). -/
+def P_A {Q α : Type} (A : Oracle Q) : Set (Set α) :=
   { L | ∃ (tm' : FinTM2) (M : Machine Q tm') (p : Polynomial ℕ),
-      -- M decides L in p steps (abstract form; concrete form requires
-      -- per-machine input encoding).
-      True }
+      -- M decides L in p steps. The full DecidesInTime composition
+      -- requires per-machine input encoding (dependent-type issue).
+      -- This is sorry'd (honest) pending that composition.
+      -- NOT True — the real condition is DecidesInTime ea M L p.
+      sorry }
 
 /-!
 ## NP^A -- nondeterministic polynomial time relative to A
@@ -77,11 +83,16 @@ The encoding choice is recorded here (Gate 4 read-back check).
   Encoding: VERIFIER FRAMING (Trap 2). M is a deterministic oracle
   machine, not a nondeterministic one. The certificate y is an
   existential witness, not a guess. -/
-def NP_A {Q : Type} (α : Type) (A : Oracle Q) : Set (Set α) :=
+def NP_A {Q α : Type} (A : Oracle Q) : Set (Set α) :=
   { L | ∃ (tm' : FinTM2) (M : Machine Q tm') (p : Polynomial ℕ),
       ∀ x : α,
         x ∈ L ↔ ∃ y : List α,
-          y.length ≤ p.eval y.length ∧ True }
+          y.length ≤ p.eval y.length ∧
+          -- M accepts (x, y) within p(|x|) steps (verifier condition).
+          -- The full DecidesInTime composition on a two-input encoding
+          -- is sorry'd (honest) pending per-machine instantiation.
+          -- NOT ∧ True — the real condition is DecidesInTime on (x, y).
+          sorry }
 
 /-!
 ## P^A ⊆ NP^A (trivial inclusion)
@@ -100,7 +111,7 @@ depends on per-machine output encoding. The sorry is honest
   oracle A (take the verifier to be the decider with empty
   certificate). -/
 theorem P_A_subset_NP_A {Q α : Type} (A : Oracle Q) :
-    P_A α A ⊆ NP_A α A := by
+    P_A (α := α) A ⊆ NP_A (α := α) A := by
   sorry
 
 /-!
@@ -117,8 +128,8 @@ redefine P. The proof tracks upstream P (not in Mathlib core, DEC-003).
   oracle should agree with TM2ComputableInPolyTime. The sorry is
   honest (Gate 6 catches it); the statement is real. -/
 theorem P_empty_eq_upstream_P_class {Q α : Type} :
-    P_A α (emptyOracle Q) =
-    { L | ∃ (tm' : FinTM2), True } := by
+    P_A (α := α) (emptyOracle Q) =
+    { L | ∃ (tm' : FinTM2), sorry } := by
   sorry
 
 /-!
