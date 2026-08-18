@@ -1,0 +1,30 @@
+# Statement specs (Gate 1 frozen statements) — index
+
+This directory holds the **frozen, human-verified informal-to-formal specifications** for each theorem PleaNP aims to prove. Per the integrity architecture (`docs/ARCHITECTURE.md`, Gate 1 — statement-freeze), the formal Lean statement of any target theorem is committed and human-verified *before* any proof search runs, and the proof-search component is structurally forbidden from editing it.
+
+## Why these docs exist (and why a non-Lean-writing driver writes them)
+
+The failure audit (`docs/FAILURE_AUDIT.md`) establishes the project's #1 lesson: **formalization does not confer correctness of the statement-to-informal mapping.** A compiling proof of the *wrong* statement is worse than no proof, because it looks authoritative. The structural fix is that the person who pins the statement must *not* be the person (or pipeline) that later searches for its proof.
+
+This is why these specs are written by the project driver in plain complexity-theoretic English, pinned to the original source papers, *before* any Lean is touched: they are the human-verified anchor that the formal Lean statement must be read back against (Gate 4 — read-back). Writing them is not busywork; it is the architecturally correct first move and the highest-leverage no-Lean task in the project.
+
+## Structure of each spec
+
+Each statement spec follows the same template:
+
+1. **Informal statement** — the theorem as stated in the source paper, verbatim or close-paraphrased, with the exact citation.
+2. **Dependencies** — every definition the statement relies on (e.g. `P^A`, `NP^A`, oracle, polynomial time), each traced to where it must come from (upstream Mathlib, a tracked effort, or PleaNP-local).
+3. **Formalization target** — the precise Lean statement shape (names, quantifier order, type of the oracle), pinned to a *dated* version of the informal theorem to avoid formalizing a moving folk theorem.
+4. **Gate mapping** — which integrity gates (`docs/ARCHITECTURE.md`) apply, and what each one checks for *this* statement specifically.
+5. **Read-back check (Gate 4)** — the natural-language sentence that an auto-generated read-back of the formal Lean statement must match; disagreement blocks the claim.
+6. **Prior art / references** — the source papers and the closest existing formalizations (from `docs/PRIOR_ART.md`), with where they stop.
+
+## Index
+
+| Spec | Barrier | Rung | Status |
+|---|---|---|---|
+| [`Relativization.md`](./Relativization.md) | Baker–Gill–Solovay (1975) | 3a | Draft — scaffold |
+| `NaturalProofs.md` | Razborov–Rudich (1994) | 3b | Not yet created |
+| `Algebrization.md` | Aaronson–Wigderson (2008) | 3c | Not yet created |
+
+Relativization is first because `docs/GAP_AUDIT.md` §4 identifies it as "the most foundational barrier and the one with the cleanest formalization target (it's an existence result about oracles, not a deep property of proof techniques)," and the GAP_AUDIT prioritization lists Rung 3a as "the first barrier to formalize."

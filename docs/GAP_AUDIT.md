@@ -59,7 +59,7 @@ The complexity substrate (P/NP/reductions with step counting) is being actively 
 | "There exists oracle B with P^B ≠ NP^B" | Not formalized anywhere | **Rung 3 — open ground** |
 | The barrier statement (relativizing proofs can't separate P from NP) | Not formalized anywhere | **Rung 3 — open ground** |
 
-**Note:** This is the most foundational barrier and the one with the cleanest formalization target (it's an existence result about oracles, not a deep property of proof techniques).
+**Note:** This is the most foundational barrier and the one with the cleanest formalization target (it's an existence result about oracles, not a deep property of proof techniques). The frozen informal-to-formal statement spec lives at `docs/STATEMENTS/Relativization.md`.
 
 ### 5. Circuit complexity
 

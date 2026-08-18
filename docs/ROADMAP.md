@@ -46,7 +46,7 @@ PleaNP imports whichever lands upstream, rather than picking a side. Our only lo
 **Why this matters:** This is the exact knowledge an AI proof-search system needs encoded to avoid dead ends. A formalized "do not try relativizing/natural/algebrizing techniques" map makes search tractable and honest. None of these is formalized in any proof assistant today — this is open ground (confirmed across Lean, Coq, and Isabelle/AFP; see `docs/PRIOR_ART.md`).
 
 **Scope notes (from the prior-art review):**
-- **3a (relativization):** the cleanest target — an existence result about oracles, depends only on Rung 2's oracle machines. Formalize against the original Baker–Gill–Solovay 1975 statement.
+- **3a (relativization):** the cleanest target — an existence result about oracles, depends only on Rung 2's oracle machines. Formalize against the original Baker–Gill–Solovay 1975 statement. The frozen, human-verified informal-to-formal spec lives at `docs/STATEMENTS/Relativization.md` (Gate 1 anchor / Gate 4 read-back reference).
 - **3b (natural proofs):** formalizes the *conditional* (`OWF exists ⟹ no natural property gives superpoly lower bounds`); the one-way function enters as a **hypothesis**, not a constructed object — PleaNP does *not* build a PRF, it states the conditional cleanly (no importable Lean/Coq/Isabelle crypto substrate exists; see `docs/PRIOR_ART.md`, crypto-substrate section).
 - **3c (algebrization):** pin the **original Aaronson–Wigderson 2009 (multiquadratic) formulation** as the v1 target; track the ITCS 2026 multilinear-strengthening as a candidate v2, not part of v1 (prevents formalizing a moving folk theorem).
 
