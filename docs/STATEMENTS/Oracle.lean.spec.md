@@ -1,7 +1,7 @@
 # Design spec: `PleaNP/Computability/Oracle.lean`
 
 **Rung:** 2 (the local, unblocked piece) — oracle machines are PleaNP's to build regardless of which upstream P/NP model lands (`docs/UPSTREAM_TRACKING.md` decision rule 2; `docs/STATEMENTS/Relativization.md` §2).
-**Status:** Design spec — the informal-to-formal target for the local agent. The actual Lean rendering is the local agent's job (`lake build` validation required, per DEC-007 and `docs/STATEMENTS/LOCAL_AGENT_WORKFLOW.md`). This document contains **no Lean code** — only the design, the constraints, and acceptance criteria. A separate trust boundary from the proof work, per `docs/ARCHITECTURE.md`.
+**Status:** Substrate confirmed (PARTIAL -- oracle machine only; P^A/NP^A blocked on step counting). Oracle.lean rendered, type-checks, hygiene-clean. See lean/PleaNP/Computability/Oracle.lean.
 
 ---
 
