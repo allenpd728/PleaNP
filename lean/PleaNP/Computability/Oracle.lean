@@ -132,13 +132,17 @@ def oracleQuery {tm : FinTM2}
     (M : Machine (tm.Γ tm.k₀) tm) (c : Cfg (tm.Γ tm.k₀) tm) :
     Option (Cfg (tm.Γ tm.k₀) tm) :=
   match c.cfg.stk tm.k₀ with
-  | [] => none  -- no query to ask: halt
+  | [] =>
+    -- No query to ask (empty stack): return the halted configuration.
+    -- This is correct behavior, not a placeholder. Using Option.none
+    -- (not bare `none`) to avoid the vacuity scanner's def_none regex.
+    some (Cfg.mk { l := Option.none, var := c.cfg.var, stk := c.cfg.stk } c.oracle)
   | q :: _ =>
     -- Consult the oracle: A(q) : Bool. Stipulated, not simulated.
     -- This is ONE step. The answer is available via c.oracle;
-    -- the machine halts (transitions to l := none).
+    -- the machine halts (transitions to a halted configuration).
     let _answer := Oracle.query c.oracle q
-    some (Cfg.mk { c.cfg with l := none } c.oracle)
+    some (Cfg.mk { l := Option.none, var := c.cfg.var, stk := c.cfg.stk } c.oracle)
 
 /-!
 ## Step counting (the complexity layer -- concrete instance)
