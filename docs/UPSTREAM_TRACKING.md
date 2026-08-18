@@ -2,7 +2,7 @@
 
 The computational-model substrate (Rung 2) is *not* PleaNP's to build — it's being actively contested by multiple efforts upstreaming into Mathlib. This document tracks them so PleaNP imports the right thing rather than reinventing or picking sides.
 
-Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-computability finding; verified no OWF/PRF infrastructure). This is a living document — update when upstream lands.
+Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-computability finding; added complexitylib (Schlesinger) as tracked effort #6; verified no OWF/PRF infrastructure). This is a living document — update when upstream lands.
 
 ---
 
@@ -41,13 +41,28 @@ Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-
 - **Gäher & Kunze, ITP 2021.** Cook-Levin in Coq using the call-by-value λ-calculus L as model. Required Forster-Kunze-Wuttke-Smolka (L ↔ TMs, polynomial overhead) first.
 - **Methodological lesson:** The λ-calculus route was chosen *because* TMs were too painful ("19K lines, inherently infeasible" — Forster). If Lean's `Turing.TM1` route proves equally painful, the λ-calculus or synthetic approach is the fallback.
 
+### 6. complexitylib — Samuel Schlesinger
+
+- **Repo:** https://github.com/SamuelSchlesinger/complexitylib (default branch `master`)
+- **Approach:** A standalone Lean 4 / Mathlib formalization of complexity theory using concrete Arora–Barak-style multi-tape Turing machines (deterministic, nondeterministic, probabilistic) over a fixed four-symbol alphabet, with explicit time and space predicates. Concrete over abstract: machines, circuits, reductions, and encoders are concrete definitions, not bare existence claims. An `AxiomGuard` script mechanically guards headline results against hidden axioms.
+- **Toolchain:** `leanprover/lean4:v4.30.0`, pinning Mathlib to `v4.30.0`. **This does NOT match PleaNP's `v4.33.0`** — a toolchain/dependency reconciliation is a prerequisite to any import. Review item.
+- **License:** Apache 2.0 (compatible with PleaNP).
+- **What it has:** `P`, `NP`, `BPP`, `PSPACE` (plus `DTIME`/`NTIME`/`DSPACE`/`NSPACE`, `PPoly`/`PAdvice`, `RP`/`ZPP`/`PP`/`EXP`/`NEXP`/`SC`/`FNP`/`TFNP`); multi-tape-to-single-tape simulation; universal machines; the deterministic time-hierarchy theorem; a full Cook-Levin reduction (`SAT` is NP-complete) via computation tableaux; a typed Boolean-circuit model with size/depth, CNF/DNF, Shannon bounds, gate-elimination lower bounds, Schnorr's XOR lower bound, Valiant depth reduction; a logarithmic-cost RAM model; and a Fourier-analysis-of-Boolean-functions subtheory (O'Donnell ch. 1) — the analytic foundation for small-depth lower bounds and natural proofs.
+- **What it explicitly lacks:** Oracle machines (the roadmap lists "oracle access" as needing common interfaces before headline equivalences can be stated), and **all three barriers** (relativization, natural proofs, algebrization) — code search confirms zero hits for `oracle`/`relativization`/`barrier`/`algebrization`. These are exactly PleaNP's gap.
+- **PleaNP stance:** Strong candidate to import P/NP/reductions/Cook-Levin/circuit-basics from, *if* the toolchain reconciles to v4.33.0 (or PleaNP downgrades). Its circuit lower bounds and Fourier-analysis subtheory are directly reusable for Rung 4. Pending review — **not yet added to `lakefile.lean`**. Proposed dependency entry:
+  ```lean
+  require complexitylib from git
+    "https://github.com/SamuelSchlesinger/complexitylib.git" @ "main"
+  ```
+  (Note: the repo's default branch is `master`, not `main`; the entry above matches the requested form but should be `@ "master"` — or a tagged release — before being added.)
+
 ---
 
 ## What none of the upstream efforts provide
 
 This is PleaNP's gap to fill, regardless of which model lands:
 
-- **Time-bounded oracle computation.** Mathlib already has *oracle computability* — `Mathlib/Computability/RecursiveIn.lean` (Duve/Roth, 2025) defines `Nat.RecursiveIn O f` (a function partial-recursive given an oracle set `O`), the recursion-theoretic substrate. But this is *unbounded-time*. What relativization (Baker-Gill-Solovay) needs is a machine with an oracle tape answering a fixed function in one step **under a polynomial time bound** — i.e. `P^A` / `NP^A`. None of #35366, #33132, descriptive-complexity, Simas, or `RecursiveIn` provide this time-bounded oracle-machine layer.
+- **Time-bounded oracle computation.** Mathlib already has *oracle computability* — `Mathlib/Computability/RecursiveIn.lean` (Duve/Roth, 2025) defines `Nat.RecursiveIn O f` (a function partial-recursive given an oracle set `O`), the recursion-theoretic substrate. But this is *unbounded-time*. What relativization (Baker-Gill-Solovay) needs is a machine with an oracle tape answering a fixed function in one step **under a polynomial time bound** — i.e. `P^A` / `NP^A`. None of #35366, #33132, descriptive-complexity, Simas, `RecursiveIn`, or complexitylib provide this time-bounded oracle-machine layer (complexitylib's own roadmap flags oracle access as unfinished).
 - **Oracle complexity classes** (P^A, NP^A) and oracle-separation results (Baker-Gill-Solovay).
 - **The barrier theorems themselves** (natural proofs, algebrization) — none of these efforts touch them.
 - **Circuit complexity** (AC⁰, TC⁰, NC) and **proof complexity** (resolution, Frege).

@@ -2,7 +2,7 @@
 
 **Rung 1 deliverable.** This is the spec for Rungs 2–4. It catalogues, domain by domain, what Mathlib currently has for complexity theory and what the barrier theorems (relativization, natural proofs, algebrization) require.
 
-Last reviewed: 2026-08-18 (deepened: verified against Mathlib master via code search; `RecursiveIn.lean` oracle-computability finding recorded). Update when upstream lands (see `docs/UPSTREAM_TRACKING.md`).
+Last reviewed: 2026-08-18 (deepened: verified against Mathlib master via code search; `RecursiveIn.lean` oracle-computability finding recorded; complexitylib tracked; open Q3 resolved). Update when upstream lands (see `docs/UPSTREAM_TRACKING.md`).
 
 ---
 
@@ -112,9 +112,20 @@ The complexity substrate (P/NP/reductions with step counting) is being actively 
 
 | Need | Mathlib status | Gap |
 |---|---|---|
-| Polynomial-time many-one reductions | Not in core (Simas standalone) | Import from upstream |
-| Cook-Levin (SAT NP-complete) | Not in Mathlib (done in Coq, Isabelle) | Import or rebuild if upstream lacks it |
+| Polynomial-time many-one reductions | Not in core (Simas standalone; complexitylib has them) | Import from upstream |
+| Cook-Levin (SAT NP-complete) | Not in Mathlib (done in Coq, Isabelle; **now in complexitylib** via machine tableaux, and in descriptive-complexity via FO reductions) | Import from upstream |
 | Karp's 21 problems | Not present | descriptive-complexity (Senellart) covers these |
+
+**Open question 3 — resolved (2026-08-18): Senellart vs complexitylib on NP-completeness.**
+
+Senellart's `descriptive-complexity` and Schlesinger's `complexitylib` both prove `SAT` NP-complete, but on **different substrates with different reduction notions**, so they overlap in *result* but not in *substrate*, and they neither conflict nor compose directly:
+
+- **descriptive-complexity (Senellart):** Machine-free. Defines NP via logical definability on finite relational structures over Mathlib's `ModelTheory` (Immerman-style). NP-completeness (`SAT_NP_complete`) is proved *without a machine model*, via **first-order (FO) reductions**. FO reductions are a *stronger* reduction than polynomial-time (Karp) reductions: every FO reduction is poly-time, but not conversely. Also includes all 21 Karp problems and the Immerman–Vardi / Abiteboul–Vianu theorems.
+- **complexitylib (Schlesinger):** Machine-based. Defines NP via concrete Arora–Barak multi-tape Turing machines with explicit time predicates. Cook-Levin is the classical proof via computation tableaux, and reductions are **polynomial-time many-one (Karp) reductions**.
+
+**The overlap is a congruence of headline result, not a redundancy of substrate.** They do not conflict — both are valid formalizations of "SAT is NP-complete" — but they do not directly compose either: an FO reduction (Senellart) is not the same object as a poly-time reduction (complexitylib), and a logical-definability class is not the same object as a machine-acceptance class. The descriptive-complexity repo provides *machine bridges* (`mem_NP_iff_le_ntmAccept`) that characterize its logical NP via machine-acceptance problems, but the agreement with the usual string-encoding presentation is classical (Fagin; Immerman–Vardi) and is *not* formalized there.
+
+**PleaNP implication:** For the barriers, complexitylib is the more directly importable substrate — its machine model composes with the oracle-tape layer relativization needs (descriptive-complexity's logic-based NP does not give oracle machines). Senellart's FO reductions are a *stronger, incomparable* reduction notion that cannot be substituted for poly-time reductions inside oracle-relative statements (`P^A`, `NP^A`). Treat the two as complementary, not competing: complexitylib for the machine substrate and Cook-Levin; descriptive-complexity as a cross-check source for NP-completeness results whose reductions happen to be FO-expressible. No conflict; no automatic composition.
 
 ---
 
@@ -147,4 +158,4 @@ Given the gap analysis, the build order is:
 
 1. Does Mathlib's existing cryptography infrastructure provide a base for pseudorandom functions / one-way functions (needed for natural proofs)? *Resolved (2026-08-18): No. Code search of Mathlib master for `one-way`/`oneway`/`pseudorandom`/`PRF` returns 0 hits. Mathlib has no cryptography directory (`Mathlib/Cryptography` does not exist); the `Computability` directory is computability only. The natural-proofs barrier must build its OWF/PRFF substrate from scratch (or import a separate crypto library).*
 2. When P/NP lands upstream, does the chosen model make oracle-machine definition tractable? If not, evaluate the synthetic approach (Church's Thesis as axiom). *Partially resolved (2026-08-18): Mathlib already has oracle **computability** via `RecursiveIn.lean` (recursion-theoretic, unbounded time), so the oracle concept is not greenfield. The open sub-question that remains is whether the chosen upstream machine model (TM1 or FinTM0) composes cleanly with an oracle tape under time bounds — i.e. whether `P^A`/`NP^A` are tractable to state. This is now a Rung 2 design task rather than an open research question.*
-3. Is there overlap with the `descriptive-complexity` approach (Senellart) for NP-completeness results, even though it avoids machines?
+3. Is there overlap with the `descriptive-complexity` approach (Senellart) for NP-completeness results, even though it avoids machines? *Resolved (2026-08-18): Yes, but only in result, not substrate. Senellart (descriptive-complexity) and complexitylib both prove SAT NP-complete, on different substrates (logical definability + FO reductions vs multi-tape TMs + Karp reductions). FO reductions are strictly stronger than poly-time reductions, so the two do not compose directly and neither conflicts. For the barriers, complexitylib's machine substrate is the importable one; Senellart's FO reductions are a complementary cross-check, not a substitute inside oracle-relative statements. Full analysis in §9 above.*
