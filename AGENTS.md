@@ -26,7 +26,7 @@ PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** o
 
 | Rung | Goal | Status |
 |---|---|---|
-| 1 | Gap audit of Mathlib complexity coverage | In progress |
+| 1 | Gap audit of Mathlib complexity coverage | Done (see `docs/GAP_AUDIT.md`; track upstream changes) |
 | 2 | Computational model + canonical P/NP (upstream-tracked) | Blocked on upstream |
 | 3 | Formalize the barrier theorems | Not started |
 | 4 | Formalize lower-bound techniques + their failures | Not started |

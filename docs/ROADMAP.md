@@ -14,7 +14,7 @@ The honest framing: **the most likely outcome of this program is not "P vs NP so
 
 **Output:** The spec for Rungs 2–4. Tells us whether each rung is "build from scratch" or "Mathlib is already most of the way there."
 
-**Status:** In progress. The audit also tracks the 3–4 active upstream efforts adding P/NP to Mathlib (see `docs/UPSTREAM_TRACKING.md`), since Rung 2 is upstream-tracked rather than built locally.
+**Status:** Done. The audit also tracks the active upstream efforts adding P/NP to Mathlib (see `docs/UPSTREAM_TRACKING.md`), since Rung 2 is upstream-tracked rather than built locally. The audit is a living document — re-review when upstream lands.
 
 ---
 
