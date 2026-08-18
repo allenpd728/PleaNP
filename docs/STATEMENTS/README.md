@@ -27,6 +27,7 @@ For the **operating procedure** the local agent follows to turn these specs into
 |---|---|---|---|
 | [`Oracle.lean.spec.md`](./Oracle.lean.spec.md) | Oracle-machine substrate (PleaNP-local) | 2 (local piece) | v1 built (TM1, partial); §4 superseded by TM2 recompose |
 | [`OracleTM2Recompose.spec.md`](./OracleTM2Recompose.spec.md) | Oracle.lean v2 recomposition against core TM2ComputableInTime (DEC-010 Option B) | 2 (local piece) | Draft — spec; local agent's job |
+| [`OracleComplexity.lean.spec.md`](./OracleComplexity.lean.spec.md) | P^A / NP^A complexity classes (the layer on top of Oracle.lean) | 2 (local piece) | Draft — spec; local agent's job; waits on Oracle.lean freeze |
 | [`Relativization.md`](./Relativization.md) | Baker–Gill–Solovay (1975) | 3a | Draft — scaffold |
 | [`Relativization.proof-strategy.md`](./Relativization.proof-strategy.md) | BGS informal proof strategy (sandwich (a) + diagonalization (b)) | 3a | Informal — NOT a frozen proof spec |
 | [`NaturalProofs.md`](./NaturalProofs.md) | Razborov–Rudich (1994) | 3b | Draft — scaffold |
