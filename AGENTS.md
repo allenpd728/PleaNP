@@ -88,6 +88,7 @@ git -c user.name="openhands" -c user.email="openhands@all-hands.dev" commit -m "
 - **Namespace:** Project-specific declarations live under `PleaNP.*`, not `Complexity.*` (that namespace is contested upstream — see `docs/UPSTREAM_TRACKING.md`)
 - **Mathlib style:** All Lean code follows Mathlib naming and style conventions
 - **Gate discipline:** No proof search runs against a statement that hasn't passed the fidelity gates (see `docs/ARCHITECTURE.md`)
+- **Sorry tracking:** Every `sorry` in `lean/PleaNP/` must be recorded in `docs/SORRY_TRACKER.md` — what it's pending on, what unblocks it, and its priority. When you add a `sorry` (new placeholder, new pending proof), add a row. When you resolve one, mark it "Resolved" with the commit. When you push changes that add/remove `sorry`s, update the tracker in the same commit. The hygiene scanner (`tooling/gates/hygiene_scan.py --prove-stage`) catches `sorry`s mechanically; the tracker documents what each one *means* so none are forgotten or filled in wrong (the exact failure mode `docs/FAILURE_AUDIT.md` Pattern A warns about). A `sorry` with no tracker entry is a process violation — add it before pushing.
 
 ## Pitfalls to avoid
 
