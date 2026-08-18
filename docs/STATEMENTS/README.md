@@ -25,7 +25,8 @@ For the **operating procedure** the local agent follows to turn these specs into
 
 | Spec | Barrier / substrate | Rung | Status |
 |---|---|---|---|
-| [`Oracle.lean.spec.md`](./Oracle.lean.spec.md) | Oracle-machine substrate (PleaNP-local) | 2 (local piece) | Draft — design spec; unblocked |
+| [`Oracle.lean.spec.md`](./Oracle.lean.spec.md) | Oracle-machine substrate (PleaNP-local) | 2 (local piece) | v1 built (TM1, partial); §4 superseded by TM2 recompose |
+| [`OracleTM2Recompose.spec.md`](./OracleTM2Recompose.spec.md) | Oracle.lean v2 recomposition against core TM2ComputableInTime (DEC-010 Option B) | 2 (local piece) | Draft — spec; local agent's job |
 | [`Relativization.md`](./Relativization.md) | Baker–Gill–Solovay (1975) | 3a | Draft — scaffold |
 | [`NaturalProofs.md`](./NaturalProofs.md) | Razborov–Rudich (1994) | 3b | Draft — scaffold |
 | [`Algebrization.md`](./Algebrization.md) | Aaronson–Wigderson (2008) | 3c | Draft — scaffold |
