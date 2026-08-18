@@ -48,7 +48,8 @@ PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** o
 | `docs/UPSTREAM_TRACKING.md` | Tracking the active Mathlib complexity efforts (currently #1–#8) |
 | `docs/STATEMENTS/` | **Frozen, human-verified statement specs (Gate 1 anchors / Gate 4 read-back refs).** One per barrier theorem, plus the oracle-machine design spec. Six-part template, prose-only (no Lean rendering — that's the local agent's job). Start here when beginning Rung 2 (oracle substrate) or Rung 3. |
 | `docs/STATEMENTS/README.md` | Why a non-Lean driver writes the specs; the template; index of the specs |
-| `docs/STATEMENTS/Oracle.lean.spec.md` | Rung 2 local piece — oracle-machine design spec (totality discipline, Mathlib composition, acceptance criteria). **Unblocked — the first thing to build.** |
+| `docs/STATEMENTS/Oracle.lean.spec.md` | Rung 2 local piece — oracle-machine design spec (totality discipline, Mathlib composition, acceptance criteria). v1 built against TM1 (partial); §4 superseded by the TM2 recompose. |
+| `docs/STATEMENTS/OracleTM2Recompose.spec.md` | Oracle.lean v2 recomposition spec — DEC-010 Option B: recompose against core `TM2ComputableInTime`'s step-counting. The three traps (function→language bridge; oracle query = 1 step in `EvalsToInTime`; `P^∅ = P` compatibility). **Read before recomposing Oracle.lean.** |
 | `docs/STATEMENTS/Relativization.md` | Rung 3a spec (Baker–Gill–Solovay 1975) — cleanest first barrier target; waits on Oracle.lean.spec |
 | `docs/STATEMENTS/NaturalProofs.md` | Rung 3b spec (Razborov–Rudich 1994) — OWF as hypothesis, not constructed |
 | `docs/STATEMENTS/Algebrization.md` | Rung 3c spec (Aaronson–Wigderson 2008) — AW09 multiquadratic v1 pinned |
