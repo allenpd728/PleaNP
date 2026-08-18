@@ -17,6 +17,15 @@ Scans for the **dishonest placeholder** pattern: definitions/theorems whose bodi
 
 **Does NOT catch** vacuity that requires understanding what a definition *means* (e.g. a real-looking but subtly-wrong predicate) — that is Gate 4 (read-back) and the review layer's job. "Gate 5 passed" = Tier 1 + review, not Tier 1 alone.
 
+## Gate 2 — Model-consistency scanner (`model_consistency_scan.py`)
+
+Scans for local redefinitions of canonical types and forbidden namespace usage — the "redefine NP weaker and prove the redefined thing" failure mode (Pattern A, Gate 2 in `docs/ARCHITECTURE.md`). Checks:
+
+- Local `def`/`abbrev`/`notation` of complexity-class names (`P`, `NP`, `PSPACE`, `Oracle`, etc.) *outside* the `PleaNP.*` namespace — these should be imported from upstream (DEC-003) or defined under `PleaNP.*`, not as bare top-level names. Tracks namespace context (including nested namespaces inside docstring blocks) so qualified `PleaNP.Oracles.Oracle` defs are NOT false-flagged.
+- Usage of the `Complexity.*` namespace — forbidden per DEC-002.
+
+**Does NOT catch** a subtly-weaker redefinition using a different name (e.g. `def MyNP := ...`) — that is Gate 4 (read-back) and the review layer's job. "Gate 2 passed" = Tier 1 + review.
+
 ## Two tiers (different agents, different trust boundaries)
 
 Both gates are implemented in two tiers, because the sneaky cases require the Lean toolchain:
