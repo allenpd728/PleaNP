@@ -32,3 +32,17 @@ The complete gate requires Lean's own machinery: running `#print axioms <theorem
 ## Scope honesty
 
 Tier 1 alone is **not Gate 6 complete.** Treating a grep pass as "Gate 6 passed" is itself an integrity hole (it would miss the meta-smuggled case — the exact sneaky failure the audit names). The gate is "passed" only when *both* tiers run. The remote authoring agent's role is to ship Tier 1 and the Tier 2 spec; the local agent completes Tier 2.
+
+
+## CI enforcement (2026-08-18)
+
+Gate 6 Tier 1 (the hygiene scanner) is now enforced in CI via
+`.github/workflows/ci.yml`, which runs `hygiene_scan.py --prove-stage`
+on every push/PR to main. Additionally, per-file `set_option warningAsError true`
+pragmas in PleaNP .lean files make `sorry` a hard build failure.
+
+Note: this enforces Tier 1 (grep-scannable sorry/admit/axiom) only.
+Tier 2 (`#print axioms` for sorry-smuggled-via-meta) is still the local
+agent's separate job. "CI green" is necessary, not sufficient, for
+"Gate 6 passed." See `docs/STATEMENTS/HygieneEnforcement.spec.md` for
+the full spec.

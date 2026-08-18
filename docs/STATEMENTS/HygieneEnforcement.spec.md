@@ -1,7 +1,7 @@
 # Spec: CI hygiene enforcement (sorry-as-error + linters)
 
 **Rung:** Cross-cutting (integrity tooling). Makes Gate 6 (hygiene) and the lint floor *enforced* rather than aspirational.
-**Status:** Spec — the local agent's job (`lake build` and CI validation required, per DEC-007). This document contains **no Lean or YAML code**; it specifies the mechanism, the acceptance criteria, and the fallback path. The remote authoring agent cannot run `lake` or CI.
+**Status:** Executed (2026-08-18). Per-file `set_option warningAsError true` pragmas added to all PleaNP .lean files. CI workflow created (.github/workflows/ci.yml). `lake exe lint` not available in v4.31.0; #lint test file is the documented fallback (not yet wired). See DEC-009.
 
 ---
 
