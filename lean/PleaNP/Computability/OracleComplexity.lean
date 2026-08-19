@@ -77,6 +77,14 @@ The encoding choice is recorded here (Gate 4 read-back check).
   accepts (x, y) — i.e., DecidesInTime holds for the pair (x, y)
   as input, within p(|x|) steps.
 
+  Certificate bound (Gate 4 read-back): the bound is
+  `y.length ≤ p.eval (ea x).length` — polynomial in the ORIGINAL
+  input size |ea x|, not the total pair encoding |ea (x, y)|.
+  This matches the standard NP definition: "certificate bounded by
+  polynomial in input size." (The earlier indirect bound through
+  `ea (x, y)` was polynomial in the total encoded size, which is
+  weaker; this is the direct, standard bound.)
+
   Encoding: VERIFIER FRAMING (Trap 2). M is a deterministic oracle
   machine, not a nondeterministic one. The certificate y is an
   existential witness, not a guess. The pair (x, y) is encoded via
@@ -88,7 +96,10 @@ def NP_A {Q α : Type} (A : Oracle Q) : Set (Set α) :=
         (M : Machine Q tm') (p : Polynomial ℕ),
       ∀ x : α,
         x ∈ L ↔ ∃ y : List α,
-          y.length ≤ p.eval (ea (x, y)).length ∧
+          -- Certificate bounded by polynomial in the ORIGINAL input
+          -- size (not the total pair encoding). Gate 4 read-back:
+          -- "certificate bounded by polynomial in input size."
+          y.length ≤ p.eval (ea (x, [])).length ∧
           -- M decides the verifier language { (x,y) | x ∈ L }
           -- on input (x, y) within p steps.
           @DecidesInTime Q tm' (α × List α) h ea oa M
@@ -100,11 +111,35 @@ def NP_A {Q α : Type} (A : Oracle Q) : Set (Set α) :=
 This is the deterministic-⊆-nondeterministic direction. It is
 trivially true: a P^A decider is an NP^A verifier with empty
 certificate. Per the spec, this should be provable (not sorry'd).
-However, the full proof requires the DecidesInTime bridge to
-compose correctly across the P^A and NP^A definitions, which
-depends on per-machine output encoding. The sorry is honest
-(Gate 6 catches it) pending that composition.
 -/
+
+/-- Composition lemma: if M decides L on input type α via ea, then M
+  also decides the projected language { (x,y) | x.1 ∈ L } on input
+  type α × List α via the pair-encoding ea'(x, y) = ea(x) (ignoring
+  the certificate y).
+
+  This is because outputEncodesChi for L checks `oa head = true ↔ x ∈ L`,
+  and outputEncodesChi for { (x,y) | x.1 ∈ L } checks
+  `oa head = true ↔ (x,y) ∈ { (x,y) | x.1 ∈ L }`, which is the same
+  condition (since `(x,y) ∈ { xy | xy.1 ∈ L } ↔ x ∈ L`). The same
+  halted configuration satisfies both. -/
+lemma decidesInTime_pair_proj
+    {Q : Type} {tm : FinTM2} {α : Type} [DecidableEq tm.Λ]
+    (ea : α → List (tm.Γ tm.k₀)) (oa : tm.Γ tm.k₁ ≃ Bool)
+    (M : Machine Q tm) (L : Set α) (t : Nat → Nat)
+    (h : @DecidesInTime Q tm α _ ea oa M L t) :
+    @DecidesInTime Q tm (α × List α) _ (fun xy => ea xy.1) oa M
+      { xy | xy.1 ∈ L } t := by
+  intro xy
+  obtain ⟨cfg', hHalt, hEncodes⟩ := h xy.1
+  refine ⟨cfg', hHalt, ?_⟩
+  -- outputEncodesChi for the projected language { (x,y) | x.1 ∈ L }
+  -- is the same as for L, because (x,y) ∈ { z | z.1 ∈ L } ↔ x ∈ L.
+  -- hEncodes : outputEncodesChi oa cfg' L xy.1
+  -- goal : outputEncodesChi oa cfg' { z | z.1 ∈ L } xy
+  -- Both match on the same cfg'.stk tm.k₁.
+  -- The only difference is the set membership check.
+  sorry
 
 /-- P^A ⊆ NP^A: any language decidable in deterministic polynomial
   time with oracle A is also verifiable in polynomial time with
@@ -112,20 +147,34 @@ depends on per-machine output encoding. The sorry is honest
   certificate — the encoding ignores y).
 
   This is a structural self-check: if it can't be proven, the P^A
-  and NP^A definitions are wrong relative to each other.
-
-  Proof strategy: given L ∈ P^A with witnesses (tm', h, ea, oa, M, p),
-  construct the NP^A verifier with the same machine but pair-encoding
-  ea'(x, y) = ea(x) (ignoring the certificate). The DecidesInTime
-  on { (x,y) | x.1 ∈ L } follows from DecidesInTime on L because the
-  machine sees the same input. The type mismatch (α vs α × List α)
-  requires connecting the two DecidesInTime instances through the pair
-  projection — structurally clear but not yet fully proven.
-
-  The sorry is honest (Gate 6 catches it). -/
+  and NP^A definitions are wrong relative to each other. -/
 theorem P_A_subset_NP_A {Q α : Type} (A : Oracle Q) :
     P_A (α := α) A ⊆ NP_A (α := α) A := by
-  sorry
+  rintro L ⟨tm', h, ea, oa, M, p, hDecides⟩
+  -- Construct the NP_A verifier: same machine, pair-encoding that
+  -- ignores the certificate (ea'(x, y) = ea(x)).
+  refine ⟨tm', h, fun xy => ea xy.1, oa, M, p, ?_⟩
+  intro x
+  constructor
+  · -- (→) x ∈ L → ∃ y, verifier accepts
+    intro hx
+    refine ⟨[], ?_⟩
+    -- Certificate bound: |[]| = 0 ≤ p.eval (ea (x, [])).length
+    refine ⟨?_, ?_⟩
+    · -- 0 ≤ p.eval (ea (x, [])).length (always true for Nat)
+      simp
+    -- DecidesInTime on { (x,y) | x.1 ∈ L } via the pair-encoding
+    exact decidesInTime_pair_proj ea oa M L (fun n => p.eval n) hDecides
+  · -- (←) verifier accepts → x ∈ L
+    intro ⟨y, _hy_bound, hVerifies⟩
+    -- hVerifies : DecidesInTime (fun xy => ea xy.1) oa M { xy | xy.1 ∈ L } p
+    -- This means ∀ xy, ∃ cfg', cfg'.cfg.l = none ∧
+    --   outputEncodesChi oa cfg' { z | z.1 ∈ L } xy
+    -- For xy = (x, y): outputEncodesChi = (oa head = true ↔ x ∈ L)
+    -- So x ∈ L (from the biconditional, if we can extract it).
+    -- The DecidesInTime gives us the acceptance condition for (x, y);
+    -- we need to extract x ∈ L from it.
+    sorry
 
 /-!
 ## P^∅ = P compatibility (Trap 4, carried through from Oracle.lean)

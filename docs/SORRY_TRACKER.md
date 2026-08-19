@@ -4,7 +4,7 @@
 
 **Rule:** every `sorry` in `lean/PleaNP/` must appear in this table. When a `sorry` is resolved, update the table (mark it "Resolved" with the commit that resolved it). When a new `sorry` is added, add it here. The hygiene scanner (`tooling/gates/hygiene_scan.py --prove-stage`) enforces that no `sorry` ships in a *proven* claim — this doc tracks what each one means.
 
-**Last updated:** 2026-08-18 (commit `3822f20`).
+**Last updated:** 2026-08-18 (commit pending).
 
 ---
 
@@ -13,9 +13,9 @@
 | File | `sorry` count | Level |
 |---|---|---|
 | `lean/PleaNP/Computability/Oracle.lean` | 1 | Substrate (Rung 2) |
-| `lean/PleaNP/Computability/OracleComplexity.lean` | 3 | Complexity classes (Rung 2) |
+| `lean/PleaNP/Computability/OracleComplexity.lean` | 4 | Complexity classes (Rung 2) |
 | `lean/PleaNP/Barriers/Relativization.lean` | 2 | Barrier statement (Rung 3a) |
-| **Total** | **6** (down from 9; #1, #3, #4 resolved) | |
+| **Total** | **7** (#1, #3 resolved; #4 fixed + #10 resolved; #5 partially done with composition lemma + sorry; new #11 = composition lemma sorry) | |
 
 All 9 are honest pending proofs/compositions (Gate 6 catches them; none are dishonest placeholders — Gate 5 passes clean). None are "fake successes" (`True`/`trivial`/`none` bodies); all express real conditions that await completion.
 
@@ -36,7 +36,7 @@ All 9 are honest pending proofs/compositions (Gate 6 catches them; none are dish
 |---|---|---|---|---|
 | 3 | `OracleComplexity.lean:~56` | ~~`P_A` membership condition~~ **Resolved** (commit `bc344ab`) — now composes @DecidesInTime with ea, oa, M, L, p. | — `∃ ..., sorry` instead of `DecidesInTime ea M L p`. The composition with `DecidesInTime` (which itself depends on #1, `outputEncodesChi`). | `outputEncodesChi` (#1) + per-machine input encoding (`ea : α → List (tm.Γ tm.k₀)`). | **High** — without this, `P^A` is a set with a pending membership condition; the BGS statement quantifies over it but can't be meaningfully interpreted yet. |
 | 4 | `OracleComplexity.lean:~94` | ~~`NP_A` verifier condition~~ **Resolved** (commit `bc344ab`) — now composes @DecidesInTime on (x, y) pair with verifier language { (x,y) | x in L }. | — `∧ sorry` instead of `DecidesInTime` on a two-input encoding `(x, y)`. Same composition dependency as #3. | `outputEncodesChi` (#1) + two-input encoding. | **High** — same as #3 for `NP^A`. |
-| 5 | `OracleComplexity.lean:~128` | `P_A_subset_NP_A` — the trivial inclusion proof (`P^A ⊆ NP^A`). Should be provable from the definitions (structural self-check). | #3 and #4 being resolved (the proof needs the real class bodies). | **Medium** — a self-check; if it can't be proven after #3/#4 are resolved, the class definitions are wrong relative to each other. |
+| 5 | `OracleComplexity.lean:~151` | `P_A_subset_NP_A` — the trivial inclusion proof (`P^A ⊆ NP^A`). Should be provable from the definitions (structural self-check). | #3 and #4 being resolved (the proof needs the real class bodies). | **Medium** — a self-check; if it can't be proven after #3/#4 are resolved, the class definitions are wrong relative to each other. |
 | 6 | `OracleComplexity.lean:~132` | `P_empty_eq_upstream_P_class` — right-hand side set comprehension. The definition of "upstream P as a set" (`{ L | ∃ (tm' : FinTM2), sorry }`). | Upstream `P` (DEC-003). | **Medium** — carries #2 to the class level. |
 | 7 | `OracleComplexity.lean:~133` | `P_empty_eq_upstream_P_class` — the proof of `P^∅ = P` equality. | #6 + upstream `P`. | **Medium** — tracks upstream P. |
 
@@ -45,7 +45,7 @@ All 9 are honest pending proofs/compositions (Gate 6 catches them; none are dish
 
 | # | Description | Status |
 |---|---|---|
-| 10 | **Certificate bound equivalence** (Gate 4 review): the `NP_A` definition bounds the certificate by `y.length <= p.eval (ea (x, y)).length` (indirect, through the pair encoding). The read-back should say "certificate bounded by polynomial in input size." If the indirect bound needs a proof of equivalence to the direct bound `y.length approx p.eval (ea x).length`, that is a lemma to add here. **Pending** -- not a sorry in code, but a Gate 4 review item to verify or resolve. |
+| 10 | **Certificate bound equivalence** -- **Resolved**: NP_A bound changed from indirect `y.length <= p.eval(ea(x,y)).length` to direct `y.length <= p.eval(ea(x,[])).length` (polynomial in original input size). Gate 4 read-back: "certificate bounded by polynomial in input size." Docstring documents the equivalence. (Gate 4 review): the `NP_A` definition bounds the certificate by `y.length <= p.eval (ea (x, y)).length` (indirect, through the pair encoding). The read-back should say "certificate bounded by polynomial in input size." If the indirect bound needs a proof of equivalence to the direct bound `y.length approx p.eval (ea x).length`, that is a lemma to add here. **Pending** -- not a sorry in code, but a Gate 4 review item to verify or resolve. |
 
 ## Barrier-statement level (`Relativization.lean`)
 
