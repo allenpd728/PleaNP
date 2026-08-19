@@ -39,26 +39,21 @@ languages -- so P^A = NP^A is set extensional equality.
 
 /-- P^A is the class of languages decidable by a deterministic oracle
   machine for A in polynomial time. A language L is in P^A if there
-  exists an oracle machine M (with oracle A) and a polynomial p such
-  that M decides L in p(|x|) steps.
+  exists an oracle machine M (with oracle A), input and output
+  encodings, and a polynomial p such that M decides L in p(|x|) steps.
 
-  The full DecidesInTime composition requires the input encoding (ea)
-  to depend on the machine's alphabet type (tm.Γ tm.k₀), which creates
-  a dependent-type dependency when existentially quantifying over tm'.
-  Here the membership condition is sorry'd (honest, Gate 6 catches it)
-  pending the per-machine instantiation that resolves the type
-  dependency. The logical shape is real: ∃ machine + polynomial +
-  decides-in-time — not vacuous (not True).
+  The input encoding (ea) and output alphabet bridge (oa) are
+  existentially quantified alongside the machine — their types depend
+  on the machine's tm', so they live in the same dependent existential.
 
   Trap 1 (polynomial-bound): Polynomial ℕ, matching
   TM2ComputableInPolyTime. Trap 3 (extensionality): Set (Set α). -/
 def P_A {Q α : Type} (A : Oracle Q) : Set (Set α) :=
-  { L | ∃ (tm' : FinTM2) (M : Machine Q tm') (p : Polynomial ℕ),
-      -- M decides L in p steps. The full DecidesInTime composition
-      -- requires per-machine input encoding (dependent-type issue).
-      -- This is sorry'd (honest) pending that composition.
-      -- NOT True — the real condition is DecidesInTime ea M L p.
-      sorry }
+  { L | ∃ (tm' : FinTM2) (h : DecidableEq tm'.Λ)
+        (ea : α → List (tm'.Γ tm'.k₀))
+        (oa : tm'.Γ tm'.k₁ ≃ Bool)
+        (M : Machine Q tm') (p : Polynomial ℕ),
+      @DecidesInTime Q tm' α h ea oa M L (fun n => p.eval n) }
 
 /-!
 ## NP^A -- nondeterministic polynomial time relative to A
@@ -77,22 +72,27 @@ The encoding choice is recorded here (Gate 4 read-back check).
   relative to A.
 
   L is in NP^A if there exists an oracle machine M (with oracle A),
-  a polynomial p, such that for every x: x ∈ L ↔ there exists a
-  certificate y with |y| ≤ p(|x|) and M accepts (x, y).
+  input/output encodings, and a polynomial p, such that for every x:
+  x ∈ L ↔ there exists a certificate y with |y| ≤ p(|x|) and M
+  accepts (x, y) — i.e., DecidesInTime holds for the pair (x, y)
+  as input, within p(|x|) steps.
 
   Encoding: VERIFIER FRAMING (Trap 2). M is a deterministic oracle
   machine, not a nondeterministic one. The certificate y is an
-  existential witness, not a guess. -/
+  existential witness, not a guess. The pair (x, y) is encoded via
+  the input encoding ea on α × List α. -/
 def NP_A {Q α : Type} (A : Oracle Q) : Set (Set α) :=
-  { L | ∃ (tm' : FinTM2) (M : Machine Q tm') (p : Polynomial ℕ),
+  { L | ∃ (tm' : FinTM2) (h : DecidableEq tm'.Λ)
+        (ea : α × List α → List (tm'.Γ tm'.k₀))
+        (oa : tm'.Γ tm'.k₁ ≃ Bool)
+        (M : Machine Q tm') (p : Polynomial ℕ),
       ∀ x : α,
         x ∈ L ↔ ∃ y : List α,
-          y.length ≤ p.eval y.length ∧
-          -- M accepts (x, y) within p(|x|) steps (verifier condition).
-          -- The full DecidesInTime composition on a two-input encoding
-          -- is sorry'd (honest) pending per-machine instantiation.
-          -- NOT ∧ True — the real condition is DecidesInTime on (x, y).
-          sorry }
+          y.length ≤ p.eval (ea (x, y)).length ∧
+          -- M decides the verifier language { (x,y) | x ∈ L }
+          -- on input (x, y) within p steps.
+          @DecidesInTime Q tm' (α × List α) h ea oa M
+            { xy | xy.1 ∈ L } (fun n => p.eval n) }
 
 /-!
 ## P^A ⊆ NP^A (trivial inclusion)
