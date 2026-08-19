@@ -197,12 +197,22 @@ convention is pinned here and must match the read-back (Gate 4).
   (step reaches none) within t steps and the output matches chi_L. -/
 
 /-- Whether the halted configuration's output encodes the answer
-  chi_L(x) = true iff x ∈ L. This requires the output-encoding bridge
-  (Bool to tm.Γ tm.k₁), which is per-machine. The predicate is sorry'd
-  pending that bridge — it is honest (Gate 6 catches it), not vacuous. -/
+  chi_L(x) = true iff x ∈ L. The output-encoding bridge is an
+  equivalence `tm.Γ tm.k₁ ≃ Bool` — the per-machine output alphabet
+  equivalence (analogous to `TM2ComputableAux.outputAlphabet`).
+
+  The predicate reads the head of the output stack (the `k₁` stack),
+  decodes it via the equivalence, and checks it equals χ_L(x):
+  decoded output = true iff x ∈ L.
+
+  Convention: true output = accept (x is in L), false = reject.
+  This is the yes/no convention pinned per Trap 1. -/
 def outputEncodesChi {Q : Type} {tm : FinTM2} {alpha : Type}
+    (outputAlphabet : tm.Γ tm.k₁ ≃ Bool)
     (c : Cfg Q tm) (L : Set alpha) (x : alpha) : Prop :=
-  sorry  -- the real condition: c's output stack encodes (if x ∈ L then true else false)
+  match c.cfg.stk tm.k₁ with
+  | [] => False  -- no output: doesn't encode anything
+  | head :: _ => outputAlphabet head = true ↔ x ∈ L
 
 /-- A language L : Set alpha is decided in time t by an oracle machine
   M if, for every input x, M halts within t(|ea x|) steps AND the
@@ -211,18 +221,18 @@ def outputEncodesChi {Q : Type} {tm : FinTM2} {alpha : Type}
   Convention: true output = accept (x is in L), false = reject.
   This is the yes/no convention pinned per Trap 1.
 
-  The `outputEncodesChi` predicate is sorry'd (honest, Gate 6 catches
-  it) pending the per-machine output-encoding bridge. The logical shape
-  is real: M halts AND output matches chi_L — not vacuous. -/
+  The `outputAlphabet` parameter is the per-machine output-encoding
+  bridge (Bool ↔ tm.Γ tm.k₁). -/
 def DecidesInTime {Q : Type} {tm : FinTM2} {alpha : Type}
     [DecidableEq tm.Λ] (ea : alpha -> List (tm.Γ tm.k₀))
+    (outputAlphabet : tm.Γ tm.k₁ ≃ Bool)
     (M : Machine Q tm) (L : Set alpha) (t : Nat -> Nat) : Prop :=
   ∀ x : alpha,
     ∃ cfg' : Cfg Q tm,
       -- The machine halts (reaches a halted configuration).
       cfg'.cfg.l = Option.none ∧
       -- And the output encodes chi_L(x): true = x ∈ L.
-      outputEncodesChi cfg' L x
+      outputEncodesChi outputAlphabet cfg' L x
 
 /-!
 ## Trap 3: P^empty = P compatibility (statement only, proof pending)
