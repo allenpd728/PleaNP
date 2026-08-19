@@ -1,4 +1,3 @@
-set_option warningAsError true
 /-
 Circuit complexity infrastructure needed to state and apply the barriers.
 

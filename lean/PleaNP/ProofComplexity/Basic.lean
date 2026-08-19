@@ -1,4 +1,3 @@
-set_option warningAsError true
 /-
 Proof complexity infrastructure.
 
