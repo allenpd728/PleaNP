@@ -4,7 +4,7 @@
 
 **Rule:** every `sorry` in `lean/PleaNP/` must appear in this table. When a `sorry` is resolved, update the table (mark it "Resolved" with the commit that resolved it). When a new `sorry` is added, add it here. The hygiene scanner (`tooling/gates/hygiene_scan.py --prove-stage`) enforces that no `sorry` ships in a *proven* claim — this doc tracks what each one means.
 
-**Last updated:** 2026-08-18 (commit `054d2f2`).
+**Last updated:** 2026-08-18 (commit 5243a06).
 
 ---
 
@@ -27,7 +27,7 @@ All 9 are honest pending proofs/compositions (Gate 6 catches them; none are dish
 
 | # | File:Line | What it's pending on | Unblocked by | Priority |
 |---|---|---|---|---|
-| 1 | `Oracle.lean:~205` | `outputEncodesChi` — the per-machine output-encoding bridge (Bool → FinTM2 output alphabet). The predicate that checks the halted config's output encodes `χ_L(x)`. | Per-machine instantiation (likely in `OracleComplexity.lean` or a `Relativization.lean` instance). The dependent-type issue: `tm.Γ tm.k₁` (output alphabet) varies per machine. | **High** — this is the acceptance condition `DecidesInTime` depends on; without it, `P^A`/`NP^A` membership is undefined. |
+| 1 | `Oracle.lean:~210` | ~~`outputEncodesChi`~~ **Resolved** (commit 5243a06) | — the per-machine output-encoding bridge (Bool → FinTM2 output alphabet). The predicate that checks the halted config's output encodes `χ_L(x)`. | Per-machine instantiation (likely in `OracleComplexity.lean` or a `Relativization.lean` instance). The dependent-type issue: `tm.Γ tm.k₁` (output alphabet) varies per machine. | **High** — this is the acceptance condition `DecidesInTime` depends on; without it, `P^A`/`NP^A` membership is undefined. |
 | 2 | `Oracle.lean:~259` | `P_empty_eq_upstream_P` — the `P^∅ = P` compatibility statement (Trap 3 of the recompose spec). Proves the empty-oracle case reduces to non-oracle `TM2ComputableInPolyTime`. | Upstream `P` (not in Mathlib core, DEC-003) + the `outputEncodesChi` bridge (#1). | **Medium** — the statement is rendered; the proof tracks upstream P. |
 
 ### Complexity-class level (`OracleComplexity.lean`)
