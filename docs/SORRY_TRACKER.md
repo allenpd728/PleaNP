@@ -4,7 +4,7 @@
 
 **Rule:** every `sorry` in `lean/PleaNP/` must appear in this table. When a `sorry` is resolved, update the table (mark it "Resolved" with the commit that resolved it). When a new `sorry` is added, add it here. The hygiene scanner (`tooling/gates/hygiene_scan.py --prove-stage`) enforces that no `sorry` ships in a *proven* claim — this doc tracks what each one means.
 
-**Last updated:** 2026-08-18 (commit 5243a06).
+**Last updated:** 2026-08-18 (this commit).
 
 ---
 
@@ -34,8 +34,8 @@ All 9 are honest pending proofs/compositions (Gate 6 catches them; none are dish
 
 | # | File:Line | What it's pending on | Unblocked by | Priority |
 |---|---|---|---|---|
-| 3 | `OracleComplexity.lean:~61` | `P_A` membership condition — `∃ ..., sorry` instead of `DecidesInTime ea M L p`. The composition with `DecidesInTime` (which itself depends on #1, `outputEncodesChi`). | `outputEncodesChi` (#1) + per-machine input encoding (`ea : α → List (tm.Γ tm.k₀)`). | **High** — without this, `P^A` is a set with a pending membership condition; the BGS statement quantifies over it but can't be meaningfully interpreted yet. |
-| 4 | `OracleComplexity.lean:~95` | `NP_A` verifier condition — `∧ sorry` instead of `DecidesInTime` on a two-input encoding `(x, y)`. Same composition dependency as #3. | `outputEncodesChi` (#1) + two-input encoding. | **High** — same as #3 for `NP^A`. |
+| 3 | `OracleComplexity.lean:~56` | ~~`P_A` membership condition~~ **Resolved** (commit pending) — now composes @DecidesInTime with ea, oa, M, L, p. | — `∃ ..., sorry` instead of `DecidesInTime ea M L p`. The composition with `DecidesInTime` (which itself depends on #1, `outputEncodesChi`). | `outputEncodesChi` (#1) + per-machine input encoding (`ea : α → List (tm.Γ tm.k₀)`). | **High** — without this, `P^A` is a set with a pending membership condition; the BGS statement quantifies over it but can't be meaningfully interpreted yet. |
+| 4 | `OracleComplexity.lean:~94` | ~~`NP_A` verifier condition~~ **Resolved** (commit pending) — now composes @DecidesInTime on (x, y) pair with verifier language { (x,y) | x in L }. | — `∧ sorry` instead of `DecidesInTime` on a two-input encoding `(x, y)`. Same composition dependency as #3. | `outputEncodesChi` (#1) + two-input encoding. | **High** — same as #3 for `NP^A`. |
 | 5 | `OracleComplexity.lean:~105` | `P_A_subset_NP_A` — the trivial inclusion proof (`P^A ⊆ NP^A`). Should be provable from the definitions (structural self-check). | #3 and #4 being resolved (the proof needs the real class bodies). | **Medium** — a self-check; if it can't be proven after #3/#4 are resolved, the class definitions are wrong relative to each other. |
 | 6 | `OracleComplexity.lean:~132` | `P_empty_eq_upstream_P_class` — right-hand side set comprehension. The definition of "upstream P as a set" (`{ L | ∃ (tm' : FinTM2), sorry }`). | Upstream `P` (DEC-003). | **Medium** — carries #2 to the class level. |
 | 7 | `OracleComplexity.lean:~133` | `P_empty_eq_upstream_P_class` — the proof of `P^∅ = P` equality. | #6 + upstream `P`. | **Medium** — tracks upstream P. |
