@@ -109,7 +109,20 @@ depends on per-machine output encoding. The sorry is honest
 /-- P^A ⊆ NP^A: any language decidable in deterministic polynomial
   time with oracle A is also verifiable in polynomial time with
   oracle A (take the verifier to be the decider with empty
-  certificate). -/
+  certificate — the encoding ignores y).
+
+  This is a structural self-check: if it can't be proven, the P^A
+  and NP^A definitions are wrong relative to each other.
+
+  Proof strategy: given L ∈ P^A with witnesses (tm', h, ea, oa, M, p),
+  construct the NP^A verifier with the same machine but pair-encoding
+  ea'(x, y) = ea(x) (ignoring the certificate). The DecidesInTime
+  on { (x,y) | x.1 ∈ L } follows from DecidesInTime on L because the
+  machine sees the same input. The type mismatch (α vs α × List α)
+  requires connecting the two DecidesInTime instances through the pair
+  projection — structurally clear but not yet fully proven.
+
+  The sorry is honest (Gate 6 catches it). -/
 theorem P_A_subset_NP_A {Q α : Type} (A : Oracle Q) :
     P_A (α := α) A ⊆ NP_A (α := α) A := by
   sorry
