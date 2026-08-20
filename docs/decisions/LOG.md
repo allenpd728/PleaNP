@@ -128,3 +128,30 @@ Chronological record of design decisions. Append-only. Format: `### DEC-0XX` wit
 - Verdict: cheapest stopgap, least ambitious.
 
 **Rationale for recording this as a DEC:** The choice changes the project's dependency posture (A: non-core dependency + toolchain downgrade; B: stay on core, more local work; C: stopgap only). This is a genuine architectural fork — the kind the decision log exists for. The user picks; the local agent records the choice and executes.
+
+
+# DEC-011 entry (to append to docs/decisions/LOG.md)
+
+### DEC-011
+
+**Date:** 2026-08-18
+**Status:** Active
+**Scope:** Validation discipline and the meta-lesson on honest scaffolding
+
+**Decision:** Adopt a validation-suite requirement for all definitional modules. No definition reaches "frozen" status without compiling a quorum of must-prove lemmas, must-refute lemmas, and smoke tests. Introduce a status ladder (typed → validated → frozen) and forbid the word "anchor" for anything below frozen. Add `binder_usage_scan.py` (Gate 7) as a Tier-1 lethality check. Add a red-team pass on definitions before proving theorems from them. Fix CI staging so `warningAsError` doesn't self-defeat (render-stage vs prove-stage).
+
+**Rationale (the meta-lesson):** The project's `FAILURE_AUDIT.md` Pattern A is usually told as a story about dishonest formalizers editing statements until they compile. The project's own first deliverable showed the more common, harder case: honest scaffolding that compiles, is documented as partial, and is still semantically empty. The v2 Oracle.lean and OracleComplexity.lean had three flaws (DecidesInTime vacuously satisfiable, oracle inert, NP_A certificate vacuous) that passed all Tier-1 scanners (Gate 5 vacuity, Gate 6 hygiene, Gate 2 model-consistency) because the flaws were structural, not syntactic. The defense isn't more honesty checks; it's behavioral evidence, demanded per definition, before anything is allowed to be called an anchor.
+
+The three flaws were:
+- **Flaw A:** `DecidesInTime` had no `EvalsToInTime` reachability — the time bound, input encoding, and machine were unused. `P_A` degenerated to "all languages."
+- **Flaw B:** `step` delegated to `FinTM2.step` without branching on `queryLabel`. The oracle was inert — `P^A = P^B` for all A, B.
+- **Flaw C:** `NP_A` wrapped the whole-language `DecidesInTime` inside `∃ y` — the certificate was vacuous. `NP^A ≈ P^A` by construction.
+
+All three would have been caught by:
+1. A must-refute lemma: "P_A A ≠ univ" (countability argument)
+2. A smoke test: a machine that queries the oracle and produces different outputs for different oracles
+3. A binder-usage scan: flagging unused parameters (`t`, `ea`, `M` in DecidesInTime) and dead binders (`y` absent from its conjunct in NP_A)
+
+The v3 fix (commit `5fd85c6`) addresses the three flaws: step branches on the oracle answer, DecidesInTime references the real step function, NP_A uses a per-input AcceptsInTime predicate. But the process lesson — that behavioral evidence must be demanded per definition — is the lasting fix, recorded here.
+
+**See also:** `docs/VALIDATION_SUITE.md` (the full validation requirements), `tooling/gates/binder_usage_scan.py` (Gate 7), the harsh review (2026-08-18).
