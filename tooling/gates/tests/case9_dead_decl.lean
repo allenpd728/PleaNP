@@ -1,4 +1,4 @@
--- Mock case 7: discarded let-binding + unreferenced declaration (Flaw B
+-- Mock case 9: discarded let-binding + unreferenced declaration (Flaw B
 -- shape -- `oracleQuery` computes the oracle's answer, throws it away, and
 -- is never wired into `step`).
 --

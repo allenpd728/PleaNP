@@ -1,4 +1,4 @@
--- Mock case 8: weakly constrained quantifier witness (Flaw C shape -- the
+-- Mock case 10: weakly constrained quantifier witness (Flaw C shape -- the
 -- `NP_A` certificate). The `∃ y` binder constrains only the length conjunct;
 -- the acceptance conjunct doesn't mention `y`, so the witness is vacuous
 -- beyond a bound that `y = 0` always satisfies.

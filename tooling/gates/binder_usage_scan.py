@@ -49,7 +49,7 @@ This is a Tier 1 heuristic scanner (text, no Lean toolchain). It does NOT
 catch: parameters used only cosmetically (e.g. `_ = M` conjuncts), influence
 that is wired but semantically wrong, or structure fields never read. Those
 remain Gate 4 (read-back) and the validation suite's job
-(docs/STATEMENTS/ValidationSuite.spec.md). "Lethality scan passed" = Tier 1b
+(docs/VALIDATION_SUITE.md). "Lethality scan passed" = Tier 1b
 + review, never Tier 1b alone.
 
 Usage:

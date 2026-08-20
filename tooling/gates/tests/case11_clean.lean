@@ -1,4 +1,4 @@
--- Mock case 9: a clean file. Every parameter is load-bearing, every
+-- Mock case 11: a clean file. Every parameter is load-bearing, every
 -- quantifier binder constrains all top-level conjuncts, and every
 -- declaration except the entry point is referenced.
 --
