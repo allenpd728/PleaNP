@@ -62,7 +62,6 @@ PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** o
 | `docs/STATEMENTS/Algebrization.proof-strategy.md` | Informal AW09 proof strategy (low-degree extension + hiding lemma + two-sided oracles). NOT a frozen proof spec |
 | `docs/STATEMENTS/LOCAL_AGENT_WORKFLOW.md` | The test-as-you-go loop the local agent follows to turn specs into validated Lean (Steps 0–6: substrate check → render → hygiene → model-consistency → read-back → freeze → proof search). **Read before any Lean execution.** |
 | `docs/STATEMENTS/HygieneEnforcement.spec.md` | CI hygiene enforcement spec — sorry-as-error + Mathlib linters + `.github/workflows/ci.yml`. The "stricter compiler" lever; local agent's job (needs `lake` + CI run). |
-| `docs/STATEMENTS/ValidationSuite.spec.md` | **DRAFT (track A)** — definitional-layer integrity: the validation suite (must-prove / must-refute / smoke tests), the typed → validated → frozen status ladder, and the red-team pass. Closes the gap the 2026-08-19 review exposed (definitions that compile but constrain nothing). Reconcile with any track-B draft before adopting into the template. |
 | `docs/STATEMENTS/Oracle.v4-repair.spec.md` | **DRAFT repair work order (track A)** — v3→v4 reachability wiring for `Oracle.lean`/`OracleComplexity.lean`. v3 headers claim the three flaws are fixed but the bodies are still vacuous (Flaw A: `DecidesInTime` no `EvalsToInTime`; Flaw C: `AcceptsInTime` vacuous + applied to `x` not `(x,y)`; plus a duplicate-binder compile bug). Has exact Mathlib v4.31.0 API signatures + code templates. **Read before the v4 repair.** |
 | `docs/decisions/LOG.md` | Chronological decision log (DEC-0XX) |
 | `lean/PleaNP/Computability/Oracle.lean` | **Oracle machine (v3):** oracle type (`Oracle Q := Q → Bool`, total by construction), `Cfg`/`Machine` (FinTM2 + oracle + query/yes/no labels), `step` (branches on query label, consults oracle, routes to yes/no label — load-bearing), `DecidesInTime` (halts + output encodes χ_L), `outputEncodesChi`. **v3 status: typed but not validated** — `EvalsToInTime` reachability not yet wired (see `Oracle.v4-repair.spec.md`). |
@@ -89,10 +88,24 @@ lake exe check
 
 ## Git workflow
 
+**Branch discipline (minimum flow -- mandatory):** All changes go to the `dev` branch first. A *different* agent (or a human) reviews on `dev` before anything is merged to `main`. **Nothing is pushed directly to `main` without review.** This is the integrity architecture applied to the repo itself: the agent that writes a change is not the agent that approves it (the same isolation as Gate 1/Gate 3, one level up).
+
 ```bash
-# Commit (identifies as AI agent)
+# 1. Work on dev (create it from main if needed, else check out the shared dev)
+git fetch origin
+git checkout dev 2>/dev/null || git checkout -b dev origin/main
+
+# 2. Commit (identifies as AI agent)
 git -c user.name="openhands" -c user.email="openhands@all-hands.dev" commit -m "message"
+
+# 3. Push to dev for review -- never directly to main
+git push origin dev
+
+# 4. A DIFFERENT agent/human reviews dev, then merges to main:
+#    git checkout main && git merge --no-ff dev && git push origin main
 ```
+
+Do not commit to `main` and do not push to `main` from the same session that authored the change. If you find yourself about to `git push origin main`, stop -- push to `dev` instead and hand off for review.
 
 ## Conventions
 
@@ -110,6 +123,6 @@ git -c user.name="openhands" -c user.email="openhands@all-hands.dev" commit -m "
 - Don't let the same pipeline formalize the statement *and* search for its proof — that's the #1 failure mode (see `docs/FAILURE_AUDIT.md`)
 - Don't trust a green Lean checkmark as proof of correctness *of the statement* — the statement-to-informal mapping is the weak link (read the failure audit)
 - Don't let a module header claim a flaw is "fixed" or a parameter is "load-bearing" when the body still leaves it unused — v3 did exactly this (headers ahead of bodies). The header is not evidence; the lethality scan + validation suite are. Verify the body, then update the header.
-- Don't declare a statement a "Gate-1 frozen anchor" while the definitions it references are unvalidated — freeze is dependency-ordered (typed → validated → frozen; see `docs/STATEMENTS/ValidationSuite.spec.md`). A `sorry` is only "honest" over validated definitions; three of the first seven sat on false statements.
+- Don't declare a statement a "Gate-1 frozen anchor" while the definitions it references are unvalidated — freeze is dependency-ordered (typed → validated → frozen; see `docs/VALIDATION_SUITE.md`). A `sorry` is only "honest" over validated definitions; three of the first seven sat on false statements.
 - Don't cite upstream P/NP numbers without checking `docs/UPSTREAM_TRACKING.md` — the computational model is contested and numbers don't transfer across models
 - Don't commit machine-specific configuration (paths, SSH, local toolchain) — that belongs in `AGENTS_LOCAL.md`, which is gitignored

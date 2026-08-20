@@ -115,7 +115,7 @@ Both classes take `A : Oracle Q` but never require `M.oracle = A`. Add `M.oracle
 2. **Lethality scan clean of violations** on `lean/PleaNP`:
    `python3 tooling/gates/binder_usage_scan.py --allow-unreferenced '^(exists_equalizing_oracle|exists_separating_oracle)$' lean/PleaNP` → 0 violations. In particular, no `unused_param` on `ea`/`M`/`t` (`DecidesInTime`), `ea`/`M`/`xy`/`t` (`AcceptsInTime`), or `A` (`P_A`/`NP_A`).
 3. **Header/body agreement.** The module headers must not claim a parameter is load-bearing unless the body uses it. Update the v3 "Fixed" claims to match reality.
-4. **Validation suite (per `ValidationSuite.spec.md`):** at minimum, a `decide`-able **oracle-sensitivity smoke test** — one concrete machine, two oracles `A₁ ≠ A₂`, one input `x`, with `AcceptsInTime … A₁ … x` and `¬ AcceptsInTime … A₂ … x` both closed by `decide`. This is the executable proof that Flaw B stays fixed and the reachability wiring is real.
+4. **Validation suite (per `docs/VALIDATION_SUITE.md`):** at minimum, a `decide`-able **oracle-sensitivity smoke test** — one concrete machine, two oracles `A₁ ≠ A₂`, one input `x`, with `AcceptsInTime … A₁ … x` and `¬ AcceptsInTime … A₂ … x` both closed by `decide`. This is the executable proof that Flaw B stays fixed and the reachability wiring is real.
 5. **`P_A_subset_NP_A` proved** (not sorry'd) once the class bodies are real — the structural tripwire. If it cannot be proved, the definitions are still wrong relative to each other.
 
 ---

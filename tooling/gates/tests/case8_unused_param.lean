@@ -1,4 +1,4 @@
--- Mock case 6: unused definition parameters (Flaw A shape -- the
+-- Mock case 8: unused definition parameters (Flaw A shape -- the
 -- `DecidesInTime` whose time bound, encoding, and machine never occur in
 -- the body). The definition is constant in the things it claims to
 -- constrain.
