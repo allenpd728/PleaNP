@@ -1,5 +1,6 @@
 import Mathlib.Computability.TuringMachine.Computable
 import Mathlib.Computability.StateTransition
+set_option warningAsError true
 
 /-!
 # Oracle machines (v3: semantically load-bearing)
