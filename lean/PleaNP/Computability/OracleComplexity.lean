@@ -1,6 +1,7 @@
 import PleaNP.Computability.Oracle
 import Mathlib.Computability.TuringMachine.Computable
 import Mathlib.Algebra.Polynomial.Basic
+set_option warningAsError true
 
 /-!
 # Oracle complexity classes (P^A / NP^A)

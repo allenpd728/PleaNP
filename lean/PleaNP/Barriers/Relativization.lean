@@ -1,5 +1,6 @@
 import PleaNP.Computability.OracleComplexity
 import Mathlib.Computability.Partrec
+set_option warningAsError true
 
 /-!
 # Relativization (Baker-Gill-Solovay, 1975)

@@ -1,4 +1,5 @@
 import PleaNP.Basic
+set_option warningAsError true
 
 /-!
 # Basic sanity tests

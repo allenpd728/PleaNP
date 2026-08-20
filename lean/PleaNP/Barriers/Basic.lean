@@ -1,3 +1,4 @@
+set_option warningAsError true
 /-
 The PleaNP barrier library.
 
