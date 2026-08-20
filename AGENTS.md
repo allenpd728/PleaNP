@@ -61,6 +61,8 @@ PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** o
 | `docs/STATEMENTS/Algebrization.proof-strategy.md` | Informal AW09 proof strategy (low-degree extension + hiding lemma + two-sided oracles). NOT a frozen proof spec |
 | `docs/STATEMENTS/LOCAL_AGENT_WORKFLOW.md` | The test-as-you-go loop the local agent follows to turn specs into validated Lean (Steps 0–6: substrate check → render → hygiene → model-consistency → read-back → freeze → proof search). **Read before any Lean execution.** |
 | `docs/STATEMENTS/HygieneEnforcement.spec.md` | CI hygiene enforcement spec — sorry-as-error + Mathlib linters + `.github/workflows/ci.yml`. The "stricter compiler" lever; local agent's job (needs `lake` + CI run). |
+| `docs/STATEMENTS/ValidationSuite.spec.md` | **DRAFT (track A)** — definitional-layer integrity: the validation suite (must-prove / must-refute / smoke tests), the typed → validated → frozen status ladder, and the red-team pass. Closes the gap the 2026-08-19 review exposed (definitions that compile but constrain nothing). Reconcile with any track-B draft before adopting into the template. |
+| `docs/STATEMENTS/Oracle.v4-repair.spec.md` | **DRAFT repair work order (track A)** — v3→v4 reachability wiring for `Oracle.lean`/`OracleComplexity.lean`. v3 headers claim the three flaws are fixed but the bodies are still vacuous (Flaw A: `DecidesInTime` no `EvalsToInTime`; Flaw C: `AcceptsInTime` vacuous + applied to `x` not `(x,y)`; plus a duplicate-binder compile bug). Has exact Mathlib v4.31.0 API signatures + code templates. **Read before the v4 repair.** |
 | `docs/decisions/LOG.md` | Chronological decision log (DEC-0XX) |
 
 ## Build and test
@@ -88,6 +90,7 @@ git -c user.name="openhands" -c user.email="openhands@all-hands.dev" commit -m "
 - **Namespace:** Project-specific declarations live under `PleaNP.*`, not `Complexity.*` (that namespace is contested upstream — see `docs/UPSTREAM_TRACKING.md`)
 - **Mathlib style:** All Lean code follows Mathlib naming and style conventions
 - **Gate discipline:** No proof search runs against a statement that hasn't passed the fidelity gates (see `docs/ARCHITECTURE.md`)
+- **Lethality scan (Gate 5 Tier 1b):** Before claiming a definition is "fixed" or "load-bearing," run `python3 tooling/gates/binder_usage_scan.py --allow-unreferenced '^(exists_equalizing_oracle|exists_separating_oracle)$' lean/PleaNP` and require 0 violations. It catches the three 2026-08-19 flaw shapes: unused definition parameters, discarded `let _x := …` bindings, unreferenced declarations, and quantifier witnesses that don't constrain their bodies. Every parameter, binder, and declaration must be load-bearing — verified in the *body*, not asserted in the docstring.
 - **Sorry tracking:** Every `sorry` in `lean/PleaNP/` must be recorded in `docs/SORRY_TRACKER.md` — what it's pending on, what unblocks it, and its priority. When you add a `sorry` (new placeholder, new pending proof), add a row. When you resolve one, mark it "Resolved" with the commit. When you push changes that add/remove `sorry`s, update the tracker in the same commit. The hygiene scanner (`tooling/gates/hygiene_scan.py --prove-stage`) catches `sorry`s mechanically; the tracker documents what each one *means* so none are forgotten or filled in wrong (the exact failure mode `docs/FAILURE_AUDIT.md` Pattern A warns about). A `sorry` with no tracker entry is a process violation — add it before pushing.
 
 ## Pitfalls to avoid
@@ -96,5 +99,7 @@ git -c user.name="openhands" -c user.email="openhands@all-hands.dev" commit -m "
 - Don't claim the `Complexity` namespace — it's being actively designed by the Mathlib community
 - Don't let the same pipeline formalize the statement *and* search for its proof — that's the #1 failure mode (see `docs/FAILURE_AUDIT.md`)
 - Don't trust a green Lean checkmark as proof of correctness *of the statement* — the statement-to-informal mapping is the weak link (read the failure audit)
+- Don't let a module header claim a flaw is "fixed" or a parameter is "load-bearing" when the body still leaves it unused — v3 did exactly this (headers ahead of bodies). The header is not evidence; the lethality scan + validation suite are. Verify the body, then update the header.
+- Don't declare a statement a "Gate-1 frozen anchor" while the definitions it references are unvalidated — freeze is dependency-ordered (typed → validated → frozen; see `docs/STATEMENTS/ValidationSuite.spec.md`). A `sorry` is only "honest" over validated definitions; three of the first seven sat on false statements.
 - Don't cite upstream P/NP numbers without checking `docs/UPSTREAM_TRACKING.md` — the computational model is contested and numbers don't transfer across models
 - Don't commit machine-specific configuration (paths, SSH, local toolchain) — that belongs in `AGENTS_LOCAL.md`, which is gitignored
