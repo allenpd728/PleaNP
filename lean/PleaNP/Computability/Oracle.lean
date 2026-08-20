@@ -3,23 +3,16 @@ import Mathlib.Computability.StateTransition
 set_option warningAsError true
 
 /-!
-# Oracle machines (v3: semantically load-bearing)
+# Oracle machines (v4: reachability wired)
 
-This file defines the oracle-machine substrate that relativization
-(Baker-Gill-Solovay) requires.
+v4 repair: closes Flaw A by wiring EvalsToInTime reachability through
+the real step function. ea, M, t are now load-bearing by construction.
 
-Status: Rendered (v3). Fixes the three semantic flaws identified in
-the harsh review:
-- Flaw A (DecidesInTime vacuous): now uses EvalsToInTime reachability
-  from an initial configuration with a step count. The parameters
-  ea, M, t are all load-bearing.
-- Flaw B (oracle inert): step now branches on queryLabel and writes
-  the oracle answer to the machine's internal state. The oracle
-  affects the machine's behavior.
-- Flaw C (NP_A vacuous): fixed in OracleComplexity.lean with a
-  per-input AcceptsInTime predicate.
+Flaw B (oracle inert) was fixed in v3 and is kept: step branches on
+queryLabel and routes the oracle answer to yesLabel/noLabel.
 
-Totality discipline: Oracle Q := Q -> Bool (total by type).
+Flaw C is fixed in OracleComplexity.lean (AcceptsInTime with
+reachability + per-input application to (x, y)).
 -/
 
 namespace PleaNP
@@ -38,39 +31,31 @@ instance Oracle.inhabited (Q : Type) : Inhabited (Oracle Q) :=
 @[simp]
 def Oracle.query {Q : Type} (A : Oracle Q) (q : Q) : Bool := A q
 
-/-- The configuration of an oracle machine: a FinTM2 configuration
-  plus the fixed oracle and a flag indicating whether the last step
-  was an oracle query (used to route the answer). -/
+/-- The configuration of an oracle machine. -/
 structure Cfg (Q : Type) (tm : FinTM2) where
   cfg : tm.Cfg
   oracle : Oracle Q
 
-/-- An oracle machine is a FinTM2 with a fixed oracle and a
-  distinguished query label. The `tm` parameter is NOT stored as a
-  field (it IS the parameter) — this avoids the M.tm.Λ vs tm.Λ
-  type-unification issue that blocked v2's step function. -/
+/-- An oracle machine: a FinTM2 with a fixed oracle and query/yes/no
+  labels. The tm parameter is NOT stored as a field (avoids the
+  type-unification issue from v2). -/
 structure Machine (Q : Type) (tm : FinTM2) [DecidableEq tm.Λ] where
   oracle : Oracle Q
   queryLabel : tm.Λ
   yesLabel : tm.Λ
   noLabel : tm.Λ
 
-/-- Construct the initial configuration for input x. -/
+/-- Construct the initial configuration for a given input list, using
+  Mathlib's Turing.initList as the loader. -/
 def initCfg {Q : Type} {tm : FinTM2} [DecidableEq tm.Λ]
-    (M : Machine Q tm) (ea : List (tm.Γ tm.k₀) -> tm.Cfg)
-    (input : List (tm.Γ tm.k₀)) : Cfg Q tm :=
-  ⟨ea input, M.oracle⟩
+    (M : Machine Q tm) (input : List (tm.Γ tm.k₀)) : Cfg Q tm :=
+  ⟨Turing.initList tm input, M.oracle⟩
 
 /-- A step of the oracle machine. If the current label is the query
   label, the oracle is consulted: the query (head of the input stack)
-  is sent to the oracle, the answer is written to the machine's
-  internal state (var), and the machine advances. Otherwise, the
-  step delegates to FinTM2.step.
-
-  The oracle answer IS used — it is written to the var field, which
-  the machine's subsequent FinTM2 transitions can branch on. This
-  makes the oracle load-bearing: different oracles produce different
-  machine behaviors (Flaw B fix). -/
+  is sent to the oracle, the answer determines the next label
+  (yesLabel for true, noLabel for false). Otherwise, delegates to
+  FinTM2.step. The oracle answer IS used (Flaw B fix). -/
 def step {tm : FinTM2} [DecidableEq tm.Λ]
     (M : Machine (tm.Γ tm.k₀) tm) (c : Cfg (tm.Γ tm.k₀) tm) :
     Option (Cfg (tm.Γ tm.k₀) tm) :=
@@ -81,10 +66,6 @@ def step {tm : FinTM2} [DecidableEq tm.Λ]
       match c.cfg.stk tm.k₀ with
       | [] => Option.none
       | q :: rest =>
-        -- Consult the oracle: A(q) : Bool. The answer IS used:
-        -- it determines which label the machine goes to next
-        -- (yesLabel for true, noLabel for false). This makes the
-        -- oracle load-bearing (Flaw B fix).
         let answer := Oracle.query c.oracle q
         some (Cfg.mk
           { l := if answer then some M.yesLabel else some M.noLabel
@@ -98,49 +79,36 @@ def step {tm : FinTM2} [DecidableEq tm.Λ]
       | Option.none => Option.none
       | Option.some cfg' => some (Cfg.mk cfg' c.oracle)
 
-/-- The step-counting interface. -/
-class StepCount (Q : Type) (tm : FinTM2) [DecidableEq tm.Λ]
-    (M : Machine Q tm) where
-  runN : Nat -> Cfg Q tm -> Option (Cfg Q tm)
-
-/-- Whether the halted configuration's output encodes chi_L(x):
-  the head of the output stack, decoded via outputAlphabet, equals
-  true iff x is in L. -/
+/-- Whether the halted config's output encodes χ_L(x): the head of
+  the output stack, decoded via outputAlphabet, equals true iff x ∈ L. -/
 def outputEncodesChi {Q : Type} {tm : FinTM2} {alpha : Type}
     (outputAlphabet : tm.Γ tm.k₁ -> Bool)
     (c : Cfg Q tm) (L : Set alpha) (x : alpha) : Prop :=
   match c.cfg.stk tm.k₁ with
   | [] => False
-  | head :: _ => outputAlphabet head = true <-> x ∈ L
+  | head :: _ => outputAlphabet head = true ↔ x ∈ L
 
 /-- A language L is decided in time t by oracle machine M if, for
-  every input x, M started on x reaches a halted configuration within
-  t(|ea x|) steps (via EvalsToInTime on the real step function),
-  AND the halted config's output encodes chi_L(x).
+  every input x, M started on ea x reaches a halted configuration
+  within t(|ea x|) steps (via EvalsToInTime on the real step
+  function), AND the halted config's output encodes χ_L(x).
 
-  Flaw A fix: the parameters ea, M, t are ALL load-bearing. The
-  EvalsToInTime reachability uses the actual step function (which
-  includes oracle queries), the actual initial configuration
-  (initCfg from ea x), and the actual time bound t. -/
-def DecidesInTime {Q : Type} {tm : FinTM2} {alpha : Type}
+  v4 fix (Flaw A): ea, M, t are ALL load-bearing — ea builds the
+  initial config, M provides the step function, t bounds the steps. -/
+def DecidesInTime {tm : FinTM2} {alpha : Type}
     [DecidableEq tm.Λ] (ea : alpha -> List (tm.Γ tm.k₀))
     (outputAlphabet : tm.Γ tm.k₁ -> Bool)
-    (M : Machine Q tm) (L : Set alpha) (t : Nat -> Nat) : Prop :=
-  forall x : alpha,
-    exists cfg' : Cfg Q tm,
-      -- Reachability: M started on ea x reaches cfg' within t steps.
-      -- This uses the REAL step function (which queries the oracle).
-      -- TODO: wire EvalsToInTime once the initCfg + step composition
-      -- is confirmed. The reachability condition is stated here as
-      -- a sorry'd hypothesis to make the structure load-bearing.
-      (cfg'.cfg.l = Option.none) /\
-      -- The output encodes chi_L(x): true = x in L.
-      outputEncodesChi outputAlphabet cfg' L x
+    (M : Machine (tm.Γ tm.k₀) tm) (L : Set alpha) (t : Nat -> Nat) : Prop :=
+  ∀ x : alpha,
+    ∃ cfg' : Cfg (tm.Γ tm.k₀) tm,
+      Nonempty (StateTransition.EvalsToInTime (step M) (initCfg M (ea x)) (some cfg') (t (ea x).length))
+      ∧ cfg'.cfg.l = Option.none
+      ∧ outputEncodesChi outputAlphabet cfg' L x
 
 /-- The empty oracle. -/
 def emptyOracle (Q : Type) : Oracle Q := fun _ => false
 
-/-- P^empty = P compatibility (statement, proof pending upstream P). -/
+/-- P^∅ = P compatibility (statement, proof pending upstream P). -/
 theorem P_empty_eq_upstream_P {Q : Type} {tm : FinTM2} [DecidableEq tm.Λ]
     (M : Machine Q tm) (h_empty : M.oracle = emptyOracle Q) :
     True := by
