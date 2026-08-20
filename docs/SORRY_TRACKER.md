@@ -4,7 +4,7 @@
 
 **Rule:** every `sorry` in `lean/PleaNP/` must appear in this table.
 
-**Last updated:** 2026-08-19 (commit `a223b12` on dev).
+**Last updated:** 2026-08-19 (commit pending on dev).
 
 ---
 
@@ -13,9 +13,9 @@
 | File | `sorry` count | Level |
 |---|---|---|
 | `lean/PleaNP/Computability/Oracle.lean` | 1 | Substrate (Rung 2) |
-| `lean/PleaNP/Computability/OracleComplexity.lean` | 4 | Complexity classes (Rung 2) |
+| `lean/PleaNP/Computability/OracleComplexity.lean` | 3 | Complexity classes (Rung 2) |
 | `lean/PleaNP/Barriers/Relativization.lean` | 2 | Barrier statement (Rung 3a) |
-| **Total** | **7** | |
+| **Total** | **6** (5a resolved) | |
 
 All are honest pending proofs/compositions. v4 repair wired EvalsToInTime reachability (Flaw A fixed), per-input AcceptsInTime on (x,y) (Flaw C fixed), M.oracle=A constraint (oracle-relative), and removed the duplicate binder. The remaining sorries are: upstream-P-blocked (#2, #6, #7), the P_A subset NP_A self-check (#5), and the BGS proofs (#8, #9).
 
@@ -33,8 +33,8 @@ All are honest pending proofs/compositions. v4 repair wired EvalsToInTime reacha
 
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 5a | `OracleComplexity.lean:80` | `P_A_subset_NP_A` forward direction -- output-encoding connection. From DecidesInTime (outputEncodesChi gives oa head = true iff x in L) to AcceptsInTime (oa head = true). Requires unfolding the match on the output stack. | Unfolding outputEncodesChi through the match. | **High** -- structural self-check. |
-| 5b | `OracleComplexity.lean:85` | `P_A_subset_NP_A` backward direction -- extracting x in L from AcceptsInTime. | Same unfolding + connecting the two reachability proofs. | **High** -- structural self-check. |
+| 5a | ~~`OracleComplexity.lean`~~ **Resolved** -- forward direction proven (by_cases on output stack, hEncodes.mpr hx) -- output-encoding connection. From DecidesInTime (outputEncodesChi gives oa head = true iff x in L) to AcceptsInTime (oa head = true). Requires unfolding the match on the output stack. | Unfolding outputEncodesChi through the match. | **High** -- structural self-check. |
+| 5b | `OracleComplexity.lean:94` | `P_A_subset_NP_A` backward direction -- extracting x in L from AcceptsInTime. | Same unfolding + connecting the two reachability proofs. | **High** -- structural self-check. |
 | 6 | `OracleComplexity.lean:90` | `P_empty_eq_upstream_P_class` -- RHS set comprehension (upstream P as a set). | Upstream P (DEC-003). | Medium |
 | 7 | `OracleComplexity.lean:91` | `P_empty_eq_upstream_P_class` -- proof of P^empty = P equality. | #6 + upstream P. | Medium |
 
