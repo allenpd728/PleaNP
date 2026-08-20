@@ -76,8 +76,17 @@ theorem P_A_subset_NP_A {Q : Type} (alpha : Type) (A : Oracle Q) :
         exact hReach
       · -- Output is true: from outputEncodesChi, oa head = true ↔ x ∈ L
         -- Since x ∈ L, oa head = true
-        unfold outputEncodesChi at hEncodes
-        sorry
+        by_cases hStk : cfg'.cfg.stk tm'.k₁ = []
+        · simp [outputEncodesChi, hStk] at hEncodes
+        · rw [← List.cons_ne_nil] at hStk
+          obtain ⟨head, tail, hStk2⟩ := List.exists_cons_of_ne_nil hStk
+          have hEncodes2 : oa head = true ↔ x ∈ L := by
+            have : cfg'.cfg.stk tm'.k₁ = head :: tail := by
+              rw [hStk2]
+            rw [show outputEncodesChi oa cfg' L x = (oa head = true ↔ x ∈ L) from by
+              unfold outputEncodesChi; rw [this]]
+            exact hEncodes
+          exact hEncodes2.mpr hx
   · -- (leftarrow): ∃ y, AcceptsInTime → x ∈ L
     intro ⟨y, _hy, hAccepts⟩
     obtain ⟨cfg', hReach, hHalt, hOutput⟩ := hAccepts
