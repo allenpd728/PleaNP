@@ -1,10 +1,10 @@
 # Sorry tracker: open proof/composition debts
 
-**Purpose.** Track every `sorry` in the PleaNP Lean codebase — what it's pending on, what unblocks it, and its priority. This prevents `sorry`s from being forgotten or filled in wrong (the exact failure mode `FAILURE_AUDIT.md` Pattern A warns about: a `sorry` that's silently resolved against the wrong condition, or never resolved, making a "compiling proof of the wrong statement" look authoritative).
+**Purpose.** Track every `sorry` in the PleaNP Lean codebase.
 
-**Rule:** every `sorry` in `lean/PleaNP/` must appear in this table. When a `sorry` is resolved, update the table (mark it "Resolved" with the commit that resolved it). When a new `sorry` is added, add it here. The hygiene scanner (`tooling/gates/hygiene_scan.py --prove-stage`) enforces that no `sorry` ships in a *proven* claim — this doc tracks what each one means.
+**Rule:** every `sorry` in `lean/PleaNP/` must appear in this table.
 
-**Last updated:** 2026-08-18 (commit pending).
+**Last updated:** 2026-08-19 (commit `a223b12` on dev).
 
 ---
 
@@ -15,75 +15,70 @@
 | `lean/PleaNP/Computability/Oracle.lean` | 1 | Substrate (Rung 2) |
 | `lean/PleaNP/Computability/OracleComplexity.lean` | 4 | Complexity classes (Rung 2) |
 | `lean/PleaNP/Barriers/Relativization.lean` | 2 | Barrier statement (Rung 3a) |
-| **Total** | **7** (#1, #3 resolved; #4 fixed + #10 resolved; #5 partially done with composition lemma + sorry; new #11 = composition lemma sorry) | |
+| **Total** | **7** | |
 
-All 9 are honest pending proofs/compositions (Gate 6 catches them; none are dishonest placeholders — Gate 5 passes clean). None are "fake successes" (`True`/`trivial`/`none` bodies); all express real conditions that await completion.
+All are honest pending proofs/compositions. v4 repair wired EvalsToInTime reachability (Flaw A fixed), per-input AcceptsInTime on (x,y) (Flaw C fixed), M.oracle=A constraint (oracle-relative), and removed the duplicate binder. The remaining sorries are: upstream-P-blocked (#2, #6, #7), the P_A subset NP_A self-check (#5), and the BGS proofs (#8, #9).
 
 ---
 
 ## Detailed inventory
 
-### Substrate level (`Oracle.lean`)
+### Substrate level (Oracle.lean)
 
-| # | File:Line | What it's pending on | Unblocked by | Priority |
+| # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 1 | `Oracle.lean:~210` | ~~`outputEncodesChi`~~ **Resolved** (commit 5243a06) | — the per-machine output-encoding bridge (Bool → FinTM2 output alphabet). The predicate that checks the halted config's output encodes `χ_L(x)`. | Per-machine instantiation (likely in `OracleComplexity.lean` or a `Relativization.lean` instance). The dependent-type issue: `tm.Γ tm.k₁` (output alphabet) varies per machine. | **High** — this is the acceptance condition `DecidesInTime` depends on; without it, `P^A`/`NP^A` membership is undefined. |
-| 2 | `Oracle.lean:~259` | `P_empty_eq_upstream_P` — the `P^∅ = P` compatibility statement (Trap 3 of the recompose spec). Proves the empty-oracle case reduces to non-oracle `TM2ComputableInPolyTime`. | Upstream `P` (not in Mathlib core, DEC-003) + the `outputEncodesChi` bridge (#1). | **Medium** — the statement is rendered; the proof tracks upstream P. |
+| 2 | `Oracle.lean:115` | `P_empty_eq_upstream_P` -- P^empty = P compatibility. Statement only; proof tracks upstream P. | Upstream P (DEC-003). | Medium |
 
-### Complexity-class level (`OracleComplexity.lean`)
+### Complexity-class level (OracleComplexity.lean)
 
-| # | File:Line | What it's pending on | Unblocked by | Priority |
+| # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 3 | `OracleComplexity.lean:~56` | ~~`P_A` membership condition~~ **Resolved** (commit `bc344ab`) — now composes @DecidesInTime with ea, oa, M, L, p. | — `∃ ..., sorry` instead of `DecidesInTime ea M L p`. The composition with `DecidesInTime` (which itself depends on #1, `outputEncodesChi`). | `outputEncodesChi` (#1) + per-machine input encoding (`ea : α → List (tm.Γ tm.k₀)`). | **High** — without this, `P^A` is a set with a pending membership condition; the BGS statement quantifies over it but can't be meaningfully interpreted yet. |
-| 4 | `OracleComplexity.lean:~94` | ~~`NP_A` verifier condition~~ **Resolved** (commit `bc344ab`) — now composes @DecidesInTime on (x, y) pair with verifier language { (x,y) | x in L }. | — `∧ sorry` instead of `DecidesInTime` on a two-input encoding `(x, y)`. Same composition dependency as #3. | `outputEncodesChi` (#1) + two-input encoding. | **High** — same as #3 for `NP^A`. |
-| 5 | `OracleComplexity.lean:~151` | `P_A_subset_NP_A` — the trivial inclusion proof (`P^A ⊆ NP^A`). Should be provable from the definitions (structural self-check). | #3 and #4 being resolved (the proof needs the real class bodies). | **Medium** — a self-check; if it can't be proven after #3/#4 are resolved, the class definitions are wrong relative to each other. |
-| 6 | `OracleComplexity.lean:~132` | `P_empty_eq_upstream_P_class` — right-hand side set comprehension. The definition of "upstream P as a set" (`{ L | ∃ (tm' : FinTM2), sorry }`). | Upstream `P` (DEC-003). | **Medium** — carries #2 to the class level. |
-| 7 | `OracleComplexity.lean:~133` | `P_empty_eq_upstream_P_class` — the proof of `P^∅ = P` equality. | #6 + upstream `P`. | **Medium** — tracks upstream P. |
+| 5a | `OracleComplexity.lean:80` | `P_A_subset_NP_A` forward direction -- output-encoding connection. From DecidesInTime (outputEncodesChi gives oa head = true iff x in L) to AcceptsInTime (oa head = true). Requires unfolding the match on the output stack. | Unfolding outputEncodesChi through the match. | **High** -- structural self-check. |
+| 5b | `OracleComplexity.lean:85` | `P_A_subset_NP_A` backward direction -- extracting x in L from AcceptsInTime. | Same unfolding + connecting the two reachability proofs. | **High** -- structural self-check. |
+| 6 | `OracleComplexity.lean:90` | `P_empty_eq_upstream_P_class` -- RHS set comprehension (upstream P as a set). | Upstream P (DEC-003). | Medium |
+| 7 | `OracleComplexity.lean:91` | `P_empty_eq_upstream_P_class` -- proof of P^empty = P equality. | #6 + upstream P. | Medium |
 
-#
-### Gate 4 review items (not sorry'd in code, but tracked)
+### Barrier-statement level (Relativization.lean)
 
-| # | Description | Status |
-|---|---|---|
-| 10 | **Certificate bound equivalence** -- **Resolved**: NP_A bound changed from indirect `y.length <= p.eval(ea(x,y)).length` to direct `y.length <= p.eval(ea(x,[])).length` (polynomial in original input size). Gate 4 read-back: "certificate bounded by polynomial in input size." Docstring documents the equivalence. (Gate 4 review): the `NP_A` definition bounds the certificate by `y.length <= p.eval (ea (x, y)).length` (indirect, through the pair encoding). The read-back should say "certificate bounded by polynomial in input size." If the indirect bound needs a proof of equivalence to the direct bound `y.length approx p.eval (ea x).length`, that is a lemma to add here. **Pending** -- not a sorry in code, but a Gate 4 review item to verify or resolve. |
-
-## Barrier-statement level (`Relativization.lean`)
-
-| # | File:Line | What it's pending on | Unblocked by | Priority |
+| # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 8 | `Relativization.lean:~79` | BGS clause (a) proof — `∃ A, Computable A ∧ P^A = NP^A`. The equalizing-oracle existence proof (sandwich: A = QBF, `P^A = NP^A = PSPACE`). | #3, #4 (class bodies) + PSPACE/QBF formalization (not in Mathlib, GAP_AUDIT §8) + upstream `P` (DEC-003). | **Low (for now)** — Rung 3 Step 6; the statement is frozen (Gate 1), the proof is the multi-year core contribution. |
-| 9 | `Relativization.lean:~100` | BGS clause (b) proof — `∃ B, Computable B ∧ P^B ≠ NP^B`. The separating-oracle existence proof (diagonalization: `U_B` construction, `2^n > p_i(n)` counting). | #3, #4 (class bodies) + enumeration of poly-time oracle machines + the diagonalization construction. | **Low (for now)** — Rung 3 Step 6; the hardest proof in the project (per `Relativization.proof-strategy.md`, ~70% of the effort). |
+| 8 | `Relativization.lean:80` | BGS clause (a) proof -- equalizing oracle existence. | #5 (class self-check) + PSPACE/QBF + upstream P. | Low (Rung 3 Step 6) |
+| 9 | `Relativization.lean:101` | BGS clause (b) proof -- separating oracle existence (diagonalization). | #5 + machine enumeration + diagonalization. | Low (Rung 3 Step 6) |
 
 ---
 
-## Dependency chain (what unblocks what)
+## Resolved
 
-```
-#1 outputEncodesChi (per-machine output bridge)
-  ├── #3 P_A membership condition (needs #1 + input encoding)
-  │     ├── #5 P_A ⊆ NP_A proof (needs #3 + #4)
-  │     └── #8 BGS clause (a) proof (needs #3 + #4 + PSPACE + upstream P)
-  ├── #4 NP_A verifier condition (needs #1 + two-input encoding)
-  │     ├── #5 P_A ⊆ NP_A proof (needs #3 + #4)
-  │     ├── #8 BGS clause (a) proof
-  │     └── #9 BGS clause (b) proof (needs #3 + #4 + machine enumeration + diagonalization)
-  ├── #2 P_empty = P (Oracle.lean, needs #1 + upstream P)
-  │     └── #6, #7 P_empty = P (class level, carries #2 through)
-  └── (upstream P/NP, DEC-003, needed by #2, #6, #7, #8)
-```
-
-**The critical path:** #1 (`outputEncodesChi`) is the root dependency — it unblocks #3 and #4 (the class bodies), which unblock #5 (the self-check), #8 and #9 (the BGS proofs). Upstream `P`/`NP` (DEC-003) is the other root — it unblocks #2, #6, #7, and #8.
-
-**The first thing to resolve:** #1 (`outputEncodesChi`) — it's the per-machine output-encoding bridge, it's in PleaNP's control (not blocked on upstream), and it's the root of the critical path. Resolving it makes #3 and #4 writable, which makes the class bodies real, which makes the BGS statement *meaningful* (not just type-checking against pending classes).
+| # | What | Commit | Notes |
+|---|---|---|---|
+| 1 | `outputEncodesChi` -- the per-machine output-encoding bridge | `5243a06` | Now a real predicate: `oa head = true iff x in L`. |
+| 3 | `P_A` membership condition | `bc344ab` then v4 `a223b12` | Now composes `@DecidesInTime` with EvalsToInTime reachability. ea/M/t load-bearing. |
+| 4 | `NP_A` verifier condition | `bc344ab` then v4 `a223b12` | Now composes `@AcceptsInTime` on pair (x, y) with reachability. ea/M/xy/t load-bearing. |
+| 10 | Certificate bound equivalence (Gate 4) | `4584d90` | Bound changed to direct `p.eval(ea(x,[])).length` (polynomial in input size). |
 
 ---
 
-## Status of the BGS statement
+## Remaining tasks for v4 completion
 
-**Rendered (type-checks) — proof pending, class bodies pending.**
+1. **#5a/#5b: Prove P_A_subset_NP_A** (not sorry). The proof structure is:
+   - Forward: given L in P_A (decider M with DecidesInTime), construct NP_A verifier (same M, pair-encoding ea'(x,y)=ea(x), empty certificate y=[]). AcceptsInTime follows from DecidesInTime (same initial config, same reachability, output is true because x in L implies oa head = true).
+   - Backward: given y and AcceptsInTime (output is true), extract x in L from the P_A decider's outputEncodesChi (oa head = true iff x in L).
+   - Obstacle: unfolding outputEncodesChi through the match on the output stack.
 
 The BGS statement (`∃ A, Computable A ∧ P^A = NP^A` / `∃ B, Computable B ∧ P^B ≠ NP^B`) is a barrier theorem *statement* rendered over machine-grounded, non-vacuous oracle classes (P^A/NP^A built on a real TM model with `EvalsToInTime` step counting). Prior renderings exist only as axioms over vacuous classes or as abstract schemes (see `docs/PRIOR_ART.md`, "Closer prior art"); ours is intended to be *provable*, not assumed. It type-checks and satisfies the rendering spec's three traps (computability hypothesis, set equality, query type). We do not claim priority — the point is that the statement is provable-in-principle, which the axiom/scheme renderings are not.
 
-**Qualification:** the statement quantifies over `P^A`/`NP^A` whose membership conditions are `sorry`'d (#3, #4). So the statement is *formally well-typed* but its *semantic content* is pending — it will be fully meaningful once #1 (the `outputEncodesChi` bridge) is resolved, making #3 and #4 writable, making the class bodies real. Until then, "the BGS statement is rendered" means "the statement type-checks against pending class definitions" — a valid Gate-1 frozen anchor, not a completed theorem.
 
-**Do not claim "BGS proven" or "barrier formalized" until #8 and #9 are resolved** (the proofs) AND #3/#4 are resolved (the class bodies). A green `lake build` with `sorry` in the proofs is a *rendered statement*, not a *theorem*.
+2. **Smoke test**: one concrete FinTM2 machine, two oracles A1 != A2, one input x, with AcceptsInTime ... A1 ... x and not AcceptsInTime ... A2 ... x both closed by decide. Requires constructing a concrete FinTM2 (Fintype instances etc.).
+
+3. **Module headers**: update v3 headers to v4 (claim "reachability wired" only where the body actually uses EvalsToInTime).
+
+4. **#2, #6, #7: P_empty = P** -- blocked on upstream P (DEC-003). Not in PleaNP's control.
+
+5. **#8, #9: BGS proofs** -- blocked on #5 + PSPACE/QBF + upstream P. Rung 3 Step 6.
+
+---
+
+## Dependency chain
+
+
+
