@@ -56,3 +56,16 @@ Gate 6 Tier 1 (the hygiene scanner) is enforced in CI via `.github/workflows/ci.
 Gate 5 Tier 1 (the vacuity scanner) should be added to CI alongside the hygiene scanner (run `python3 tooling/gates/vacuity_scan.py lean/PleaNP` in the same workflow). This is a pending CI update — see `docs/STATEMENTS/HygieneEnforcement.spec.md`.
 
 Note: this enforces Tier 1 (grep/AST-scannable patterns) only. Tier 2 (`#print axioms`; semantic vacuity) is still the local agent's separate job. "CI green" is necessary, not sufficient, for "Gate 5/6 passed."
+
+## Gate 7 (Tier 1): binder usage / lethality scanner (2026-08-18)
+
+`binder_usage_scan.py` checks that every named parameter, field, and
+bound variable in a definition is load-bearing (actually used in the
+body). Catches:
+- Unused definition parameters (Flaw A shape)
+- Declarations never applied / fields never read (Flaw B shape)
+- Bound variables absent from their own conjunct (Flaw C shape)
+
+Usage: `python3 binder_usage_scan.py lean/PleaNP`
+
+See `docs/VALIDATION_SUITE.md` for the full validation requirements.
