@@ -82,7 +82,7 @@ All 9 are honest pending proofs/compositions (Gate 6 catches them; none are dish
 
 **Rendered (type-checks) — proof pending, class bodies pending.**
 
-The BGS statement (`∃ A, Computable A ∧ P^A = NP^A` / `∃ B, Computable B ∧ P^B ≠ NP^B`) is the first barrier theorem *statement* rendered in any proof assistant (per `docs/PRIOR_ART.md` cross-assistant survey — no proof assistant has this). It type-checks and satisfies the rendering spec's three traps (computability hypothesis, set equality, query type).
+The BGS statement (`∃ A, Computable A ∧ P^A = NP^A` / `∃ B, Computable B ∧ P^B ≠ NP^B`) is a barrier theorem *statement* rendered over machine-grounded, non-vacuous oracle classes (P^A/NP^A built on a real TM model with `EvalsToInTime` step counting). Prior renderings exist only as axioms over vacuous classes or as abstract schemes (see `docs/PRIOR_ART.md`, "Closer prior art"); ours is intended to be *provable*, not assumed. It type-checks and satisfies the rendering spec's three traps (computability hypothesis, set equality, query type). We do not claim priority — the point is that the statement is provable-in-principle, which the axiom/scheme renderings are not.
 
 **Qualification:** the statement quantifies over `P^A`/`NP^A` whose membership conditions are `sorry`'d (#3, #4). So the statement is *formally well-typed* but its *semantic content* is pending — it will be fully meaningful once #1 (the `outputEncodesChi` bridge) is resolved, making #3 and #4 writable, making the class bodies real. Until then, "the BGS statement is rendered" means "the statement type-checks against pending class definitions" — a valid Gate-1 frozen anchor, not a completed theorem.
 

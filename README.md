@@ -16,7 +16,7 @@ The P vs NP problem has three decades of known **barriers**:
 
 These barriers are the map of where P vs NP proof attempts fail. Encoding them formally turns "don't try these techniques" from folklore into machine-checkable facts — which is the prerequisite for any honest, AI-assisted proof search over the formalized landscape.
 
-**None of these barriers is formalized in any proof assistant, in any computational model.** That gap is this project's core contribution.
+**None of these barriers has a machine-checked proof in any proof assistant, in any computational model.** (They've been stated as axioms and sketched as abstract schemes — see `docs/PRIOR_ART.md` — but never proved over real machine-grounded classes.) This project fills that gap by building the missing infrastructure: machine-grounded oracle classes and the barrier theorems on top, so the statements are *provable*, not assumed.
 
 ## Scope and non-scope
 

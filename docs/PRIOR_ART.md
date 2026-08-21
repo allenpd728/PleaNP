@@ -10,7 +10,7 @@ Searched: the Mathlib4 Zulip archive at `https://leanprover-community.github.io/
 
 **The three barriers are absent from the Lean Zulip archive.** Searches for "Baker-Gill-Solovay", "natural proofs", "Razborov-Rudich", "algebrization", and "Aaronson-Wigderson" across the archive (`leanprover-community.github.io`) return **no** threads discussing them as formalization targets. The only Zulip "oracle" discussions are (a) the `linarith` tactic's certificate *oracle* (unrelated) and (b) decidability-oracle thought experiments (Damiano Testa / Mario Carneiro, new-members stream, Mar 2021 — about noncomputable reals, not complexity).
 
-This corroborates the gap audit's central claim: **the barrier theorems are open ground in every proof assistant, in every model.** A broad literature search beyond the Lean Zulip — over Coq, Isabelle/HOL (Archive of Formal Proofs), and the AI proof-search tooling landscape — surfaced **no** formalization of relativization, natural proofs, or algebrization in any proof assistant. The closest existing formalizations (Cook–Levin in Coq and Isabelle; oracle *computability* in Mathlib; circuit lower bounds in complexitylib) all stop short of the barriers. PleaNP's core contribution is genuinely novel.
+This corroborates the gap audit's central observation: **the barrier theorems are open ground in every proof assistant, in every model.** A broad literature search beyond the Lean Zulip — over Coq, Isabelle/HOL (Archive of Formal Proofs), and the AI proof-search tooling landscape — surfaced **no machine-checked proof** of relativization, natural proofs, or algebrization in any proof assistant. The closest existing formalizations (Cook–Levin in Coq and Isabelle; oracle *computability* in Mathlib; circuit lower bounds in complexitylib) all stop short of the barriers. **Caveat (see "Closer prior art" below):** the barriers have been *stated* as axioms and *gestured at* as abstract schemes in a few repos, and *formalized on paper* in bounded arithmetic — so "open ground" means "no provable, machine-checked, machine-grounded rendering," not "nobody has written the words." We record this to keep the substrate map accurate, not to stake a novelty claim.
 
 ---
 
@@ -150,12 +150,33 @@ Rung 6 sits on top of a fast-moving tooling landscape. The failure audit (Patter
 
 ---
 
+## Closer prior art (added 2026-08-19; corrects the over-broad "none found" claim)
+
+A deeper sweep (GitHub code search across Lean/Coq/Isabelle, Reddit, CS Theory SE, MathOverflow, the complexity blogs, AFP, Metamath, and the bounded-arithmetic literature) surfaced prior art the earlier review missed. **None of it invalidates the project — the barriers remain unproven in every proof assistant — but three repos and one research tradition must be cited so the "what exists" map is accurate.** This matters for *substrate decisions* (what we build vs. import), not for staking a claim.
+
+### GitHub repos with barrier *renderings or interfaces* (none are theorems over real classes)
+
+- **`gobbleyourdong/open_problems` (Lean, Jun 2026).** `math/p_vs_np/lean/Barriers.lean` literally contains BGS statements — but as **axioms**, not theorems (`axiom bgs_exists_equal : ∃ A : Oracle, ...`), over **vacuous** classes (`InP_rel`/`InNP_rel` end in `∧ True` and never define polynomial time). This is the closest prior *rendering* of the BGS statement shape — and a textbook FAILURE_AUDIT Pattern A instance (a statement assumed, over classes that constrain nothing).
+- **`khanukov/p-np2` (Lean, active).** A `pnp3/Barrier/` directory with `Relativization.lean`, `NaturalProofs.lean`, `Algebrization.lean` — but these are **abstract schemes**, not theorems: `Relativizing (S : Type u → Prop) := ∀ O₁ O₂ : Type u, S O₁ ↔ S O₂` where the "oracles" are bare types. Zero oracle machines (repo-wide search), no P^A/NP^A classes, no BGS statements. The files are *contracts* — "our magnification pipeline must supply bypass witnesses" — inside a P≠NP attempt. (Fortnow's blog, Jun 2026, "Respect the P v NP Problem," calls this project out by name.) Strengthens the Pattern A record.
+- **`konard/p-vs-np` (Lean/Rocq/Isabelle/Agda).** Already in FAILURE_AUDIT; confirmed here to stay at catalogue level — `axiom bakerGillSolovay : Prop` (a contentless proposition), `def OracleP (_O : Language) := ClassP` (oracle classes that ignore the oracle), `limitation := True`.
+- **Coq neighbors:** `sethirus/The-Thiele-Machine` and `Horsocrates/theory-of-systems-coq` both *mention* the barriers; the latter explicitly states "DESCRIBED, NOT formalized as theorems."
+
+**Why none of these is the infrastructure PleaNP builds:** every one either (a) assumes the barrier as an axiom, (b) defines vacuous or oracle-blind classes, or (c) states an abstract scheme with no machine model. PleaNP's difference is not priority — it's that the oracle-relative classes are *machine-grounded and non-vacuous* (real TM step function, `EvalsToInTime` step counting, 1-step oracle queries), so the barrier statements can eventually be *proved*, not just written down.
+
+### The bounded-arithmetic tradition (the nearest intellectual prior art — must cite)
+
+The barriers *have* been formalized in a formal system — just not a machine-checked proof assistant. **Razborov 1995, *Unprovability of Lower Bounds on Circuit Size in Certain Fragments of Bounded Arithmetic* (Izvestiya RAN 59:1)** derives the natural-proofs barrier as unprovability of circuit lower bounds in weak arithmetic (S¹₂, PV₁). Successors: **Pich 2015** (PCP theorem in PV₁; circuit lower bounds in bounded arithmetic), **Jeřábek** (approximate counting in APC¹), **Oliveira–Müller / Cook–Krajíček** (provability of circuit upper/lower bounds; the KPT theorem). This is paper-rigorous, theory-relative formalization — "which techniques are *feasibly provable*" — and it is the established framework adjacent to PleaNP's barrier map. Two consequences:
+
+1. **Citation duty.** Any write-up of PleaNP's barrier library must cite this tradition as prior art, or a logic reviewer will (correctly) object.
+2. **Rung 6 relevance.** Bounded arithmetic is the mature version of "formalize which proof techniques can't work." The specific theories (PV₁ = poly-time reasoning, APC¹ = probabilistic poly-time, the Jerˇábek counting framework) are the *target vocabulary* for what "a lower-bound proof is natural/constructive" should mean formally. Not a substrate to import (it is not machine-checked), but a conceptual reference for the barrier *statements*.
+
 ## What was NOT found
 
-- **No formalization of any of the three barriers** (relativization, natural proofs, algebrization) in Lean, Coq, Isabelle, or any other proof assistant — confirmed now across *both* the Lean Zulip archive *and* a broad literature/repo review of the Coq, Isabelle/AFP, and AI-tooling ecosystems. The headline claim ("open ground in every proof assistant, in every model") is corroborated beyond the Lean Zulip.
+- **No machine-checked proof of any of the three barriers** (relativization, natural proofs, algebrization) in Lean, Coq, Isabelle, or any other proof assistant — confirmed across the Lean Zulip archive, a broad literature/repo review (Coq, Isabelle/AFP, Metamath, AI tooling), and the GitHub sweep above. The closer renderings (§"Closer prior art") all stop at axioms, vacuous classes, or abstract schemes — none is a provable statement over real machine-grounded classes.
 - **No prior discussion of "complexitylib" by name** in the archive (it's a newer project; the Zulip search did not index a discussion thread for it).
 - **No prior discussion of oracle *machines*** (TM + oracle tape + time bound) — only oracle *computability* (unbounded, recursion-theoretic).
 - **No importable Lean 4 substrate for one-way functions or pseudorandom function families** — the natural-proofs prerequisites must be stated, not imported (see the crypto-substrate section above).
+- **No non-axiom, machine-grounded rendering of a barrier statement** in any proof assistant. (The closest — gobbleyourdong's BGS — is an axiom over vacuous classes.) PleaNP's goal is to be the first *provable* such rendering, but that is an outcome of building the infrastructure correctly, not a claim to stake in advance.
 
 ---
 
