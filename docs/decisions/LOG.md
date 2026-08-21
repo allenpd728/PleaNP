@@ -155,3 +155,33 @@ All three would have been caught by:
 The v3 fix (commit `5fd85c6`) addresses the three flaws: step branches on the oracle answer, DecidesInTime references the real step function, NP_A uses a per-input AcceptsInTime predicate. But the process lesson — that behavioral evidence must be demanded per definition — is the lasting fix, recorded here.
 
 **See also:** `docs/VALIDATION_SUITE.md` (the full validation requirements), `tooling/gates/binder_usage_scan.py` (Gate 7), the harsh review (2026-08-18).
+
+### DEC-012
+
+**Date:** 2026-08-21
+**Status:** Active (deferred - post-v4 hardening)
+**Scope:** Oracle-machine step semantics (Oracle.lean)
+
+**Decision:** Record a known design gap in Oracles.step: the label
+distinctness of queryLabel / yesLabel / noLabel is unenforced.
+
+**The gap:** step checks `if l = M.queryLabel` BEFORE dispatching to the
+machine program. If a machine sets `queryLabel = yesLabel` (or
+`noLabel`), the oracle answer routes execution to that label, and the
+NEXT step consults the oracle again at the same label rather than
+running the program there. The query stack was already popped, so the
+re-query hits an empty k0 stack and the machine halts (none) at the
+post-query label instead of executing the intended branch. Verified
+behaviorally: a degenerate Machine with `queryLabel = yesLabel` stops
+after 2 steps with `= none`.
+
+**Why deferred:** The fix adds `yesLabel != queryLabel` and
+`noLabel != queryLabel` as Machine hypotheses (or fields), which threads
+two inequalities through every Machine construction site (including the
+smoke test). That is a real refactor, out of scope for the v4-completion
+pass and worth its own review. The P_A/NP_A theorems do not rely on the
+gap (the smoke machine uses three distinct labels), so this is
+hardening, not a correctness fix for anything already proved.
+
+**See also:** lean/PleaNP/Computability/OracleSmoke.lean (the degenerate
+machine is the witness that the gap is real).
