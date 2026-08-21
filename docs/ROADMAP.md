@@ -36,14 +36,14 @@ PleaNP imports whichever lands upstream, rather than picking a side. Our only lo
 
 ---
 
-## Rung 3 — Formalize the barrier theorems (the novel contribution)
+## Rung 3 — Formalize the barrier theorems (the core deliverable)
 
 **Goal:** Machine-checked proofs of:
 - **Relativization** (Baker–Gill–Solovay, 1975): there exists an oracle A with P^A = NP^A; there exists an oracle B with P^B ≠ NP^B. Therefore any relativizing proof cannot separate P from NP.
 - **Natural proofs** (Razborov–Rudich, 1994): under the assumption that one-way functions exist, no natural property can prove superpolynomial circuit lower bounds.
 - **Algebrization** (Aaronson–Wigderson, 2008): the third barrier, covering techniques that evade the first two.
 
-**Why this matters:** This is the exact knowledge an AI proof-search system needs encoded to avoid dead ends. A formalized "do not try relativizing/natural/algebrizing techniques" map makes search tractable and honest. None of these is formalized in any proof assistant today — this is open ground (confirmed across Lean, Coq, and Isabelle/AFP; see `docs/PRIOR_ART.md`).
+**Why this matters:** This is the exact knowledge an AI proof-search system needs encoded to avoid dead ends. A formalized "do not try relativizing/natural/algebrizing techniques" map makes search tractable and honest. None of these has a machine-checked proof in any proof assistant today — they've been stated as axioms or abstract schemes, but never proved over machine-grounded classes (see `docs/PRIOR_ART.md`, "Closer prior art"). We build them as provable theorems.
 
 **Scope notes (from the prior-art review):**
 - **3a (relativization):** the cleanest target — an existence result about oracles, depends only on Rung 2's oracle machines. Formalize against the original Baker–Gill–Solovay 1975 statement. The frozen, human-verified informal-to-formal spec lives at `docs/STATEMENTS/Relativization.md` (Gate 1 anchor / Gate 4 read-back reference).
