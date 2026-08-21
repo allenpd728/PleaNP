@@ -10,17 +10,21 @@
 
 ## By rung
 
-| Rung | Groundwork | Action at this rung |
-|---|---|---|
-| **2 — Computational model / oracle machines** | Mathlib `TM2ComputableInTime` / `TM2OutputsInTime` / `initList` (core, v4.31.0); `RecursiveIn.lean` (unbounded oracle computability) | **Imitate** the `TM2OutputsInTime` composition idiom for reachability; do **not** reuse `RecursiveIn` for time bounds (it has none). Track `UPSTREAM_TRACKING` for the P/NP model — import, never define. |
-| **2 — step counting** | Mathlib #35366 (`runN`), #33132 (`FinTM0`/`EvalsToInTime`) | **Watch** — import whichever lands; keep the `StepCount` interface so the swap is surgical (DEC-008/010). |
-| **3a — Relativization statement + proof** | Balbach Cook–Levin (Isabelle/AFP); Gäher–Kunze Cook–Levin (Coq, L-model) | **Imitate** their machine-enumeration and step-counting handling for the clause-(b) diagonalization — the two complete Cook–Levin formalizations are proven paths through the finicky parts. **Cite** BGS 1975 as the informal source of truth for Gate 4 read-back. |
-| **3b — Natural proofs** | Razborov 1995 (bounded arithmetic); Pich 2015; Jeřábek APC¹; Oliveira–Müller | **Consult for statement strength** — the PV₁/APC¹ vocabulary is the reference for what "constructive / natural" should mean formally, so the barrier isn't stated vacuously or unprovably. **Cite** as prior art (mandatory). **Do not** build the OWF→PRF reduction — hypothesize the PRF (no importable substrate exists). |
-| **3c — Algebrization** | Aaronson–Wigderson 2009 (multiquadratic, v1 pinned); ITCS 2026 multilinear strengthening | **Pin v1** to AW09; track the 2026 strengthening as a candidate v2, not part of v1 (prevents formalizing a moving folk theorem). Mathlib finite fields are present — the only missing substrate is the oracle machine (Rung 2). |
-| **4 — Circuit lower bounds** | **complexitylib** (Schlesinger): typed circuit model, Cook–Levin tableaux, universal machines, time hierarchy, Fourier subtheory | **Import, don't rebuild** — the single biggest overhead saver. **Blocker:** v4.30.0/v4.31.0 toolchain drift (see `UPSTREAM_TRACKING` §6); reconcile the toolchain first. **Cite** the original lower-bound papers (Håstad, Razborov, Williams) for Gate 4. |
-| **5 — Benchmark** | LeanDojo Benchmark 4; MiniF2F | **Benchmark against** LeanDojo Benchmark 4's autoformalization metrics (exact-match < 10%, proof-check < 20%) as the measured threat model for Gates 3–4. |
-| **6 — AI proof-search loop** | LeanDojo/ReProver (premise selection); the 2025–26 prover wave (AlphaProof, DeepSeek-Prover-V2, …) | **Build premise selection on LeanDojo/ReProver** or justify divergence. Treat the prover wave as evidence that *search* outpaces *statement integrity* — which is why the gates are mandatory before this rung runs. |
-| **7 — Open problems below P vs NP** | Reitwiessner's Williams √-space formalization (Lean Together 2026) | **De-scope** Williams √-space (already targeted); pick Ladner-style structure or derandomization consequences instead. **Track** Reitwiessner's multi-tape + space model as a candidate Rung-2 substrate. |
+**Every rung has a row — including the ones with no groundwork.** A row that says "considered, none" is the difference between *overlooked* and *checked-and-empty*; without it a future agent can't tell whether the gap is real or an omission. The `Verified` column is the staleness signal (see Maintenance).
+
+| Rung | Groundwork | Action at this rung | Verified |
+|---|---|---|---|
+| **1 — Gap audit** | — (this rung *produces* the audit) | No groundwork to import — the deliverable is the audit itself. Re-verify against `UPSTREAM_TRACKING` when a new upstream model lands. | 2026-08-19 |
+| **2 — Computational model / oracle machines** | Mathlib `TM2ComputableInTime` / `TM2OutputsInTime` / `initList` (core, v4.31.0); `RecursiveIn.lean` (unbounded oracle computability) | **Imitate** the `TM2OutputsInTime` composition idiom for reachability; do **not** reuse `RecursiveIn` for time bounds (it has none). Track `UPSTREAM_TRACKING` for the P/NP model — import, never define. | 2026-08-19 |
+| **2 — step counting** | Mathlib #35366 (`runN`), #33132 (`FinTM0`/`EvalsToInTime`) | **Watch** — import whichever lands; keep the `StepCount` interface so the swap is surgical (DEC-008/010). | 2026-08-19 |
+| **3a — Relativization statement + proof** | Balbach Cook–Levin (Isabelle/AFP); Gäher–Kunze Cook–Levin (Coq, L-model) | **Imitate** their machine-enumeration and step-counting handling for the clause-(b) diagonalization — the two complete Cook–Levin formalizations are proven paths through the finicky parts. **Cite** BGS 1975 as the informal source of truth for Gate 4 read-back. | 2026-08-19 |
+| **3b — Natural proofs** | Razborov 1995 (bounded arithmetic); Pich 2015; Jeřábek APC¹; Oliveira–Müller | **Consult for statement strength** — the PV₁/APC¹ vocabulary is the reference for what "constructive / natural" should mean formally, so the barrier isn't stated vacuously or unprovably. **Cite** as prior art (mandatory). **Do not** build the OWF→PRF reduction — hypothesize the PRF (no importable substrate exists). | 2026-08-19 |
+| **3c — Algebrization** | Aaronson–Wigderson 2009 (multiquadratic, v1 pinned); ITCS 2026 multilinear strengthening | **Pin v1** to AW09; track the 2026 strengthening as a candidate v2, not part of v1 (prevents formalizing a moving folk theorem). Mathlib finite fields are present — the only missing substrate is the oracle machine (Rung 2). | 2026-08-19 |
+| **4 — Circuit lower bounds** | **complexitylib** (Schlesinger): typed circuit model, Cook–Levin tableaux, universal machines, time hierarchy, Fourier subtheory | **Import, don't rebuild** — the single biggest overhead saver. **Blocker:** v4.30.0/v4.31.0 toolchain drift (see `UPSTREAM_TRACKING` §6); reconcile the toolchain first. **Cite** the original lower-bound papers (Håstad, Razborov, Williams) for Gate 4. | 2026-08-19 |
+| **5 — Benchmark** | LeanDojo Benchmark 4; MiniF2F | **Benchmark against** LeanDojo Benchmark 4's autoformalization metrics (exact-match < 10%, proof-check < 20%) as the measured threat model for Gates 3–4. | 2026-08-19 |
+| **6 — AI proof-search loop** | LeanDojo/ReProver (premise selection); the 2025–26 prover wave (AlphaProof, DeepSeek-Prover-V2, …) | **Build premise selection on LeanDojo/ReProver** or justify divergence. Treat the prover wave as evidence that *search* outpaces *statement integrity* — which is why the gates are mandatory before this rung runs. | 2026-08-19 |
+| **7 — Open problems below P vs NP** | Reitwiessner's Williams √-space formalization (Lean Together 2026) | **De-scope** Williams √-space (already targeted); pick Ladner-style structure or derandomization consequences instead. **Track** Reitwiessner's multi-tape + space model as a candidate Rung-2 substrate. | 2026-08-19 |
+| **8 — Novel barrier-evasion arguments** | — (none by definition) | Considered: no prior art to borrow — this rung is *novel* argument search constrained by the formalized barrier map. The only groundwork is the project's own Rungs 3–4 output. | 2026-08-19 |
 
 ---
 
@@ -32,6 +36,7 @@
 | **1 — Render the statement** | Bounded-arithmetic vocabulary (3b); AW09 pinned formulation (3c) | State the barrier at the strength the groundwork indicates. For 3b, "constructive" should track the PV₁/APC¹ sense of feasible — not a hand-waved "poly-time." |
 | **4 — Read-back (Gate 4)** | The informal source papers (BGS 1975; Razborov–Rudich 1997; AW 2009) | Read back against the *original* statement, not a paraphrase. The §5 "dropping X is a fail" lists in the statement specs are derived from these. |
 | **6 — Proof search** | khanukov's bypass-witness *pattern* (not code) | **Adapt the contract idea**: barrier-evasion claims carry their justification as an explicit record field (a type-level obligation), not a comment. Makes unproven obligations un-elidable. |
+| **2, 3, 5 — Hygiene / model-consistency / freeze** | — (these are PleaNP's own gates) | No external groundwork — these steps *are* the integrity machinery. Nothing to import; the gates are the deliverable. |
 
 ---
 
@@ -48,6 +53,10 @@ From the prior-art sweep (`PRIOR_ART.md`, "Closer prior art") — all single-pip
 
 ## Maintenance
 
+This file replaces any separate "keep doing prior-art reviews" tracker — the staleness signal lives in the rows themselves.
+
 - **Update a row when its groundwork moves.** This file is indexed by trigger point, so a stale row sends an agent to the wrong action. The two living inputs are `UPSTREAM_TRACKING.md` (upstream models) and `PRIOR_ART.md` (what exists).
+- **The `Verified` column is the honesty mechanism.** When you *rely* on a row, re-check its groundwork and bump the date in the same commit. A row whose `Verified` date predates a known upstream event (a Mathlib P/NP PR landing, a complexitylib toolchain bump, a new prover release) is stale — re-verify before trusting it, don't trust it because it's written down.
+- **Just-in-time coverage check, not periodic full audit.** When a rung is *started*, verify its row against `PRIOR_ART.md` / `UPSTREAM_TRACKING.md`. The full prior-art review only needs redoing when a substrate assumption changes — not on a schedule.
 - **Add a row when a new rung gains a usable external substrate.** The test: "would building this from scratch take longer than reconciling the import?" If yes, it belongs here.
 - **Do not add a row for groundwork that is only intellectually adjacent** (e.g. bounded arithmetic is cited for 3b/Rung 6, but it is not importable code — it stays a *consult/cite*, not an *imitate/import*).
