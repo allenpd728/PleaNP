@@ -22,7 +22,10 @@ For each statement spec (`Relativization.md`, `NaturalProofs.md`, `Algebrization
 
 ### Step 0 — Confirm the substrate exists (do not skip)
 
-Before rendering *any* statement, confirm its dependencies (`§2` of the spec) are present:
+Before rendering *any* statement, do two lookups:
+
+1. **The playbook** (`docs/PLAYBOOK.md`, the row for this rung): is there prior groundwork to *import* (e.g. complexitylib for Rung 4), *imitate* (e.g. Cook–Levin for the diagonalization), or *consult for statement strength* (e.g. bounded arithmetic for 3b)? Doing this now changes whether the step is "build" or "wire" — skipping it is how dead ends get rediscovered.
+2. **The dependencies** (`§2` of the spec): confirm they are present:
 
 - For relativization (3a): is `PleaNP.Oracles.Oracle` and an oracle-machine type defined? Are upstream `P`/`NP` imported (or is Rung 2 still blocked)?
 - For natural proofs (3b): is `PleaNP.Circuits` / `P/poly` defined? (If not, 3b is blocked on Rung 4 — stop here and surface the blocker, don't fake it.)
