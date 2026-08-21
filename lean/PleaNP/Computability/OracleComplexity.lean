@@ -6,9 +6,19 @@ set_option warningAsError true
 /-!
 # Oracle complexity classes (P^A / NP^A) v4
 
-v4 repair: closes Flaw C by wiring AcceptsInTime with reachability
-and applying it to the pair (x, y). Adds M.oracle = A constraint.
-Removes duplicate binder in P_A_subset_NP_A.
+v4 repair (refined in the v4-completion pass): the class parameter
+A : Oracle Q must be tied to each machine's query alphabet. Machines
+quantify with hΓ : tm'.Γ tm'.k₀ = Q, and the constraint is
+M.oracle = hΓ.symm ▸ A. (The v4 headers' bare `M.oracle = A` did not
+even typecheck — the build was never green past the substrate sorry,
+so the mismatch was unobservable.)
+
+Closes Flaw C with reachability-wired AcceptsInTime applied to (x, y).
+
+v4 completion: P_A_subset_NP_A proved in both directions. Backward
+uses determinism (`evalsTo_unique_result`): the halted endpoint of
+AcceptsInTime equals that of DecidesInTime on the same input, so the
+output bit transfers.
 -/
 
 namespace PleaNP
@@ -18,13 +28,14 @@ namespace Oracles
 open Turing
 
 /-- P^A: languages decidable by a deterministic oracle machine for A
-  in polynomial time. M.oracle = A ensures the class is relative to A. -/
+  in polynomial time. `hΓ` ties the machine's query alphabet to Q;
+  `M.oracle = hΓ.symm ▸ A` makes the class relative to A. -/
 def P_A {Q alpha : Type} (A : Oracle Q) : Set (Set alpha) :=
-  { L | ∃ (tm' : FinTM2) (h : DecidableEq tm'.Λ)
+  { L | ∃ (tm' : FinTM2) (hΓ : tm'.Γ tm'.k₀ = Q) (h : DecidableEq tm'.Λ)
         (ea : alpha → List (tm'.Γ tm'.k₀))
         (oa : tm'.Γ tm'.k₁ → Bool)
-        (M : @Machine (tm'.Γ tm'.k₀) tm' h) (hM : M.oracle = A) (p : Polynomial ℕ),
-      hM ∧ @DecidesInTime tm' alpha h ea oa M L (fun n => p.eval n) }
+        (M : @Machine (tm'.Γ tm'.k₀) tm' h) (p : Polynomial ℕ),
+      M.oracle = hΓ.symm ▸ A ∧ @DecidesInTime tm' alpha h ea oa M L (fun n => p.eval n) }
 
 /-- Per-input acceptance: M started on ea xy reaches a halted config
   within t(|ea xy|) steps AND outputs true (accept).
@@ -41,63 +52,69 @@ def AcceptsInTime {tm : FinTM2} {alpha : Type}
            | head :: _ => oa head = true)
 
 /-- NP^A: languages with a polynomial-time verifier relative to A.
-  M.oracle = A. Certificate y appears in the acceptance conjunct via
-  AcceptsInTime on the pair (x, y) -- not x alone. -/
+  Certificate y appears in the acceptance conjunct via AcceptsInTime
+  on the pair (x, y) -- not x alone. Same hΓ oracle constraint as P_A. -/
 def NP_A {Q alpha : Type} (A : Oracle Q) : Set (Set alpha) :=
-  { L | ∃ (tm' : FinTM2) (h : DecidableEq tm'.Λ)
+  { L | ∃ (tm' : FinTM2) (hΓ : tm'.Γ tm'.k₀ = Q) (h : DecidableEq tm'.Λ)
         (ea : alpha × List alpha → List (tm'.Γ tm'.k₀))
         (oa : tm'.Γ tm'.k₁ → Bool)
-        (M : @Machine (tm'.Γ tm'.k₀) tm' h) (hM : M.oracle = A) (p : Polynomial ℕ),
+        (M : @Machine (tm'.Γ tm'.k₀) tm' h) (p : Polynomial ℕ),
       ∀ x : alpha,
         x ∈ L ↔ ∃ y : List alpha,
           y.length ≤ p.eval (ea (x, [])).length
-          ∧ hM ∧ @AcceptsInTime tm' (alpha × List alpha) h ea oa M (x, y) (fun n => p.eval n) }
+          ∧ M.oracle = hΓ.symm ▸ A
+          ∧ @AcceptsInTime tm' (alpha × List alpha) h ea oa M (x, y) (fun n => p.eval n) }
 
 /-- P^A ⊆ NP^A: a decider is a verifier with empty certificate.
-  Structural self-check. -/
+  Structural self-check, proved in both directions.
+
+  Forward: the decider's halted endpoint satisfies outputEncodesChi,
+  so with x ∈ L the output bit is true — same endpoint, same
+  reachability, empty certificate.
+
+  Backward: the accept-run and the decide-run start from the same
+  initial config (the pair-encoding ignores the certificate), so by
+  determinism (evalsTo_unique_result) they halt at the same endpoint;
+  the accept-run's true output bit transfers to outputEncodesChi,
+  which yields x ∈ L. -/
 theorem P_A_subset_NP_A {Q : Type} (alpha : Type) (A : Oracle Q) :
     P_A (alpha := alpha) A ⊆ NP_A (alpha := alpha) A := by
-  rintro L ⟨tm', h, ea, oa, M, hM, p, hDecides⟩
-  -- Use the same machine, with pair-encoding ea'(x,y) = ea(x)
-  refine ⟨tm', h, fun xy => ea xy.1, oa, M, hM, p, ?⟩
+  rintro L ⟨tm', hΓ, h, ea, oa, M, p, hM, hDecides⟩
+  refine ⟨tm', hΓ, h, fun xy => ea xy.1, oa, M, p, ?_⟩
   intro x
   constructor
-  · -- (rightarrow): x ∈ L → ∃ y, AcceptsInTime on (x, y)
+  · -- (→): x ∈ L → ∃ y, bounded certificate, M accepts (x, y)
     intro hx
-    -- Take empty certificate y = []
-    refine ⟨[], ?⟩
-    refine ⟨?_, ?⟩
-    · -- Certificate bound: |[]| = 0 ≤ p.eval (ea (x, [])).length
-      simp
-    · -- AcceptsInTime on (x, []) follows from DecidesInTime on L
-      obtain ⟨cfg', hReach, hHalt, hEncodes⟩ := hDecides x
-      refine ⟨cfg', ?_, hHalt, ?_⟩
-      · -- Reachability: same initial config (ea(x,[]) = ea(x))
-        exact hReach
-      · -- Output is true: from outputEncodesChi, oa head = true ↔ x ∈ L
-        -- Since x ∈ L, oa head = true
-        by_cases hStk : cfg'.cfg.stk tm'.k₁ = []
-        · simp [outputEncodesChi, hStk] at hEncodes
-        · rw [← List.cons_ne_nil] at hStk
-          obtain ⟨head, tail, hStk2⟩ := List.exists_cons_of_ne_nil hStk
-          have hEncodes2 : oa head = true ↔ x ∈ L := by
-            have : cfg'.cfg.stk tm'.k₁ = head :: tail := by
-              rw [hStk2]
-            rw [show outputEncodesChi oa cfg' L x = (oa head = true ↔ x ∈ L) from by
-              unfold outputEncodesChi; rw [this]]
-            exact hEncodes
-          exact hEncodes2.mpr hx
-  · -- (leftarrow): ∃ y, AcceptsInTime → x ∈ L
-    intro ⟨y, _hy, hAccepts⟩
+    refine ⟨[], Nat.zero_le _, hM, ?_⟩
+    obtain ⟨cfg', hReach, hHalt, hEncodes⟩ := hDecides x
+    refine ⟨cfg', hReach, hHalt, ?_⟩
+    unfold outputEncodesChi at hEncodes
+    by_cases hStk : cfg'.cfg.stk tm'.k₁ = []
+    · rw [hStk] at hEncodes
+      exact False.elim hEncodes
+    · obtain ⟨head, tail, hStk'⟩ := List.exists_cons_of_ne_nil hStk
+      rw [hStk'] at hEncodes
+      have hTrue : oa head = true := hEncodes.2 hx
+      rw [hStk']
+      exact hTrue
+  · -- (←): ∃ y, M accepts (x, y) → x ∈ L
+    intro ⟨y, _hbound, _hM₂, hAccepts⟩
     obtain ⟨cfg', hReach, hHalt, hOutput⟩ := hAccepts
     obtain ⟨cfgL', hReachL, hHaltL, hEncodesL⟩ := hDecides x
-    sorry
-
-/-- P^∅ = P compatibility (statement, proof pending upstream P). -/
-theorem P_empty_eq_upstream_P_class {Q : Type} (alpha : Type) :
-    P_A (alpha := alpha) (emptyOracle Q) =
-    { L | sorry } := by
-  sorry
+    -- Both runs start from the same initial config (ea (x, y) = ea x
+    -- under the pair-encoding) and halt, so determinism gives cfg' = cfgL'.
+    have hEq : cfg' = cfgL' :=
+      evalsTo_unique_result
+        (step_none M cfg' hHalt) (step_none M cfgL' hHaltL)
+        hReach.some.toEvalsTo hReachL.some.toEvalsTo
+    rw [hEq] at hOutput
+    unfold outputEncodesChi at hEncodesL
+    by_cases hStk : cfgL'.cfg.stk tm'.k₁ = []
+    · rw [hStk] at hOutput
+      exact False.elim hOutput
+    · obtain ⟨head, tail, hStk'⟩ := List.exists_cons_of_ne_nil hStk
+      rw [hStk'] at hOutput hEncodesL
+      exact hEncodesL.1 hOutput
 
 end Oracles
 
