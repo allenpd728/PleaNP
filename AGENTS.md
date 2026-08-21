@@ -45,6 +45,7 @@ PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** o
 | `docs/ARCHITECTURE.md` | The gate pipeline (integrity architecture) |
 | `docs/FAILURE_AUDIT.md` | Prior attempts at "formalized P vs NP" and how they failed |
 | `docs/PRIOR_ART.md` | Cross-assistant prior-art survey + AI-tooling landscape (validates "no barriers formalized anywhere") |
+| `docs/PLAYBOOK.md` | **Prior groundwork indexed by trigger point** — at each rung / workflow step, which prior art applies and what to do with it (imitate / import / cite / avoid). Consulted at workflow Step 0 and when starting a rung. Keeps the learnings actionable instead of rediscovered. |
 | `docs/SORRY_TRACKER.md` | Tracks every open `sorry` in the Lean codebase — what it's pending on, what unblocks it, and its priority. Prevents `sorry`s from being forgotten or filled in wrong. **Update when adding/resolving a `sorry`.** |
 | `docs/UPSTREAM_TRACKING.md` | Tracking the active Mathlib complexity efforts (currently #1–#8) |
 | `docs/VALIDATION_SUITE.md` | Validation suite requirements — must-prove lemmas, must-refute lemmas, smoke tests, the typed → validated → frozen status ladder, red-team pass, and CI staging rules. **Read before claiming any definition is "frozen" or "validated."** |
@@ -110,6 +111,7 @@ Do not commit to `main` and do not push to `main` from the same session that aut
 ## Conventions
 
 - **Decision log:** Append-only; format `### DEC-0XX` with Date, Status, Scope, Decision, Rationale
+- **Playbook first:** Before starting a rung or rendering a statement (workflow Step 0), consult `docs/PLAYBOOK.md` for the prior groundwork that applies — import / imitate / cite / avoid. When the groundwork moves, update the playbook row in the same commit that changes the plan.
 - **Namespace:** Project-specific declarations live under `PleaNP.*`, not `Complexity.*` (that namespace is contested upstream — see `docs/UPSTREAM_TRACKING.md`)
 - **Mathlib style:** All Lean code follows Mathlib naming and style conventions
 - **Gate discipline:** No proof search runs against a statement that hasn't passed the fidelity gates (see `docs/ARCHITECTURE.md`)
