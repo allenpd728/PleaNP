@@ -1,6 +1,8 @@
 import PleaNP.Basic
 import PleaNP.Computability.Oracle
 import PleaNP.Computability.OracleComplexity
+import PleaNP.Computability.OracleSmoke
+import PleaNP.Computability.OracleUpstreamP
 import PleaNP.Barriers.Basic
 import PleaNP.Barriers.Relativization
 import PleaNP.Circuits.Basic

@@ -76,7 +76,7 @@ Per Relativization.md §3:
 theorem exists_equalizing_oracle :
     ∃ (A : Oracle QueryType),
       Computable (α := QueryType) A ∧
-      P_A (α := InputType) A = NP_A (α := InputType) A := by
+      P_A (alpha := InputType) A = NP_A (alpha := InputType) A := by
   sorry
 
 /-!
@@ -97,7 +97,7 @@ set extensional inequality.
 theorem exists_separating_oracle :
     ∃ (B : Oracle QueryType),
       Computable (α := QueryType) B ∧
-      P_A (α := InputType) B ≠ NP_A (α := InputType) B := by
+      P_A (alpha := InputType) B ≠ NP_A (alpha := InputType) B := by
   sorry
 
 /-!
