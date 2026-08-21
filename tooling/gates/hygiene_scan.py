@@ -54,16 +54,77 @@ class Finding:
 
 
 def _strip_comments(src: str) -> str:
-    """Remove block comments /- ... -/ (which can span lines and wrap tokens)
-    and line comments -- so tokens inside comments aren't flagged.
+    """Remove line comments (-- ...) and *nested* block comments (/- ... -/,
+    including /-! ... -/ docstrings) so tokens inside comments are not flagged,
+    while preserving line structure (a comment is blanked in place, never
+    deleted -- reported line numbers stay correct).
 
-    Lean block comments nest; a non-greedy single-level strip is a reasonable
-    first cut for a hygiene scanner (Tier 1 is heuristic by design)."""
-    # Block comments (non-nested strip; nested is rare in practice for hygiene)
-    src = re.sub(r"/-.*? -/", "", src, flags=re.DOTALL)
-    # Line comments
-    src = re.sub(r"--.*?$", "", src, flags=re.MULTILINE)
-    return src
+    Two prior bugs this fixes:
+
+    1. The old regex `/-.*? -/` stopped at the first `-/` ANYWHERE in the
+       file, including one inside a string literal inside a docstring (e.g. a
+       docstring that quotes `none`). Everything after that early `-/` was
+       silently deleted, so real sorries in the tail of the file were never
+       scanned -- a false NEGATIVE on Gate 6's core check.
+    2. String literals (e.g. `"-/"` or a quoted `--`) could start or end a
+       comment match, corrupting the strip.
+
+    The scanner is now a small character-level state machine that tracks
+    strings, line comments, and nested block comments with a depth counter.
+    It is still Tier 1 / heuristic (it does not tokenize Lean), but it no
+    longer deletes code wholesale.
+    """
+    out: list[str] = []
+    i, n = 0, len(src)
+    depth = 0          # block-comment nesting depth
+    in_str = False     # inside a " ... " string literal
+    in_line = False    # inside a -- line comment
+    while i < n:
+        c = src[i]
+        if in_line:
+            if c == "\n":
+                in_line = False
+                out.append(c)
+            else:
+                out.append(" ")
+            i += 1
+        elif in_str:
+            out.append(c)
+            if c == "\\":
+                # escaped char inside string
+                if i + 1 < n:
+                    out.append(src[i + 1])
+                i += 2
+            elif c == "\"":
+                in_str = False
+                i += 1
+            else:
+                i += 1
+        elif depth > 0:
+            if src.startswith("/-", i):
+                depth += 1
+                i += 2
+            elif src.startswith("-/", i):
+                depth -= 1
+                i += 2
+            else:
+                out.append("\n" if c == "\n" else " ")
+                i += 1
+        else:
+            if src.startswith("/-", i):
+                depth = 1
+                i += 2
+            elif src.startswith("--", i):
+                in_line = True
+                i += 2
+            elif c == "\"":
+                in_str = True
+                out.append(c)
+                i += 1
+            else:
+                out.append(c)
+                i += 1
+    return "".join(out)
 
 
 def _find_token_lines(src: str, token: str) -> list[tuple[int, int, str]]:
