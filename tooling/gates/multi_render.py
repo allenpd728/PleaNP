@@ -123,14 +123,30 @@ def mine(slug: str) -> int:
     matrix = json.loads((ws / "matrix.json").read_text(encoding="utf-8"))
     informal = (ws / "informal.md").read_text(encoding="utf-8").split("> ", 1)[-1].strip()
     mined = 0
+    # Map a rendering id to a plain-words tag (equalizing vs separating) so
+    # the human question is boolean-style and self-describing.
+    def _tag(rid: str) -> str:
+        try:
+            rd = json.loads((ws / "renderings" / f"{rid}.json").read_text(encoding="utf-8"))
+        except Exception:
+            return f"rendering {rid}"
+        thm = str(rd.get("theorem", ""))
+        if "equaliz" in thm:
+            return f"rendering {rid} (says a box makes the two classes EQUAL)"
+        if "separat" in thm or rid.upper() in ("B", "D"):
+            return f"rendering {rid} (says a box makes the two classes DIFFERENT)"
+        return f"rendering {rid}"
+
     for pair in matrix["pairs"]:
         if pair["equivalent"]:
             continue
-        # A disagreement -> one human-mine review point.
-        q = (f"Two independent renderings of the claim '{slug}' are NOT "
-             f"machine-verified equivalent (rendering {pair['a']} vs "
-             f"{pair['b']}). They disagree on the shape. Which matches your "
-             f"intention — or is the informal claim ambiguous?")
+        q = (f"Two AI-written versions of the claim disagree. "
+             f"Version 1: {_tag(pair['a'])}. "
+             f"Version 2: {_tag(pair['b'])}. "
+             f"These can both be wanted — a project can want BOTH an equalizing "
+             f"box and a separating box. Reply `confirm` if both facts look "
+             f"right and nothing unexpected is claimed. Reply `flag <reason>` "
+             f"if one version says something that should NOT be intended.")
         rc = review_inbox.add([
             "kind=semantic-review",
             f"run=multi-rendering-{slug}",
@@ -139,7 +155,8 @@ def mine(slug: str) -> int:
             f"claim={slug} (Gate 3 disagreement)",
             f"module={pair['a']},{pair['b']}",
             f"decl={pair['a']},{pair['b']}",
-            f"machine_summary=Gate 3 multi-rendering: renderings {pair['a']} and {pair['b']} disagree",
+            f"machine_summary=Two renderings not machine-verified equivalent: "
+            f"{_tag(pair['a'])} vs {_tag(pair['b'])}",
             f"informal={informal}",
             f"question={q}",
             "expected=yes",
