@@ -77,20 +77,20 @@ jobs:
               continue
             fi
             BODY="(inbox id: ${f%.yaml})
-**One question to review (Numberphile level):**
+          **One question to review (Numberphile level):**
 
-**$q**
+          **$q**
 
-- **claim:** ${claim}
-- **machine summary (from Lean):** ${sum}
-- **informal (what we wanted):** ${info}
-- **decl:** \`${decl}\`
-- **expected answer:** ${exp}
+          - **claim:** ${claim}
+          - **machine summary (from Lean):** ${sum}
+          - **informal (what we wanted):** ${info}
+          - **decl:** \`${decl}\`
+          - **expected answer:** ${exp}
 
----
-To answer, comment on this issue:
-- \`confirm\` — the machine summary matches my intention
-- \`flag <reason>\` — it does not; the claim reopens (reason recorded)"
+          ---
+          To answer, comment on this issue:
+          - \`confirm\` — the machine summary matches my intention
+          - \`flag <reason>\` — it does not; the claim reopens (reason recorded)"
             gh issue create --repo "$REPO" --title "${claim} — review" \
               --label "review:pending" --body "$BODY"
           done
