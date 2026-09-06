@@ -247,7 +247,7 @@ Rationale: the read-back (Layer 2) still asks the owner to compare two English
 sentences and spot subtle differences (quantifier order, direction, bounds) — a
 high bar for someone with intro math/CS who does not write proofs. The probe
 checklist turns each claim into 3–5 tiny, independent, single-choice probes
-(quantifier/direction/bound/existence) at Numberphile/Computerphile level; one
+(quantifier/direction/bound/existence) at intro-level (plain-language) level; one
 wrong answer BLOCKS the claim and names the specific probe. Tool:
 tooling/gates/probe_check.py (specs in tooling/gates/specs/, unit-tested). The
 owner is NEVER the tiebreaker on ambiguity — machines/agents absorb it; the
@@ -266,7 +266,7 @@ wish-list. Doc: docs/STATEMENTS/HUMAN_REVIEW_LAYERS.md.
 
 **Decision:** Surface the irreducible human semantic confirmation through a
 review inbox (reviews/ + tooling/reviews/review_inbox.py + docs/REVIEW_INBOX.md):
-one claim = one review point = ONE Numberphile-level yes/no question. Agents
+one claim = one review point = ONE plain-language yes/no question. Agents
 FILE points and CONTINUE — never blocking on the human (inbox, not gate). The
 human reads a single generated reviews/INBOX.md (batched, oldest-first, merged
 across all parallel agents) and answers with confirm/flag. A flag reopens the

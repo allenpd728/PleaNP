@@ -29,7 +29,7 @@ is the whole interaction.
 
 ## The one idea
 
-A **review point** is a single claim + a single Numberphile-level question.
+A **review point** is a single claim + a single plain-language question.
 Agents file review points **and keep working** — they never wait for you.
 Your answers land asynchronously; a `flag` re-opens a claim *retrospectively*
 (matching how the repo already reviews `dev` retrospectively). **Nothing
@@ -59,7 +59,7 @@ stalls.** This is the "inbox, not a gate" model.
 - run: `20260906-1530-a1b2`  agent: agent-A
 ```
 
-You only ever answer the **bold QUESTION** — one fact, Numberphile level.
+You only ever answer the **bold QUESTION** — one fact, intro-level level.
 The "machine summary" is generated from the Lean itself (statement_lint), so
 the question is asking *you* to confirm the machine's reading matches your
 intention — the irreducible last hop.

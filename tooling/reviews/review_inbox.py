@@ -3,7 +3,7 @@
 
 Design (docs/REVIEW_INBOX.md): the human confirmation at the irreducible
 semantic hop must NOT block multi-agent work. Agents write a review point
-(one Numberphile-level yes/no question per claim) and CONTINUE — they never
+(one plain-language yes/no question per claim) and CONTINUE — they never
 wait. The human reads a single generated INBOX (batched, oldest-first) and
 answers whenever convenient. Flagged points re-open the claim
 retrospectively (matching the existing retrospective-on-dev model); nothing
@@ -59,7 +59,7 @@ _POINT_SCHEMA = {
     "decl",            # fully-qualified declaration name
     "machine_summary", # English shape summary (from statement_lint / read-back)
     "informal",        # the step-0 informal claim
-    "question",        # ONE Numberphile-level yes/no question for the human
+    "question",        # ONE plain-language yes/no question for the human
     "expected",        # the answer the agent asserts ("yes" or "no")
     "refs",            # optional; commit hash / issue link
     "reason",          # optional; set only when flagged

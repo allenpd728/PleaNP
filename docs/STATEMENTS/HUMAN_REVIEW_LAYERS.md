@@ -1,7 +1,7 @@
 # Human semantic review for a non-proof-writing reviewer
 
 **Audience:** the project owner — intro-level math and CS, a fan of
-Numberphile and Computerphile, comfortable with ideas but not with writing
+intro-level and intro-level, comfortable with ideas but not with writing
 Lean (or writing proofs at all). **Purpose:** this is the map of *how you*
 approve the *meaning* of formal claims, without learning Lean or proof
 craft.
@@ -27,7 +27,7 @@ reasoning:
 3. So we add a **third layer** that removes the "compare two sentences"
    requirement entirely. Instead of judging prose, you answer a **checklist
    of tiny, independent, concrete probes** — each one the kind of fact a
-   Numberphile video makes obvious. A claim is approved only when *every*
+   intro-level video makes obvious. A claim is approved only when *every*
    probe matches. You are never asked to weigh subtle prose; you are asked
    "is this one fact true?" — and a single wrong answer means the claim is
    wrong.
@@ -93,7 +93,7 @@ against the claim's *expected* values:
 
 That single message is the whole contract: you only had to know ONE fact —
 "P^A ⊆ NP^A is a *for-every-oracle* claim" — and if you got it wrong, the
-claim does not get approved. This is exactly the Numberphile/Computerphile
+claim does not get approved. This is exactly the intro-level (plain-language)
 skill: understanding one crisp idea at a time.
 
 ---
@@ -103,13 +103,13 @@ skill: understanding one crisp idea at a time.
 Everything outside this short list is the machines' job; you never need more:
 
 - **there exists vs for every** — "we can pick one" vs "it must work for
-  all." (Computerphile: ∃ vs ∀.)
+  all." (intro-level: ∃ vs ∀.)
 - **subset/containment direction** — "everything in P is in NP" (one way) vs
-  "P equals NP" (both ways). (Numberphile: P vs NP is about whether the
+  "P equals NP" (both ways). (intro-level: P vs NP is about whether the
   direction reverses too.)
 - **at most vs exactly** — a ceiling vs a strict requirement.
 - **polynomial time** — "time bounded by a polynomial in the input size."
-  You already know this from Computerphile; nothing deeper.
+  You already know this from intro-level; nothing deeper.
 - **oracle** — "a magic black box that answers questions in one step." The
   whole relativization barrier is built on this idea, and you have the
   intuition from the barrier videos.

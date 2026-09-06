@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Unit tests for the Gate 3 churn driver (churn.py) — stdlib only.
+"""Unit tests for the Gate 3 multi_render driver (multi_render.py) — stdlib only.
 
-Uses a temp CHURN root so tests never touch the real churn/ tree, and stubs
+Uses a temp CHURN root so tests never touch the real multi_render/ tree, and stubs
 dual_render.check_equivalence so no Lean is needed. Tests the pipeline:
 init -> render -> check (matrix) -> mine (review points).
 
-Run:  python3 tooling/gates/tests/test_churn.py
+Run:  python3 tooling/gates/tests/test_multi_render.py
 """
 from __future__ import annotations
 
@@ -16,14 +16,14 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import churn  # noqa: E402
+import multi_render  # noqa: E402
 
 
-class ChurnTest(unittest.TestCase):
+class multi_renderTest(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
-        churn.CHURN = Path(self._tmp.name) / "churn"
-        # Point review_inbox at a temp tree too (churn.mine calls it).
+        multi_render.CHURN = Path(self._tmp.name) / "multi_render"
+        # Point review_inbox at a temp tree too (multi_render.mine calls it).
         import review_inbox
         self._rroot = Path(self._tmp.name) / "reviews"
         review_inbox.REVIEWS = self._rroot
@@ -38,50 +38,50 @@ class ChurnTest(unittest.TestCase):
         self._tmp.cleanup()
 
     def test_init_creates_workspace(self):
-        self.assertEqual(churn.init("demo", "some claim"), 0)
-        ws = churn._ws("demo")
+        self.assertEqual(multi_render.init("demo", "some claim"), 0)
+        ws = multi_render._ws("demo")
         self.assertTrue((ws / "informal.md").exists())
         self.assertTrue((ws / "renderings").is_dir())
 
     def test_render_registers(self):
-        churn.init("demo", "c")
-        self.assertEqual(churn.render("demo", "r1", "M", "T"), 0)
-        self.assertEqual(len(list(churn._ws("demo").glob("renderings/*.json"))), 1)
+        multi_render.init("demo", "c")
+        self.assertEqual(multi_render.render("demo", "r1", "M", "T"), 0)
+        self.assertEqual(len(list(multi_render._ws("demo").glob("renderings/*.json"))), 1)
 
     def test_render_requires_init(self):
-        self.assertEqual(churn.render("nope", "r1", "M", "T"), 1)
+        self.assertEqual(multi_render.render("nope", "r1", "M", "T"), 1)
 
     def test_check_requires_two(self):
-        churn.init("demo", "c")
-        churn.render("demo", "r1", "M", "T")
-        self.assertEqual(churn.check("demo", Path(".")), 1)
+        multi_render.init("demo", "c")
+        multi_render.render("demo", "r1", "M", "T")
+        self.assertEqual(multi_render.check("demo", Path(".")), 1)
 
     def test_check_builds_matrix_with_stubbed_equiv(self):
-        churn.init("demo", "c")
-        churn.render("demo", "r1", "MA", "TA")
-        churn.render("demo", "r2", "MB", "TB")
+        multi_render.init("demo", "c")
+        multi_render.render("demo", "r1", "MA", "TA")
+        multi_render.render("demo", "r2", "MB", "TB")
         calls = []
         def fake(lean_dir, a_mod, a_t, b_mod, b_t):
             calls.append((a_t, b_t))
             return (True, "ok") if a_t == "TA" and b_t == "TB" else (False, "nope")
-        orig = churn.dual_render.check_equivalence
-        churn.dual_render.check_equivalence = fake
+        orig = multi_render.dual_render.check_equivalence
+        multi_render.dual_render.check_equivalence = fake
         try:
-            self.assertEqual(churn.check("demo", Path(".")), 0)
+            self.assertEqual(multi_render.check("demo", Path(".")), 0)
         finally:
-            churn.dual_render.check_equivalence = orig
-        matrix = json.loads((churn._ws("demo") / "matrix.json").read_text())
+            multi_render.dual_render.check_equivalence = orig
+        matrix = json.loads((multi_render._ws("demo") / "matrix.json").read_text())
         self.assertEqual(matrix["pairs"][0]["equivalent"], True)
         self.assertEqual(len(calls), 1)
 
     def test_mine_emits_review_point_per_disagreement(self):
-        churn.init("demo", "the informal claim")
-        churn.render("demo", "r1", "MA", "TA")
-        churn.render("demo", "r2", "MB", "TB")
-        churn.dual_render.check_equivalence = lambda ld, a, b, c, d: (False, "disagree")
-        self.assertEqual(churn.check("demo", Path(".")), 0)
-        self.assertEqual(churn.mine("demo"), 0)
-        pending = list(churn.review_inbox.PENDING.glob("*.yaml"))
+        multi_render.init("demo", "the informal claim")
+        multi_render.render("demo", "r1", "MA", "TA")
+        multi_render.render("demo", "r2", "MB", "TB")
+        multi_render.dual_render.check_equivalence = lambda ld, a, b, c, d: (False, "disagree")
+        self.assertEqual(multi_render.check("demo", Path(".")), 0)
+        self.assertEqual(multi_render.mine("demo"), 0)
+        pending = list(multi_render.review_inbox.PENDING.glob("*.yaml"))
         self.assertEqual(len(pending), 1)
         text = pending[0].read_text()
         self.assertIn("disagree", text.lower().split("machine_summary:")[1].split("\n")[0].lower())
