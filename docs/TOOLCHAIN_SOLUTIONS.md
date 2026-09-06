@@ -1,6 +1,6 @@
 # Persistent & cloud toolchain options for Lean 4 + Mathlib
 
-**Status:** 2026-09-06 — Plans A (devcontainer) and B (CI oracle) implemented (see .devcontainer/ and .github/workflows/ci.yml; DEC-013 Active). Plans C and D remain reference options. This doc records the research; the landing is in the referenced files.
+**Status:** 2026-09-06 — Plans A (devcontainer) and B (CI oracle) implemented (see .devcontainer/ and .github/workflows/ci.yml; DEC-013 Active). Activation is blocked on an account-level GitHub billing lock — owner checklist: docs/ACTIVATION_CHECKLIST.md. Plans C and D remain reference options.
 **Audience:** anyone who needs a Lean 4 + Mathlib environment for PleaNP without re-provisioning a toolchain from scratch each session (the pain this solves: `elan install` + Mathlib cache download + full build every new workspace).
 
 The problem statement: *"What could be a free and more persistent way to have access to the Lean toolchain and mathlib corpus without having to connect to the local M4 system or build in the temporary sandbox from scratch every time work is done on the repo?"*
