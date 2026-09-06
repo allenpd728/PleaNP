@@ -22,7 +22,7 @@ PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** o
 | **Gate** | A validation step in the integrity pipeline (see `docs/ARCHITECTURE.md`) |
 | **Rung** | A level in the development ladder (see `docs/ROADMAP.md`) |
 
-## The rung ladder (summary)
+##The rung ladder (summary)
 
 | Rung | Goal | Status |
 |---|---|---|
@@ -30,10 +30,15 @@ PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** o
 | 2 | Computational model + canonical P/NP (upstream-tracked) | Blocked on upstream |
 | 3 | Formalize the barrier theorems | Not started |
 | 4 | Formalize lower-bound techniques + their failures | Not started |
-| 5 | Graded benchmark | Not started |
-| 6 | AI proof-search loop (retrieval + gates) | Not started |
-| 7 | Open problems below P vs NP | Not started |
-| 8 | Novel barrier-evasion arguments | Not started |
+| 5 | **Barrier Calculus** (Relativizing typeclass + `#barrier_check`; unit-test vs. THH) | In progress (prototype in `lean/PleaNP/Calculus/`) |
+| 6 | **Anchor Object** (P/NP model-equivalence anchor + Levin-search `P_eq_NP_iff`) | Blocked on upstream (gap lemma formulable once one model lands) |
+| 7 | Graded benchmark | Not started |
+| 8 | **Lower-Bound Compiler**(Williams transfer as a Lean elaborator) | Not started (placeholder note in ROADMAP) |
+| 9 | AI proof-search loop (retrieval + gates) | Not started |
+| 10 | Open problems below P vs NP | Not started |
+| 11 | Novel barrier-evasion arguments | Not started |
+
+Scope note (2026-09-06, DEC-012): three components added — Barrier Calculus (Rung 5), Anchor Object (Rung 6), Lower-Bound Compiler (Rung 8) — in that priority order. Core bet: *negative-space specification* — formalize the constraints a proof must satisfy, not the proof itself;, `#barrier_check` is the demand-pull artifact. Update `docs/ROADMAP.md` for the full rung details.
 
 ## File map
 
@@ -65,9 +70,11 @@ PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** o
 | `docs/STATEMENTS/ValidationSuite.spec.md` | **DRAFT (track A)** — definitional-layer integrity: the validation suite (must-prove / must-refute / smoke tests), the typed → validated → frozen status ladder, and the red-team pass. Closes the gap the 2026-08-19 review exposed (definitions that compile but constrain nothing). Reconcile with any track-B draft before adopting into the template. |
 | `docs/STATEMENTS/Oracle.v4-repair.spec.md` | **DRAFT repair work order (track A)** — v3→v4 reachability wiring for `Oracle.lean`/`OracleComplexity.lean`. v3 headers claim the three flaws are fixed but the bodies are still vacuous (Flaw A: `DecidesInTime` no `EvalsToInTime`; Flaw C: `AcceptsInTime` vacuous + applied to `x` not `(x,y)`; plus a duplicate-binder compile bug). Has exact Mathlib v4.31.0 API signatures + code templates. **Read before the v4 repair.** |
 | `docs/decisions/LOG.md` | Chronological decision log (DEC-0XX) |
+| `docs/TOOLCHAIN_SOLUTIONS.md` | Persistent & cloud toolchain options for Lean 4 + Mathlib (devcontainer/Codespaces/Gitpod, CI-as-build-oracle, lean4web playgrounds, cache-based compartmentalization). The "how to get a warm Lean env without the M4 box or a from-scratch sandbox build" reference. Recommendation for a future DEC — not yet a decision. |
 | `lean/PleaNP/Computability/Oracle.lean` | **Oracle machine (v3):** oracle type (`Oracle Q := Q → Bool`, total by construction), `Cfg`/`Machine` (FinTM2 + oracle + query/yes/no labels), `step` (branches on query label, consults oracle, routes to yes/no label — load-bearing), `DecidesInTime` (halts + output encodes χ_L), `outputEncodesChi`. **v3 status: typed but not validated** — `EvalsToInTime` reachability not yet wired (see `Oracle.v4-repair.spec.md`). |
 | `lean/PleaNP/Computability/OracleComplexity.lean` | **P^A / NP^A complexity classes (v3):** `P_A` (composes `DecidesInTime`), `NP_A` (uses per-input `AcceptsInTime` — Flaw C fix), `P_A ⊆ NP^A` (sorry'd self-check), `P_empty_eq_upstream_P_class` (sorry'd, tracks upstream P). **v3 status: typed but not validated.** |
 | `lean/PleaNP/Barriers/Relativization.lean` | **BGS statement (rendered):** `exists_equalizing_oracle` (clause a) and `exists_separating_oracle` (clause b), both `sorry`'d. Quantifies over `P_A`/`NP_A` from `OracleComplexity.lean`. **Not frozen** — depends on unvalidated class definitions. |
+| `lean/PleaNP/Calculus/BarrierCalculus.lean` | **Rung 5 (new,in progress):** `Relativizing` prop-carrying typeclass + composition/application/quantifier propagation instances + `#barrier_check` elaborator (walks dependency closure; emits `DEAD: this proof relativizes` if every leaf relativizesand the conclusion separates/collapses `P`/`NP`, else `Inconclusive`) + time-hierarchy-theorem unit test(THH is relativizing — must emit DEAD). Meta-level: does NOT depend on upstream P/NP substrate. |
 | `tooling/gates/hygiene_scan.py` | Gate 6 Tier 1: scans for `sorry`/`admit`/`axiom` in Lean source. `--prove-stage` treats every `sorry` as a violation (for freeze PRs); without it, `sorry`s are tracked warnings. |
 | `tooling/gates/vacuity_scan.py` | Gate 5 Tier 1: scans for `True := by trivial`, `↔ True`, `:= none` patterns (dishonest placeholders). Catches top-level vacuity but not deep vacuity (a `True` buried inside `∃` — see DEC-011). |
 | `tooling/gates/model_consistency_scan.py` | Gate 2 Tier 1: scans for local redefinitions of complexity-class names or forbidden namespaces (`Complexity.*`). |
@@ -99,7 +106,8 @@ git -c user.name="openhands" -c user.email="openhands@all-hands.dev" commit -m "
 - **Decision log:** Append-only; format `### DEC-0XX` with Date, Status, Scope, Decision, Rationale
 - **Namespace:** Project-specific declarations live under `PleaNP.*`, not `Complexity.*` (that namespace is contested upstream — see `docs/UPSTREAM_TRACKING.md`)
 - **Mathlib style:** All Lean code follows Mathlib naming and style conventions
-- **Gate discipline:** No proof search runs against a statement that hasn't passed the fidelity gates (see `docs/ARCHITECTURE.md`)
+- **Gate discipline:** No proof search runs against a statement that hasn't passed the fidelity gates(see `docs/ARCHITECTURE.md`)
+- **Barrier-calculus discipline (Rung 5):** Any theorem claiming a P-vs-NP-shaped conclusion (`P = NP`, `P ≠ NP`, or separation of oracle-relative classes) should be triaged with `#barrier_check` before being cited as evidence — if it emits **DEAD: this proof relativizes**, it cannot resolve P vs NP(per BGS). If it emits "Inconclusive," non-relativizing potential survives. The `Relativizing` typeclass is meta-level: instances state "uniform in the oracle," and propagation instances carry it through composition/quantification automatically. New definitions that *should* relativize get explicit `Relativizing` instances; new definitions that can't are the interesting case — leave them instance-free so `#barrier_check` reports Inconclusive. **Do not hand-annotate a whole proof as `Relativizing`** — that would bypass the dependency-walk the elaborator performs. |
 - **Lethality scan (Gate 5 Tier 1b):** Before claiming a definition is "fixed" or "load-bearing," run `python3 tooling/gates/binder_usage_scan.py --allow-unreferenced '^(exists_equalizing_oracle|exists_separating_oracle)$' lean/PleaNP` and require 0 violations. It catches the three 2026-08-19 flaw shapes: unused definition parameters, discarded `let _x := …` bindings, unreferenced declarations, and quantifier witnesses that don't constrain their bodies. Every parameter, binder, and declaration must be load-bearing — verified in the *body*, not asserted in the docstring.
 - **Sorry tracking:** Every `sorry` in `lean/PleaNP/` must be recorded in `docs/SORRY_TRACKER.md` — what it's pending on, what unblocks it, and its priority. When you add a `sorry` (new placeholder, new pending proof), add a row. When you resolve one, mark it "Resolved" with the commit. When you push changes that add/remove `sorry`s, update the tracker in the same commit. The hygiene scanner (`tooling/gates/hygiene_scan.py --prove-stage`) catches `sorry`s mechanically; the tracker documents what each one *means* so none are forgotten or filled in wrong (the exact failure mode `docs/FAILURE_AUDIT.md` Pattern A warns about). A `sorry` with no tracker entry is a process violation — add it before pushing.
 

@@ -23,8 +23,11 @@ These barriers are the map of where P vs NP proof attempts fail. Encoding them f
 ### In scope
 
 - A formalized **barrier library**: relativization, natural proofs, algebrization.
-- Supporting **circuit complexity** (AC⁰, TC⁰, NC, switching lemma, monotone lower bounds) and **proof complexity** (resolution, Frege) needed to state and apply the barriers.
-- An **integrity pipeline** (the "gates") that separates statement formalization from proof search, to structurally prevent the most common failure mode of claimed P vs NP formalizations.
+- A **barrier calculus** (Rung 5, the crown jewel): a `Relativizing` typeclass that propagates through the dependency graph of any lemma built from relativizing pieces,plus a `#barrier_check` elaborator that walks a theorem's dependency closure and reports **"DEAD: this proof relativizes"** or **"Inconclusive."** — turning "does this proof relativize?" from per-paper human judgment into a typechecking question. Unit-tested against the time hierarchy theorem(which relativizes).
+- An **anchor object** (Rung 6):machine-checked P/NP model-equivalence across whichever upstream formalizations land,plus Levin universal searchas an explicit `#eval`-able term behind `P_eq_NP_iff`.The search⟶decision gap(needs self-reducibility + a Hutter-style wrapper)is logged as a scoped open lemma,not a blocker(see DEC-012).
+- A **lower-bound compiler** (Rung 8):Williams' transfer theorem(nontrivial CircuitSAT algorithm for class C ⟹ NEXP ⊄ C)as a Lean elaborator— feed it a verified algorithm + runtime bound,it emits a verified circuit lower bound. Under `PleaNP.Circuits`.
+- Supporting **circuit complexity** (AC⁰,, TC⁰,, NC,, switching lemma,, monotone lower bounds)and **proof complexity** (resolution,, Frege) needed to state and apply the barriers.
+- An **integrity pipeline** (the "gates")that separates statement formalization from proof search,to structurally prevent the most common failure mode of claimed P vs NP formalizations.
 
 ### Out of scope (deliberately)
 
@@ -39,6 +42,7 @@ PleaNP/
 │   ├── PleaNP/
 │   │   ├── Barriers/    # Relativization, NaturalProofs, Algebrization
 │   │   ├── Circuits/    # AC0, TC0, NC, switching lemma, monotone bounds
+│   │   ├── Calculus/    # Rung 5: Relativizing typeclass + #barrier_check
 │   │   └── ProofComplexity/
 │   └── tests/
 ├── tooling/             # AI + integrity layer (Python)
@@ -53,6 +57,10 @@ The `lean/` tree is a clean lake project with no Python dependencies — it can 
 ## Current status
 
 **Rung 1 — Gap audit.** See `docs/GAP_AUDIT.md` for the domain-by-domain analysis of Mathlib's current complexity coverage versus what the barrier theorems require.
+
+
+
+**Rung 5 — Barrier Calculus (in progress).** The `Relativizing` typeclass + `#barrier_check` elaborator prototype lives in `lean/PleaNP/Calculus/BarrierCalculus.lean`,with the time-hierarchy-theorem unit test. It is meta-level — it does not wait on upstream P/NP. The remaining new rungs(6 Anchor Object, 8 Lower-Bound Compiler)are specced in `docs/ROADMAP.md` (DEC-012.
 
 See `docs/ROADMAP.md` for the full rung ladder.
 
