@@ -36,7 +36,7 @@ on:
         required: false
         type: string
       question:
-        description: "The ONE Numberphile-level question for the human"
+        description: "The ONE plain-language question for the human"
         required: true
         type: string
       expected:
@@ -77,7 +77,7 @@ jobs:
               continue
             fi
             BODY="(inbox id: ${f%.yaml})
-          **One question to review (Numberphile level):**
+          **One question to review (intro-level level):**
 
           **$q**
 
@@ -111,7 +111,7 @@ jobs:
           DECL="${{ github.event.inputs.decl }}"
           EXP="${{ github.event.inputs.expected }}"
           BODY=$(cat <<'EOF'
-          **One question to review (Numberphile level):**
+          **One question to review (intro-level level):**
 
           **$Q**
 

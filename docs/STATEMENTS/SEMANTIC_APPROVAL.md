@@ -4,7 +4,7 @@
 > `docs/STATEMENTS/HUMAN_REVIEW_LAYERS.md`. It adds the third layer —
 > the **probe checklist** (`tooling/gates/probe_check.py`) — which replaces
 > "compare two English sentences" with 3–5 tiny single-choice probes you can
-> answer with Numberphile/Computerphile-level intuition. The process here
+> answer with intro-level (plain-language)-level intuition. The process here
 > (Layers 1–2 + gates) is the full pipeline; HUMAN_REVIEW_LAYERS.md is the
 > operator's manual for the human in it.
 
@@ -39,18 +39,18 @@ that must agree, plus concrete examples**.
 
 ---
 
-## The Gate-3 "AI churn → human mine" model (2026-09-06)
+## The Gate-3 "AI multi-rendering → human mine" model (2026-09-06)
 
 For target theorems (especially the barriers), the fastest path to a *frozen,
-independently-verified* statement is machine churn + human mining:
+independently-verified* statement is machine multi-rendering + human mining:
 
-1. **AI churn:** N agents/LLM passes each write an *independent* Lean rendering
-   of the same informal claim (`tooling/gates/churn.py render`).
+1. **AI multi-rendering:** N agents/LLM passes each write an *independent* Lean rendering
+   of the same informal claim (`tooling/gates/multi_render.py render`).
 2. **Machine equivalence:** pairwise `dual_render.check` — renderings that
    machine-prove the IFF cluster together.
 3. **Human mine:** every pair that is NOT machine-verified equivalent becomes a
-   review point (`churn mine` → review inbox → GitHub issue). The human mines
-   it: one Numberphile-level question, `confirm` or `flag <reason>`.
+   review point (`multi-rendering mine` → review inbox → GitHub issue). The human mines
+   it: one plain-language question, `confirm` or `flag <reason>`.
 4. **Outcome:** confirmed agreements freeze the statement; flagged
    disagreements reveal where the claim's *shape* is ambiguous and send an
    agent back to revise — incrementally mapping the shape of all three

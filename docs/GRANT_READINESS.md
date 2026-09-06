@@ -116,19 +116,19 @@ is dormant).
 
 ---
 
-## The Gate-3 "AI churn → human mine" strategy (how we get there)
+## The Gate-3 "AI multi-rendering → human mine" strategy (how we get there)
 
 The path that makes Tier-1 items 1 and 4 tractable *and* creates the external
-validation (Tier-2 item 7) is the **Gate-3 churn loop**:
+validation (Tier-2 item 7) is the **Gate-3 multi-rendering loop**:
 
-1. **AI churn:** for a target theorem, N agents (or N LLM passes) each
+1. **AI multi-rendering:** for a target theorem, N agents (or N LLM passes) each
    produce an *independent* Lean rendering from the informal statement.
    `dual_render.py check` runs pairwise equivalences: renderings that agree
    (machine-proven IFF) cluster; renderings that disagree identify the
    *shape ambiguity* — exactly where a statement can be silently wrong.
 2. **Human mine:** each equivalence verdict and each disagreement pools into
    the review inbox → a GitHub issue. The human (you) mines the issues: each
-   is one Numberphile-level question ("these two renderings disagree on
+   is one plain-language question ("these two renderings disagree on
    whether there is *one* oracle or *all* oracles — which did you intend?").
    Confirmed agreements freeze the statement; flagged disagreements send an
    agent back to revise.
@@ -137,7 +137,7 @@ validation (Tier-2 item 7) is the **Gate-3 churn loop**:
    grant's credibility get caught *before* a reviewer finds them.
 
 This is the concrete bridge from "tooling project" to "fundable formalization
-research": machine-churned renderings + human-mined fixes incrementally map
+research": machine-multi-renderinged renderings + human-mined fixes incrementally map
 the shape of all three barriers.
 
 ---

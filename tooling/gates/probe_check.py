@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Gate 4 (read-back) — Layer 3: the "probe checklist" for a non-proof-writing,
-intro-math/CS human reviewer (Numberphile/Computerphile level).
+intro-math/CS human reviewer (intro-level (plain-language) level).
 
 WHY THIS LAYER EXISTS (docs/STATEMENTS/SEMANTIC_APPROVAL.md):
 
@@ -12,7 +12,7 @@ WHY THIS LAYER EXISTS (docs/STATEMENTS/SEMANTIC_APPROVAL.md):
   Layer 3 (THIS)        - instead of comparing sentences, you answer a fixed
                           checklist of INDEPENDENT, TINY, concrete yes/no
                           probes. Each probe is a small fact you CAN reason
-                          about with intro CS + Numberphile intuition:
+                          about with intro CS + intro-level intuition:
                             * "the always-yes oracle: does the machine accept
                               the input [true]?"
                             * "does the claim say 'there exists an oracle' or
@@ -29,7 +29,7 @@ This tool has two halves:
                   validate the human's answers against the expected values.
 
 The probes are concrete and tiny so a non-proof-writer can reason about them
-like a Numberphile example: small inputs, obvious oracles, one step at a time.
+like a intro-level example: small inputs, obvious oracles, one step at a time.
 
 Usage (from the lean/ dir for --probe; anywhere for --checklist):
 
@@ -78,7 +78,7 @@ PROBE_KINDS = {
     "quantifier": {
         "question": "Does the claim say '{word}'?",
         "answers": ["there exists", "for every"],
-        "explain": ("Numberphile-style: 'there exists an oracle A' means we get "
+        "explain": ("intro-level-style: 'there exists an oracle A' means we get "
                  "to pick a helpful oracle. 'for every oracle A' means it must "
                  "work for ALL oracles, even hostile ones. These are very "
                  "different claims."),
@@ -86,7 +86,7 @@ PROBE_KINDS = {
     "direction": {
         "question": "Which direction does the claim go?",
         "answers": ["A implies B", "B implies A", "A iff B (both ways)"],
-        "explain": ("Computerphile-style: does the claim say 'if it's in P then "
+        "explain": ("intro-level-style: does the claim say 'if it's in P then "
                  "it's in NP' (one way), or 'in P exactly when in NP' (both "
                  "ways)? The direction is the crux."),
     },

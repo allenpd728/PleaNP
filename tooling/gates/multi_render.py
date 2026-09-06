@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Gate 3 churn driver — "AI churn on theorems, humans mine the shape."
+"""Gate 3 multi-rendering driver — "AI produces many renderings; humans mine the shape."
 
-The user's model: let AI (agents / LLM passes) churn out MANY independent Lean
+The model: let AI (agents / LLM passes) produce MANY independent Lean
 renderings of the same informal statement; the machine checks pairwise
 equivalence; the DISAGREEMENTS (where renderings are NOT provably equivalent)
 are the interesting places — they reveal where the statement's shape is
 ambiguous and can be silently wrong. Those disagreements are pooled into the
-review inbox as human-mine points (one Numberphile-level question each), and
+review inbox as human-mine points (one plain-language question each), and
 the human mines them via GitHub issues (comment `confirm` / `flag <reason>`).
 
 Pipeline (per target statement):
-  1. `init`   — create a churn workspace: the informal claim + N slots.
+  1. `init`   — create a multi-rendering workspace: the informal claim + N slots.
   2. `render` — an agent writes its independent rendering (a Lean theorem in a
                 module), registered under a slot id.
   3. `check`  — run pairwise `dual_render.check_equivalence` over all
@@ -19,17 +19,17 @@ Pipeline (per target statement):
                 review point into the review inbox (which the review-issue
                 workflow turns into a GitHub issue for the human).
 
-The churn workspace lives in `churn/<claim-slug>/`:
+The multi-rendering workspace lives in `churn/<claim-slug>/` (dir kept as churn for git stability):
     informal.md        the informal claim (the seed)
     renderings/<id>.lean   each independent rendering
     matrix.json        pairwise equivalence results (machine-verified)
     mined/             review points emitted (one per disagreement)
 
 Usage (from the repo root):
-    python3 tooling/gates/churn.py init <slug> "<informal claim>"
-    python3 tooling/gates/churn.py render <slug> <id> <module> <theorem>
-    python3 tooling/gates/churn.py check <slug> [--lean-dir lean]
-    python3 tooling/gates/churn.py mine <slug>
+    python3 tooling/gates/multi_render.py init <slug> "<informal claim>"
+    python3 tooling/gates/multi_render.py render <slug> <id> <module> <theorem>
+    python3 tooling/gates/multi_render.py check <slug> [--lean-dir lean]
+    python3 tooling/gates/multi_render.py mine <slug>
 
 Exit codes: 0 ok, 1 error, 2 usage.
 """
@@ -65,14 +65,14 @@ def init(slug: str, informal: str) -> int:
         shown = ws.relative_to(ROOT)
     except ValueError:
         shown = ws
-    print(f"churn workspace: {shown}")
+    print(f"multi-rendering workspace: {shown}")
     return 0
 
 
 def render(slug: str, rid: str, module: str, theorem: str) -> int:
     ws = _ws(slug)
     if not ws.exists():
-        print(f"error: no churn workspace for {slug!r} (run init first)", file=sys.stderr)
+        print(f"error: no multi-rendering workspace for {slug!r} (run init first)", file=sys.stderr)
         return 1
     entry = {"id": rid, "module": module, "theorem": theorem,
              "created": _dt.datetime.now(_dt.timezone.utc).isoformat()}
@@ -129,13 +129,13 @@ def mine(slug: str) -> int:
              f"intention — or is the informal claim ambiguous?")
         rc = review_inbox.add([
             "kind=semantic-review",
-            f"run=churn-{slug}",
-            "agent=churn",
+            f"run=multi-rendering-{slug}",
+            "agent=multi-rendering",
             f"created={_dt.datetime.now(_dt.timezone.utc).isoformat()}",
             f"claim={slug} (Gate 3 disagreement)",
             f"module={pair['a']},{pair['b']}",
             f"decl={pair['a']},{pair['b']}",
-            f"machine_summary=Gate 3 churn: renderings {pair['a']} and {pair['b']} disagree",
+            f"machine_summary=Gate 3 multi-rendering: renderings {pair['a']} and {pair['b']} disagree",
             f"informal={informal}",
             f"question={q}",
             "expected=yes",

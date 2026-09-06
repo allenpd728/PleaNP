@@ -8,7 +8,7 @@
       "question": "Over what does the claim range?",
       "choices": ["there exists an oracle", "for every oracle"],
       "expected": "for every oracle",
-      "hint": "Computerphile style: does this have to work for ALL oracles, or just some helpful one?"
+      "hint": "plain-language: does this have to work for ALL oracles, or just some helpful one?"
     },
     {
       "key": "q2",
@@ -16,7 +16,7 @@
       "question": "Which direction does the containment go?",
       "choices": ["P implies NP", "NP implies P", "both ways (equal)"],
       "expected": "P implies NP",
-      "hint": "Numberphile style: 'P is a subset of NP' means one-way — everything in P is in NP, not the reverse."
+      "hint": "plain-language: 'P is a subset of NP' means one-way — everything in P is in NP, not the reverse."
     },
     {
       "key": "q3",
