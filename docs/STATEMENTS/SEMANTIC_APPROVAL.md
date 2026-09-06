@@ -147,8 +147,20 @@ between two translations. Agents must not place those on you.
 
 ## Status
 
-2026-09-06 — process documented. Two enabling gaps to close (tracked as work):
-1. **Gate 3 dual-rendering harness** (two isolated renderings + equivalence
-   check) — partially tooled; the equivalence check is still agent-done.
-2. **Tier-2 axiom check in CI** (#print axioms, assert no sorryAx) —
-   documented manual step; being added to `.github/workflows/ci.yml`.
+2026-09-06 — process documented AND tooled (harness landed). Current state:
+- **Gate 4 harness tooled:** `tooling/gates/readback.py` runs two independent
+  translators (deterministic skeleton + pluggable LLM), requires agreement,
+  blocks on disagreement, never escalates to the human as a choice.
+  `tooling/gates/lean_readback.py` is the deterministic half; unit tests in
+  `tooling/gates/tests/test_readback.py` (stdlib, no secrets) — wired into CI
+  + a no-secret read-back smoke step.
+- **Tier-2 axiom check in CI:** `tooling/gates/axiom_check.py` runs in CI;
+  asserts only Mathlib-standard axioms, no `sorryAx`.
+Remaining gaps (tracked as issues):
+1. **Gate 3 dual-rendering harness** (two isolated renderings + an equivalence
+   check in Lean) — partially tooled; the equivalence check is still
+   agent-done. This is the natural next tool.
+2. **LLM translator integration** — `readback.py` calls an LLM only when
+   `OPENAI_API_KEY`/`ANTHROPIC_API_KEY` is set; wiring a provider into CI
+   requires a secret, which is a maintenance decision (see issue `read-back
+   LLM integration`).
