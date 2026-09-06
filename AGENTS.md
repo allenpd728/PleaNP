@@ -56,6 +56,7 @@ Scope note (2026-09-06, DEC-012): three components added — Barrier Calculus (R
 | `docs/VALIDATION_SUITE.md` | Validation suite requirements — must-prove lemmas, must-refute lemmas, smoke tests, the typed → validated → frozen status ladder, red-team pass, and CI staging rules. **Read before claiming any definition is "frozen" or "validated."** |
 | `docs/STATEMENTS/` | **Frozen, human-verified statement specs (Gate 1 anchors / Gate 4 read-back refs).** One per barrier theorem, plus the oracle-machine design spec. Six-part template, prose-only (no Lean rendering — that's the local agent's job). Start here when beginning Rung 2 (oracle substrate) or Rung 3. |
 | `docs/STATEMENTS/README.md` | Why a non-Lean driver writes the specs; the template; index of the specs |
+| `docs/STATEMENTS/SEMANTIC_APPROVAL.md` | **How the non-Lean-literate owner approves semantics**: two independent read-backs must agree, concrete must-prove/must-refute examples, `#barrier_check` verdicts, gate evidence — never read Lean, never adjudicate conflicting translations. Read before asking the owner to approve any claim. |
 | `docs/STATEMENTS/Oracle.lean.spec.md` | Rung 2 local piece — oracle-machine design spec (totality discipline, Mathlib composition, acceptance criteria). v1 built against TM1 (partial); §4 superseded by the TM2 recompose. |
 | `docs/STATEMENTS/OracleTM2Recompose.spec.md` | Oracle.lean v2 recomposition spec — DEC-010 Option B: recompose against core `TM2ComputableInTime`'s step-counting. The three traps (function→language bridge; oracle query = 1 step in `EvalsToInTime`; `P^∅ = P` compatibility). **Read before recomposing Oracle.lean.** |
 | `docs/STATEMENTS/OracleComplexity.lean.spec.md` | P^A / NP^A complexity-class spec — the layer on top of `Oracle.lean`. The four traps (polynomial-bound encoding; nondeterminism encoding; extensionality; `P^∅ = P` carry-through). Waits on `Oracle.lean` freeze. |
@@ -86,6 +87,7 @@ Scope note (2026-09-06, DEC-012): three components added — Barrier Calculus (R
 | `tooling/gates/model_consistency_scan.py` | Gate 2 Tier 1: scans for local redefinitions of complexity-class names or forbidden namespaces (`Complexity.*`). |
 | `tooling/gates/binder_usage_scan.py` | Gate 7 Tier 1 (lethality scanner): checks that every named parameter, field, and bound variable in a definition is load-bearing (actually used in the body). Catches unused params (Flaw A), dead binders (Flaw C), and unreferenced declarations (Flaw B). **Run before claiming any definition is "fixed" or "load-bearing."** |
 | `tooling/gates/hygiene_axioms.lean` | Gate 6 Tier 2: `#print axioms` check for sorry-smuggled-via-meta (separate from Tier 1 grep). |
+| `tooling/gates/axiom_check.py` | **Gate 6 Tier 2 (CI-wired 2026-09-06):** runs `#print axioms` on the clean-module theorems and fails on any non-standard axiom or `sorryAx` (smuggled sorry via meta-programs). The machine guarantee behind SEMANTIC_APPROVAL. |
 | `tooling/gates/tests/` | Test cases for the gate scanners (case1–case9: placeholder, sorry, axiom, smells, clean, unused-param, dead-decl, vacuous-binder, clean). |
 
 ## Build and test
