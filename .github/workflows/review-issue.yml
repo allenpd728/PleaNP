@@ -66,6 +66,8 @@ jobs:
                      --state open --limit 100 --json title,body 2>/dev/null || echo '[]')
           for f in reviews/pending/*.yaml; do
             [ -e "$f" ] || continue
+            # Inbox id = the unique review-point id (the filename minus .yaml).
+            inbox_id=$(basename "$f" .yaml)
             claim=$(awk -F': ' '/^claim:/{gsub(/"/,"",$2);print $2}' "$f")
             decl=$(awk -F': ' '/^decl:/{gsub(/"/,"",$2);print $2}' "$f")
             q=$(awk -F': ' '/^question:/{gsub(/"/,"",$2);print $2}' "$f")
@@ -74,8 +76,11 @@ jobs:
             exp=$(awk -F': ' '/^expected:/{gsub(/"/,"",$2);print $2}' "$f")
             kind=$(awk -F': ' '/^kind:/{gsub(/"/,"",$2);print $2}' "$f")
             control_of=$(awk -F': ' '/^control_of:/{gsub(/"/,"",$2);print $2}' "$f")
-            if echo "$existing" | grep -q "$decl"; then
-              echo "already filed for $decl; skipping"
+            # Dedupe by inbox id (unique per point), not decl (shared by
+            # mined/churned points — the earlier bug that doubled issues
+            # #7-#16). The issue body carries '(inbox id: <id>)'.
+            if echo "$existing" | grep -q "inbox id: *${inbox_id}"; then
+              echo "already filed for ${inbox_id}; skipping"
               continue
             fi
             BODY="(inbox id: ${f%.yaml})
