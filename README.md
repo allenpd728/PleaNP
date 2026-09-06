@@ -75,7 +75,7 @@ fully GitHub-native in the meantime.
 ## For newcomers
 
 Want the plain-words version — no math background needed?
-Read [`docs/EXPLAINER_PVPNP_NARRATIVE.md`](docs/EXPLAINER_PVPNP_NARRATIVE.md),
+Read [`docs/EXPLAINER_P_VS_NP.md`](docs/EXPLAINER_P_VS_NP.md),
 a beginner-friendly telling of P vs NP and how PleaNP approaches it.
 
 ## Conventions
