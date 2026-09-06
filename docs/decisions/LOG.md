@@ -293,3 +293,35 @@ missing evidence is a process failure, not a flag; never block.
 **Scope note / honest trade-off:** classical choice is a genuine axiom; constructivist reviewers discount existence-on-choice claims. The trade (don't build the weapon vs. existence is classical-conditional) is accepted and documented. Constructive proofs remain welcome where the mathematics is constructive (the gates do not forbid them); they would be highlighted. Reversing to a constructive-only stance would be a major pivot and requires a new DEC.
 
 **Rationale:** matches the mathematics (P vs NP barrier statements are inherently existence-shaped), matches Mathlib's classical posture (DEC-003), is CI-monitored (axiom_check fails on any drift), and — per the owner's strategic point — is the safest stance if the hostile cryptographic outcome occurs.
+
+
+---
+
+### DEC-019
+
+**Date:** 2026-09-06
+**Status:** Active
+**Scope:** Creative-strategy protocol for hard sub-tasks
+
+**Decision:** Adopt a structured creative-protocol (semantic excavation,
+constraint cartography, cross-domain transplantation, synthesis +
+persuasion scaffold, comprehension bridge) as the **idea-generation layer**
+for hard, open-ended sub-tasks (e.g. BGS diagonalization, future novel
+lower bounds, search-loop design). The protocol is documented in
+docs/CREATIVE_PROTOCOL.md. **Governing rule:** novelty without verification
+is crank-adjacent; a protocol output becomes real work only when rendered
+as a Lean statement/proof and passed through the gates (multi-rendering
+churn -> dual_render -> statement_lint -> review loop -> hygiene/axiom).
+The creative phase is upstream of the pipeline, never a bypass.
+
+**Worked example:** running the protocol on "P vs NP has no obvious next
+step in Lean" produced a candidate: formalize the **provability boundary**
+of the near-P-vs-NP lattice (which weaker statements are provable; where
+provability stops). That idea is recorded as a candidate for a future rung,
+not adopted as a task.
+
+**Rationale:** the obvious approach to the hard steps is known to plateau
+(the barriers classify it dead); the project needs a structured way to
+generate genuinely novel candidate strategies without descending into
+unverified brainstorms. The protocol gives the creative step a shape, and
+the gates keep it honest.
