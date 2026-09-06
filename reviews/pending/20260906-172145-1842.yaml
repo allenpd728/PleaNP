@@ -1,0 +1,12 @@
+agent: multi-rendering
+claim: bgs (Gate 3 disagreement)
+created: "2026-09-06T17:21:45.118128+00:00"
+decl: C,D
+expected: yes
+informal: "Baker-Gill-Solovay: there exist oracles that separate and equalize P^A vs NP^A"
+kind: semantic-review
+machine_summary: "Gate 3 multi-rendering: renderings C and D disagree"
+module: C,D
+question: Two independent renderings of the claim 'bgs' are NOT machine-verified equivalent (rendering C vs D). They disagree on the shape. Which matches your intention — or is the informal claim ambiguous?
+run: multi-rendering-bgs
+status: pending

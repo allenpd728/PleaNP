@@ -59,7 +59,8 @@ def _run_lean(lean_dir: Path, src: str, timeout: int = 420) -> tuple[int, str]:
 
 
 def check_equivalence(lean_dir: Path, module_a: str, theorem_a: str,
-                      module_b: str, theorem_b: str) -> tuple[bool, str]:
+                      module_b: str, theorem_b: str,
+                      lemma: str | None = None) -> tuple[bool, str]:
     """Attempt to machine-verify theorem_a <-> theorem_b in Lean.
 
     Honest contract: we do NOT fabricate proofs. We generate a checker that
@@ -123,6 +124,21 @@ def check_equivalence(lean_dir: Path, module_a: str, theorem_a: str,
     rc5, out5 = _run_lean(lean_dir, qsrc2)
     if rc5 == 0:
         return True, "Parameterized renderings equivalent (∀ x, IFF by simp)."
+    # If the caller supplied a proved IFF lemma (e.g. equalizing_A_iff_C),
+    # `exact <lemma>` closes it — this is the "Gate-7 proof exists" path.
+    if lemma:
+        lsrc = "\n".join([
+            f"import {module_a}", f"import {module_b}", "",
+            f"example : {theorem_a} ↔ {theorem_b} := by",
+            f"  exact {lemma}",
+        ]) + "\n"
+        rc6, out6 = _run_lean(lean_dir, lsrc)
+        if rc6 == 0:
+            return True, f"Equivalent by proved lemma {lemma}."
+        detail = out6[-1200:]
+        return (False,
+                f"BLOCKED: the provided lemma {lemma} does not close "
+                f"{theorem_a} ↔ {theorem_b}. Lean output:\n" + detail)
     detail = (out5 or out4 or out3 or out2 or out)[-1200:]
     return (False,
             "BLOCKED: the two renderings are not MACHINE-VERIFIED equivalent. "
@@ -174,6 +190,8 @@ def main() -> int:
     p_check = sub.add_parser("check", help="equivalence check of two renderings")
     p_check.add_argument("module_a"); p_check.add_argument("theorem_a")
     p_check.add_argument("module_b"); p_check.add_argument("theorem_b")
+    p_check.add_argument("--lemma", default=None,
+                        help="optional proved IFF lemma name (FQN) that closes the pair")
     p_self = sub.add_parser("self", help="single-rendering self-check (CI-safe)")
     p_self.add_argument("module"); p_self.add_argument("theorem")
     args = ap.parse_args()
@@ -181,7 +199,8 @@ def main() -> int:
 
     if args.mode == "check":
         ok, detail = check_equivalence(lean_dir, args.module_a, args.theorem_a,
-                                       args.module_b, args.theorem_b)
+                                       args.module_b, args.theorem_b,
+                                       lemma=args.lemma)
         print("=" * 70)
         print("Gate 3 dual-rendering equivalence check")
         print("=" * 70)

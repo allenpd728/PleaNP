@@ -90,7 +90,7 @@ def _load_renderings(slug: str) -> list[dict]:
     return out
 
 
-def check(slug: str, lean_dir: Path) -> int:
+def check(slug: str, lean_dir: Path, lemmas: dict | None = None) -> int:
     ws = _ws(slug)
     rs = _load_renderings(slug)
     if len(rs) < 2:
@@ -98,8 +98,12 @@ def check(slug: str, lean_dir: Path) -> int:
         return 1
     matrix = {"slug": slug, "pairs": []}
     for a, b in itertools.combinations(rs, 2):
+        lemma = None
+        if lemmas:
+            lemma = lemmas.get(f"{a['id']}|{b['id']}") or lemmas.get(f"{b['id']}|{a['id']}")
         ok, detail = dual_render.check_equivalence(
-            lean_dir, a["module"], a["theorem"], b["module"], b["theorem"])
+            lean_dir, a["module"], a["theorem"], b["module"], b["theorem"],
+            lemma=lemma)
         matrix["pairs"].append({
             "a": a["id"], "b": b["id"],
             "equivalent": ok, "detail": detail[:200],
@@ -155,6 +159,8 @@ def main() -> int:
     p_r.add_argument("module"); p_r.add_argument("theorem")
     p_c = sub.add_parser("check"); p_c.add_argument("slug")
     p_c.add_argument("--lean-dir", default="lean")
+    p_c.add_argument("--lemmas", default=None,
+                     help="optional JSON file mapping 'idA|idB' -> proved IFF lemma FQN")
     p_m = sub.add_parser("mine"); p_m.add_argument("slug")
     args = ap.parse_args()
 
@@ -163,7 +169,11 @@ def main() -> int:
     if args.cmd == "render":
         return render(args.slug, args.id, args.module, args.theorem)
     if args.cmd == "check":
-        return check(args.slug, Path(args.lean_dir))
+        import json as _json
+        lemmas = None
+        if args.lemmas:
+            lemmas = _json.loads(Path(args.lemmas).read_text(encoding="utf-8"))
+        return check(args.slug, Path(args.lean_dir), lemmas)
     if args.cmd == "mine":
         return mine(args.slug)
     return 2
