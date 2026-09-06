@@ -216,3 +216,18 @@ machine is the witness that the gap is real).
 **Decision (proposal):** Adopt the community cache as the persistence layer and a warm devcontainer as the environment entry point. Concretely: (1) add a .devcontainer (elan + lean-toolchain pin + lake exe cache get + prebuild of the PleaNP import closure) so any cloud editor (GitHub Codespaces free 60 h/mo, Gitpod free 50 h/mo) or any fresh sandbox converges to a warm state in minutes; (2) keep .github/workflows/ci.yml as the always-free headless build oracle (public repo = unlimited Actions minutes), adding a Mathlib olean cache-restore step; (3) use the lean4web playgrounds (live.lean-lang.org, lean.math.hhu.de) for single-file experiments; (4) compartmentalize by keeping new modules import-light and the calculus layer physically separable as its own mini lake project if needed. Do NOT vendor Mathlib or self-host the olean cache — the community Azure cache is the decentralization already in place, and DEC-003 (import upstream) stays intact.
 
 **Rationale:** Verified in-session (2026-09-06): elan installs in seconds and lake exe cache get restores ~8.5k Mathlib oleans in minutes; with cache warm, a single PleaNP module builds in ~4 s. The expensive, non-persistent step (full Mathlib build) never needs to happen in any environment — the community cache is persistent, free, and public. The M4 box is a convenience, not a prerequisite. Options researched live (Codespaces/Gitpod requirements, mathlib cache mechanics, lean4web, globally-shared-install pattern) — see docs/TOOLCHAIN_SOLUTIONS.md.
+
+
+---
+
+### DEC-015
+
+**Date:** 2026-09-06
+**Status:** Active
+**Scope:** Multi-agent task coordination + community intake
+
+**Decision:** Adopt the **muse** multi-agent workflow (muse/TASK_WORKFLOW.md, 2026-09-06) for PleaNP, adapted to PleaNP's integrity-gate reality: one task = one GitHub issue; run-ids under shared identity; atomic label claims (status:available / status:claimed / status:done / status:blocked-needs-input, plus priority:high, community-ready, needs-gate); direct-to-dev commits with no force-push; blockers dir + sweeps + end-of-session report. Formal claims additionally pass the PleaNP gates ( hygiene, vacuity, model-consistency, lethality, #barrier_check) before closing as done — the gates section of docs/MULTI_AGENT_WORKFLOW.md is the PleaNP-specific overlay on muse's protocol.
+
+**Community surface (Zulip):** external contributors do NOT commit to dev; they file issues/PRs, which agents triage into the queue, gate, and merge (docs/CONTRIBUTIONS.md). The community-ready label marks first-contributor-friendly work. This keeps the credibility/negative-space core (the gates) intact while opening the repo to the Lean/Mathlib Zulip community — the likely source of upstream-substrate know-how (DEC-003 alignment, P/NP tracking).
+
+**Rationale:** PleaNP's work is inherently multi-agent (gated rung ladder); the shared GitHub identity needs the muse discipline to prevent double-claims and stranded dependents. The community surface multiplies capacity without crossing the statement-fidelity trust line: external PRs still pass Gates 1-6 before merge.
