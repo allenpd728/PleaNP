@@ -1,0 +1,20 @@
+{
+  "name": "PleaNP (Lean 4 + Mathlib)",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "root",
+  "workspaceFolder": "/workspaces/PleaNP",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "leanprover.lean4"
+      ],
+      "settings": {
+        "lean4.infoviewAutoOpen": true
+      }
+    }
+  },
+  "postCreateCommand": "cd /workspaces/PleaNP/lean && lake exe cache get && lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus",
+  "postStartCommand": "cd /workspaces/PleaNP/lean && lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus"
+}
