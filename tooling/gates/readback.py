@@ -13,6 +13,12 @@ owner:
       renderer pass (same rules, different surface wording) so the harness is
       fully testable and CI-runnable with no secrets.
 
+    ARCHITECTURE NOTE (DEC-021): PleaNP does NOT use an external LLM —
+    the "two independent translators" guarantee is satisfied by two
+    independent OpenHands agent passes, not by API calls from inside this
+    tool. The LLM hook below is an OPTIONAL capability (off by default),
+    NOT part of PleaNP's architecture, and must never be assumed in CI.
+
     The two translations are compared for semantic agreement:
     - AGREE            -> emit the agreed Plain-English Anchor for human
                           approval (compare vs. the informal claim, step 0).

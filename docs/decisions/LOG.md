@@ -350,3 +350,36 @@ rejection is the default expectation for any Mathlib submission. Preparing
 the process and the rejection responses now prevents reputational damage and
 turns feedback into a concrete fix list rather than a dead end. No submission
 is planned until the upstream P/NP substrate lands and a human anchor exists.
+
+
+---
+
+### DEC-021
+
+**Date:** 2026-09-06
+**Status:** Active
+**Scope:** LLM architecture — no external LLM; OpenHands is the model
+
+**Decision:** PleaNP does **not** use an LLM external to OpenHands. The "two
+independent translators" guarantee (Gates 3/4) is satisfied by **two
+independent OpenHands agent passes** — never by API calls from inside the repo
+tooling. The external-LLM hook in `readback.py` (OpenAI/Anthropic) is demoted
+to an **optional capability** (harmless, documented, off by default); CI uses
+the deterministic-skeleton fallback (no secrets). Issue #5 ("wire an LLM
+provider into CI as a secret") is closed as **resolved-by-architecture** — its
+premise (needs a secret) was wrong for this project.
+
+**Why:** the project's "AI" is the agent itself. Adding a separate
+LLM-provider + CI secret would duplicate the model OpenHands already provides,
+add secret-handling risk, and misrepresent where the intelligence lives. The
+multi-rendering protocol (#24) formalizes the agent-pair path as the real
+mechanism.
+
+**Scope note:** the readback.py LLM hook stays in the code as an OPTIONAL path
+(useful if a future contributor wants a non-agent LLM for a specific check),
+but it is NOT part of PleaNP's architecture and must never be assumed in CI.
+
+**Rationale:** aligns the tooling with how the project actually runs (agents
+do the work), removes the secret-maintenance burden and the implied external
+dependency, and keeps the two-independence guarantee where it belongs: in the
+agent-pair protocol.
