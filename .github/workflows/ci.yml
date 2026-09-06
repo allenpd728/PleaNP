@@ -49,3 +49,12 @@ jobs:
       - name: Read-back smoke (Gate 4; deterministic skeleton on a real theorem)
         run: python3 ../tooling/gates/lean_readback.py "PleaNP.Oracles.evalsTo_unique_result" "PleaNP.Computability.Oracle" >/dev/null && echo "read-back smoke ok"
         working-directory: lean
+      - name: Gate 3 dual-render unit tests (no secrets, no Lean needed)
+        run: python3 tooling/gates/tests/test_dual_render.py
+      - name: Gate 3 self-check on authored statements
+        run: |
+          python3 ../tooling/gates/dual_render.py self "PleaNP.Computability.Oracle" "PleaNP.Oracles.evalsTo_unique_result" >/dev/null
+          python3 ../tooling/gates/dual_render.py self "PleaNP.Computability.OracleComplexity" "PleaNP.Oracles.P_A_subset_NP_A" >/dev/null
+          python3 ../tooling/gates/dual_render.py self "PleaNP.Calculus.BarrierCalculus" "PleaNP.Calculus.thhStatement" >/dev/null
+          echo "Gate 3 self-checks ok"
+        working-directory: lean

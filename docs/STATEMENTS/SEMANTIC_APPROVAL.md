@@ -157,9 +157,14 @@ between two translations. Agents must not place those on you.
 - **Tier-2 axiom check in CI:** `tooling/gates/axiom_check.py` runs in CI;
   asserts only Mathlib-standard axioms, no `sorryAx`.
 Remaining gaps (tracked as issues):
-1. **Gate 3 dual-rendering harness** (two isolated renderings + an equivalence
-   check in Lean) — partially tooled; the equivalence check is still
-   agent-done. This is the natural next tool.
+1. **Gate 3 dual-rendering harness — TOOLED (2026-09-06):**
+   `tooling/gates/dual_render.py` (`self` = CI-safe single-rendering check;
+   `check` = machine-verified equivalence of two independent renderings via
+   Lean rfl/simpa/simp, with a parameterized ∀-quantified fallback). The
+   `check` mode's honest contract: equivalence is only trusted when Lean
+   mechanically closes the IFF; otherwise it BLOCKS pending a real proof.
+   The second-independent-rendering *author* (human or LLM) is still the
+   input requirement for a true dual pass — CI self-checks one rendering.
 2. **LLM translator integration** — `readback.py` calls an LLM only when
    `OPENAI_API_KEY`/`ANTHROPIC_API_KEY` is set; wiring a provider into CI
    requires a secret, which is a maintenance decision (see issue `read-back
