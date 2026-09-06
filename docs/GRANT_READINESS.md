@@ -142,6 +142,17 @@ the shape of all three barriers.
 
 ---
 
+## Proof stance (why PleaNP is classical / non-constructive)
+
+PleaNP's proofs are **non-constructive by choice** (axiom fingerprint
+{propext, Classical.choice, Quot.sound}, CI-enforced). This is correct for
+the mathematics (barrier statements are existence-shaped) and — strategically —
+the safest posture: if P = NP turns out true and cryptography collapses, a
+*non-constructive* proof proves existence without having *constructed the hard
+object* that breaks crypto. Constructive results remain welcome wherever the
+mathematics permits them. (DEC-018 records this; constructive-only would be a
+major pivot.)
+
 ## Open items this doc tracks (informal issue list)
 
 - [ ] Upstream P/NP lands; re-audit Rung 2 (ties to issue #4)

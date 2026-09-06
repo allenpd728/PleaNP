@@ -278,3 +278,18 @@ per answer, scales across streams, and keeps the machine-derived evidence
 (statement_lint summary + informal claim) attached to every point. Rules:
 expected answers come from the Lean (bias-guard); one point = one question;
 missing evidence is a process failure, not a flag; never block.
+
+
+---
+
+### DEC-018
+
+**Date:** 2026-09-06
+**Status:** Active
+**Scope:** Proof stance — acknowledged classical (non-constructive)
+
+**Decision:** PleaNP's Lean proofs are and remain **classical (non-constructive by choice)**: the clean-proof axiom fingerprint is {propext, Classical.choice, Quot.sound}, verified and enforced by tooling/gates/axiom_check.py in CI. This is deliberate, not accidental. A **strategic rationale is added (owner, 2026-09-06):** if P = NP turns out to be true (cryptography collapses), a *constructive* proof would also have *constructed the hard object* that breaks crypto — furnishing the weapon. A non-constructive proof proves existence via classical choice without manufacturing the dangerous instance, which is the safest posture for the project if the crypto-hostile outcome occurs. This complements the natural-proofs barrier, which already says natural lower-bound techniques would imply the collapse; non-constructiveness lands on the safe side of that too.
+
+**Scope note / honest trade-off:** classical choice is a genuine axiom; constructivist reviewers discount existence-on-choice claims. The trade (don't build the weapon vs. existence is classical-conditional) is accepted and documented. Constructive proofs remain welcome where the mathematics is constructive (the gates do not forbid them); they would be highlighted. Reversing to a constructive-only stance would be a major pivot and requires a new DEC.
+
+**Rationale:** matches the mathematics (P vs NP barrier statements are inherently existence-shaped), matches Mathlib's classical posture (DEC-003), is CI-monitored (axiom_check fails on any drift), and — per the owner's strategic point — is the safest stance if the hostile cryptographic outcome occurs.
