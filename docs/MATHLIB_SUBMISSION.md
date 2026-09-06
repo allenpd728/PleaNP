@@ -126,8 +126,47 @@ rejection can be turned into a concrete fix list rather than a dead end.
 
 ---
 
+## Rejection lessons — the learning loop (how we get smarter from every "no")
+
+Rejection is not a dead end; it is the highest-value feedback available. The
+gates turn it into a *machine-checkable* fix list. But that learning is only
+systematic if it is **recorded**, so the next submission (and the next agent)
+doesn't repeat the same mistakes. Every rejection **must** produce a row here.
+
+### The log
+
+| Date | Rejection path (A–E) | Root cause | Gate that catches it | Fix | Lesson (one line) |
+|---|---|---|---|---|---|
+| _(empty until the first rejection)_ | | | | | | |
+
+### How to fill a row
+
+1. **Map the criticism to a gate category.** Most feedback falls into: a
+   `sorry` (hygiene gate), a vacuity (vacuity gate), a design objection
+   (read-back / review loop), a missing lemma (build), a naming/style issue
+   (Mathlib conventions — not a gate but a checklist item). If it doesn't fit
+   an existing gate, that's a signal the gate set may need a new check — file
+   that as a new task.
+2. **Fix the code → re-run the gates.** The gate confirms the fix is real.
+3. **Write the lesson in one line**, so it generalizes to the next submission.
+
+### The blocking-avoidance rule (why this log matters)
+
+The primary way contributors get *de facto* blocked is **repeating the same
+rejected choice without engaging**. A maintained lessons log is the structural
+defense: it makes "did we learn from the last rejection?" a checkable
+question, not a memory test. The four real blocking risks, all avoidable:
+
+| Risk | Defense |
+|---|---|
+| Process violation (sorry, PR-without-Zulip, ignoring review) | The non-negotiables above |
+| Repeating the same mistake | This lessons log |
+| Looking like a "P vs NP crank" (appearing to claim resolution) | The honesty architecture + the README "not claiming to resolve" line |
+| No human accountability anchor | The named-human requirement (Zulip/funding/submission) |
+
 ## Status
 
-2026-09-06 — playbook documented. No submission is planned until the upstream
-substrate lands and a human anchor exists. This document is the preparation:
-process known, rejection paths mapped, reputation rules fixed.
+2026-09-06 — playbook documented + rejection-lessons log added. No submission
+is planned until the upstream substrate lands and a human anchor exists. This
+document is the preparation: process known, rejection paths mapped including
+how we learn from each, reputation rules fixed.
