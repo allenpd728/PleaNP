@@ -325,3 +325,28 @@ not adopted as a task.
 generate genuinely novel candidate strategies without descending into
 unverified brainstorms. The protocol gives the creative step a shape, and
 the gates keep it honest.
+
+
+---
+
+### DEC-020
+
+**Date:** 2026-09-06
+**Status:** Active
+**Scope:** Mathlib submission strategy + rejection handling
+
+**Decision:** Prepare for the real Mathlib submission process with an honest
+playbook (docs/MATHLIB_SUBMISSION.md): Zulip-first community alignment, small
+PRs, bors/CI, and the five realistic rejection paths (too-early, too-big,
+design-objection, duplicate, substantive-criticism) each with a concrete
+handling plan. Reputation non-negotiables: never submit a sorry; submit the
+oracle-machine substrate (the upstreamable module) not the barrier theorems
+(those are research/papers); cite prior art; follow the community process;
+require one human accountability anchor.
+
+**Rationale:** PleaNP will eventually want to contribute its oracle-machine
+layer to Mathlib (the gap audit confirms no upstream effort provides it), and
+rejection is the default expectation for any Mathlib submission. Preparing
+the process and the rejection responses now prevents reputational damage and
+turns feedback into a concrete fix list rather than a dead end. No submission
+is planned until the upstream P/NP substrate lands and a human anchor exists.
