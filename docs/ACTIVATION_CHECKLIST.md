@@ -1,6 +1,6 @@
 # DEC-013 activation checklist (human owner)
 
-**Status:** 2026-09-06 — automation done; blocked on one account-level billing issue.
+**Status:** 2026-09-06, updated after billing cleared — Plan B (CI) **verified green live** (run on `459d38c`: success in ~2 min, 15:11:25-15:13:28 UTC). Plan A (Codespace) needs the owner web-UI click or a token with Codespaces admin scope — the repo-scope token cannot create Codespaces ("Must have admin rights" on POST /user/codespaces).
 
 This is the owner's to-do list for finishing the DEC-013 landing (Plan A +
 Plan B). Everything listed under "Already automated" is committed and pushed;
@@ -23,9 +23,9 @@ in-sandbox (ubuntu container, same commands as CI) passes clean:
 `elan install` → `lake exe cache get` → `lake build PleaNP.Basic
 PleaNP.Calculus.BarrierCalculus` → all four `#barrier_check` verdicts correct.
 
-The only thing stopping a *green* CI run and a *usable* Codespace is an
-account-level billing lock on the GitHub user `allenpd728`. Evidence
-(2026-09-06):
+The billing lock (account-level) was the CI blocker; it is now resolved and
+CI is green. Codespace creation remains blocked on token *scope* (needs
+`admin:codespaces` or a web-UI click), not billing. Evidence (2026-09-06):
 - Latest Actions run (`34033388621`, attempts 1-3) annotation: *"The job was
   not started because your account is locked due to a billing issue."*
 - `POST /user/codespaces` with the repo-owner token → HTTP 500.
