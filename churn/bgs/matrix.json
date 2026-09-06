@@ -1,0 +1,41 @@
+{
+  "slug": "bgs",
+  "pairs": [
+    {
+      "a": "A",
+      "b": "B",
+      "equivalent": false,
+      "detail": "BLOCKED: the two renderings are not MACHINE-VERIFIED equivalent. Lean could not close the IFF (tried rfl/simpa/simp, and the \u2200-quantified parameterized form) with mechanical tactics. A real equivalenc"
+    },
+    {
+      "a": "A",
+      "b": "C",
+      "equivalent": true,
+      "detail": "Equivalent by proved lemma PleaNP.Barriers.BgsRenderings.equalizing_A_iff_C."
+    },
+    {
+      "a": "A",
+      "b": "D",
+      "equivalent": false,
+      "detail": "BLOCKED: the two renderings are not MACHINE-VERIFIED equivalent. Lean could not close the IFF (tried rfl/simpa/simp, and the \u2200-quantified parameterized form) with mechanical tactics. A real equivalenc"
+    },
+    {
+      "a": "B",
+      "b": "C",
+      "equivalent": false,
+      "detail": "BLOCKED: the two renderings are not MACHINE-VERIFIED equivalent. Lean could not close the IFF (tried rfl/simpa/simp, and the \u2200-quantified parameterized form) with mechanical tactics. A real equivalenc"
+    },
+    {
+      "a": "B",
+      "b": "D",
+      "equivalent": false,
+      "detail": "BLOCKED: the two renderings are not MACHINE-VERIFIED equivalent. Lean could not close the IFF (tried rfl/simpa/simp, and the \u2200-quantified parameterized form) with mechanical tactics. A real equivalenc"
+    },
+    {
+      "a": "C",
+      "b": "D",
+      "equivalent": false,
+      "detail": "BLOCKED: the two renderings are not MACHINE-VERIFIED equivalent. Lean could not close the IFF (tried rfl/simpa/simp, and the \u2200-quantified parameterized form) with mechanical tactics. A real equivalenc"
+    }
+  ]
+}
