@@ -157,6 +157,38 @@ class ReviewInboxTest(unittest.TestCase):
         # created=now, confirmed_at=now -> <30s -> fast
         self.assertEqual(review_inbox.fatigue(), 1)
 
+    # --- auto-requeue (no sweep needed) ---
+
+    def test_move_confirmed_control_auto_requeues_original(self):
+        pid = self._add_and_confirm()          # original confirmed
+        review_inbox.perturb(pid)              # make control
+        twin = next(review_inbox.PENDING.glob("*.yaml")).stem
+        review_inbox._move(twin, "confirmed", None)  # human confirms control
+        # A fresh pending point (the re-queued original) must exist.
+        pending = [p.stem for p in review_inbox.PENDING.glob("*.yaml")]
+        self.assertEqual(len(pending), 1, "auto-requeue should re-file the original")
+        d = review_inbox._MiniYaml.load(
+            review_inbox.PENDING.joinpath(pending[0] + ".yaml").read_text())
+        self.assertEqual(d.get("kind"), "semantic-review")
+        self.assertEqual(d.get("reopened_by"), twin)
+        self.assertIn("AUTO-REQUEUED", d.get("question", ""))
+        # The auto-requeued point must NOT carry the control's flipped summary.
+        self.assertNotIn("there exists", d.get("machine_summary", ""))
+
+    def test_move_confirmed_noncontrol_no_requeue(self):
+        self._add_and_confirm()
+        # no control -> no new pending point
+        self.assertEqual(len(list(review_inbox.PENDING.glob("*.yaml"))), 0)
+
+    def test_requeue_command(self):
+        pid = self._add_and_confirm()
+        self.assertEqual(review_inbox.requeue(pid), 0)
+        pending = [p.stem for p in review_inbox.PENDING.glob("*.yaml")]
+        self.assertEqual(len(pending), 1)
+        d = review_inbox._MiniYaml.load(
+            review_inbox.PENDING.joinpath(pending[0] + ".yaml").read_text())
+        self.assertEqual(d.get("reopened_by"), "auto-requeue")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

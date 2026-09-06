@@ -204,6 +204,37 @@ def _move(pid: str, target: str, reason: str | None) -> int:
     final.write_text(_MiniYaml.dump(d), encoding="utf-8")
     path.unlink(missing_ok=True)
     print(f"{target} {pid} (was {st})")
+
+    # AUTO-REQUEUE: if a recheck-control was CONFIRMED (fatigue signal: it
+    # should have been flagged), re-file the original claim as a fresh
+    # pending point so no sweep is needed. Nothing is silent: the re-queued
+    # point records `reopened_by=<control-id>`, and the control stays in the
+    # confirmed/flagged archive as the audit record.
+    if target == "confirmed" and d.get("kind") == "recheck-control" and d.get("control_of"):
+        orig_path, _ = _find(d["control_of"])
+        if orig_path is not None:
+            orig = _MiniYaml.load(orig_path.read_text(encoding="utf-8"))
+        else:
+            orig = None
+        if orig is None:
+            # Control references a point we no longer track — reconstruct a
+            # fresh pending from the control's own fields (claim/question).
+            orig = d
+        fresh = dict(orig)
+        for k in ("status", "confirmed_at", "reason", "kind", "control_of", "reopened_by"):
+            fresh.pop(k, None)
+        fresh["kind"] = "semantic-review"
+        fresh["created"] = _dt.datetime.now(_dt.timezone.utc).isoformat()
+        fresh["reopened_by"] = pid
+        fresh["status"] = "pending"
+        fresh["question"] = (fresh.get("question", "") +
+                             " [AUTO-REQUEUED after a confirmed recheck-control; "
+                             "please review carefully.]")
+        new_id = _id()
+        PENDING.mkdir(parents=True, exist_ok=True)
+        (PENDING / f"{new_id}.yaml").write_text(_MiniYaml.dump(fresh), encoding="utf-8")
+        print(f"AUTO-REQUEUE: re-filed original {d['control_of']} as {new_id} "
+              f"(control {pid} was confirmed — fatigue signal)")
     return 0
 
 
@@ -244,6 +275,36 @@ def perturb(pid: str) -> int:
     PENDING.mkdir(parents=True, exist_ok=True)
     (PENDING / f"{new_id}.yaml").write_text(_MiniYaml.dump(twin), encoding="utf-8")
     print(f"recheck-control {new_id} created from confirmed {pid} (flipped: {what})")
+    return 0
+
+
+def requeue(orig_id: str) -> int:
+    """Re-file a confirmed ORIGINAL point as a fresh pending point (auto-
+    requeue after a confirmed recheck-control). Used by the GH workflow so
+    no sweep is needed. Mirrors the auto-requeue block in _move."""
+    if not _ID_RE.match(orig_id or ""):
+        print(f"error: bad point id {orig_id!r}", file=sys.stderr)
+        return 2
+    orig_path, st = _find(orig_id)
+    if orig_path is None:
+        # Original no longer tracked (e.g. it was excluded); nothing to redo.
+        print(f"info: original {orig_id} not found (state {st}); nothing to re-queue")
+        return 0
+    orig = _MiniYaml.load(orig_path.read_text(encoding="utf-8"))
+    fresh = dict(orig)
+    for k in ("status", "confirmed_at", "reason", "kind", "control_of", "reopened_by"):
+        fresh.pop(k, None)
+    fresh["kind"] = "semantic-review"
+    fresh["created"] = _dt.datetime.now(_dt.timezone.utc).isoformat()
+    fresh["reopened_by"] = "auto-requeue"
+    fresh["status"] = "pending"
+    fresh["question"] = (fresh.get("question", "") +
+                         " [AUTO-REQUEUED after a confirmed recheck-control; "
+                         "please review carefully.]")
+    new_id = _id()
+    PENDING.mkdir(parents=True, exist_ok=True)
+    (PENDING / f"{new_id}.yaml").write_text(_MiniYaml.dump(fresh), encoding="utf-8")
+    print(f"AUTO-REQUEUE: re-filed original {orig_id} as {new_id}")
     return 0
 
 
@@ -386,6 +447,8 @@ def main() -> int:
     p_fl.add_argument("reason", nargs="?", default=None)
     p_pt = sub.add_parser("perturb", help="make a recheck-control twin of a confirmed point")
     p_pt.add_argument("id")
+    p_rq = sub.add_parser("requeue", help="re-file a confirmed original as a fresh pending point (auto-requeue)")
+    p_rq.add_argument("id")
     sub.add_parser("fatigue", help="report fatigue signals (confirmed controls, fast confirms)")
     p_ls = sub.add_parser("list", help="list review points")
     p_ls.add_argument("--status", choices=["pending", "confirmed", "flagged"], default=None)
@@ -405,6 +468,8 @@ def main() -> int:
         return _move(args.id, "flagged", args.reason)
     if args.cmd == "perturb":
         return perturb(args.id)
+    if args.cmd == "requeue":
+        return requeue(args.id)
     if args.cmd == "fatigue":
         return fatigue()
     if args.cmd == "list":
