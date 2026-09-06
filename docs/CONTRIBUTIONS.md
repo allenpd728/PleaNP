@@ -10,6 +10,28 @@ merged. This is the public face of the multi-agent workflow
 > issue queue, runs the integrity gates, and merges. You don't need to know the
 > gate details to contribute — the repo's agents and CI enforce them.
 
+## Maintainer model (be transparent, not apologetic)
+
+This repo is maintained by **one human + OpenHands agents**. The human is not
+Lean-literate and does not (yet) participate in the Lean/Mathlib Zulip. That
+is a deliberate, documented choice (DEC-015): **the artifact speaks first.**
+Concretely:
+
+- All formal claims pass the integrity gates mechanically (hygiene, vacuity,
+  model-consistency, lethality, `#barrier_check`), so "agents did it" is
+  auditable — every step is a gate-verified commit on a public branch.
+- If you're considering contributing and feeling unsure about the human-in-the-
+  loop: a PR is reviewed by an agent + CI, and **anything gated is verified by
+  machine regardless of who wrote it**. You are not implicitly endorsing an
+  unaudited agent claim by contributing here.
+- The human's role is accountability: decision log, scope, and knowing what is
+  and isn't an anchor. If you want a more classic maintainer relationship
+  (e.g. a Lean-literate co-maintainer), that is a known, welcomed gap — issue
+  `CONTRIBUTIONS: co-maintainer` would be the fastest way to open it.
+
+This page documents the *mechanics*; the honesty is the repo's actual
+mechanism for trust.
+
 ## Why we want community contributions
 
 - No proof assistant has formalized the complexity barriers (relativization,

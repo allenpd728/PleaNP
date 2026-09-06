@@ -64,6 +64,14 @@ The `lean/` tree is a clean lake project with no Python dependencies — it can 
 
 See `docs/ROADMAP.md` for the full rung ladder.
 
+**Community status (2026-09-06, DEC-015):** contributions are welcome via
+GitHub issues/PRs (`docs/CONTRIBUTIONS.md`); the multi-agent issue workflow is
+`docs/MULTI_AGENT_WORKFLOW.md`. The project is maintained by one human + AI
+agents with machine-verified integrity gates. Participation in external chat
+channels (e.g. Zulip) is deliberately deferred until the artifact is
+stranger-pickupable and a human accountability anchor exists — the repo is
+fully GitHub-native in the meantime.
+
 ## Conventions
 
 This project follows Mathlib's naming and style conventions for all Lean code, with project-specific declarations under the `PleaNP` namespace. See `AGENTS.md` for the condensed project reference.
