@@ -1,0 +1,173 @@
+name: review-issue
+
+# Review-inbox-as-issues: the human reviews via GitHub issue comments (no
+# local tooling). Two functions:
+#  1. workflow_dispatch: turn a local review point (or ad-hoc claim) into a
+#     GitHub issue labelled review:pending — one claim, one question.
+#  2. issue_comment on an issue labelled review:pending: if the comment body
+#     starts with "confirm", apply review:confirmed and close the issue; if
+#     it starts with "flag", apply review:flagged, add the reason as a label
+#     hint in the issue body, and leave it open (the claim reopens).
+#
+# Loop guard: issue_comment can't fire on issues created by workflow_dispatch
+# of THIS workflow (dispatch-created issues don't emit issue_comment events),
+# so there's no self-trigger loop.
+
+on:
+  push:
+    paths:
+      - "reviews/pending/*.yaml"
+  workflow_dispatch:
+    inputs:
+      claim:
+        description: "Plain-English claim"
+        required: true
+        type: string
+      machine_summary:
+        description: "Machine-derived summary (statement_lint output)"
+        required: true
+        type: string
+      informal:
+        description: "The informal step-0 claim"
+        required: false
+        type: string
+      decl:
+        description: "Fully-qualified Lean declaration"
+        required: false
+        type: string
+      question:
+        description: "The ONE Numberphile-level question for the human"
+        required: true
+        type: string
+      expected:
+        description: "Expected answer (yes/no)"
+        required: false
+        type: string
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  sync-pending:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: File GitHub issues for pending review points (idempotent)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          existing=$(gh issue list --repo "$REPO" --label "review:pending,review:flagged" \
+                     --state open --limit 100 --json title,body 2>/dev/null || echo '[]')
+          for f in reviews/pending/*.yaml; do
+            [ -e "$f" ] || continue
+            claim=$(awk -F': ' '/^claim:/{gsub(/"/,"",$2);print $2}' "$f")
+            decl=$(awk -F': ' '/^decl:/{gsub(/"/,"",$2);print $2}' "$f")
+            q=$(awk -F': ' '/^question:/{gsub(/"/,"",$2);print $2}' "$f")
+            sum=$(awk -F': ' '/^machine_summary:/{gsub(/"/,"",$2);print $2}' "$f")
+            info=$(awk -F': ' '/^informal:/{gsub(/"/,"",$2);print $2}' "$f")
+            exp=$(awk -F': ' '/^expected:/{gsub(/"/,"",$2);print $2}' "$f")
+            if echo "$existing" | grep -q "$decl"; then
+              echo "already filed for $decl; skipping"
+              continue
+            fi
+            BODY="(inbox id: ${f%.yaml})
+**One question to review (Numberphile level):**
+
+**$q**
+
+- **claim:** ${claim}
+- **machine summary (from Lean):** ${sum}
+- **informal (what we wanted):** ${info}
+- **decl:** \`${decl}\`
+- **expected answer:** ${exp}
+
+---
+To answer, comment on this issue:
+- \`confirm\` — the machine summary matches my intention
+- \`flag <reason>\` — it does not; the claim reopens (reason recorded)"
+            gh issue create --repo "$REPO" --title "${claim} — review" \
+              --label "review:pending" --body "$BODY"
+          done
+
+  create:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create review issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          Q="${{ github.event.inputs.question }}"
+          CLAIM="${{ github.event.inputs.claim }}"
+          SUM="${{ github.event.inputs.machine_summary }}"
+          INFO="${{ github.event.inputs.informal }}"
+          DECL="${{ github.event.inputs.decl }}"
+          EXP="${{ github.event.inputs.expected }}"
+          BODY=$(cat <<'EOF'
+          **One question to review (Numberphile level):**
+
+          **$Q**
+
+          - **claim:** $CLAIM
+          - **machine summary (from Lean):** $SUM
+          - **informal (what we wanted):** $INFO
+          - **decl:** `$DECL`
+          - **expected answer:** $EXP
+
+          ---
+          To answer, comment on this issue:
+          - `confirm` — the machine summary matches my intention
+          - `flag <reason>` — it does not; the claim reopens (reason recorded)
+          EOF
+          )
+          gh issue create --repo "${{ github.repository }}" \
+            --title "$CLAIM — review" \
+            --label "review:pending" \
+            --body "$BODY"
+
+  respond:
+    if: github.event_name == 'issue_comment'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Handle confirm/flag comment on a review:pending issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+          BODY: ${{ github.event.comment.body }}
+        run: |
+          set -euo pipefail
+          # Only act on issues labelled review:pending.
+          labels=$(gh issue view "$ISSUE" --repo "$REPO" --json labels -q '.labels[].name' || true)
+          case " $labels " in
+            *" review:pending "*) ;;
+            *) echo "not a review:pending issue; ignoring"; exit 0;;
+          esac
+          body="$BODY"
+          first=$(echo "$body" | awk '{print tolower($1); exit}')
+          case "$first" in
+            confirm)
+              gh issue edit "$ISSUE" --repo "$REPO" \
+                --remove-label "review:pending" \
+                --add-label "review:confirmed"
+              gh issue close "$ISSUE" --repo "$REPO" --comment "review:confirmed — machine summary matches intention."
+              ;;
+            flag)
+              reason=$(echo "$body" | sed -n 's/^[Ff]lag[[:space:]]*//p' | head -1)
+              gh issue edit "$ISSUE" --repo "$REPO" \
+                --remove-label "review:pending" \
+                --add-label "review:flagged"
+              gh issue comment "$ISSUE" --repo "$REPO" \
+                --body "review:flagged — reason: ${reason:-<no reason>}. The claim reopens (agents sweep flagged)."
+              ;;
+            *)
+              echo "comment does not start with confirm/flag; ignoring."
+              ;;
+          esac
