@@ -88,12 +88,24 @@ Scope note (2026-09-06, DEC-012): three components added — Barrier Calculus (R
 
 ## Build and test
 
-**Lean (requires local Lean toolchain — see AGENTS_LOCAL.md, gitignored):**
+**Lean (agent-sandbox bootstrap — DEC-013; no M4 box or Codespace needed):**
 ```bash
-cd lean
+# 1. elan (Lean version manager) — seconds
+curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+export PATH="$HOME/.elan/bin:$PATH"
+# 2. toolchain + Mathlib precompiled oleans (community Azure cache) — minutes
+cd lean && lake exe cache get
+# 3. build the clean modules (v4 substrate + Barrier Calculus compile green)
+lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus \
+  PleaNP.Computability.Oracle PleaNP.Computability.OracleComplexity PleaNP.Computability.OracleSmoke
+# 4. full tree (fails ONLY on the two documented pending-sorry modules:
+#    OracleUpstreamP = upstream-P anchor; Relativization = BGS statement)
 lake build
-lake exe check
 ```
+CI (`.github/workflows/ci.yml`) runs the same recipe on every push/PR; a sandbox
+that reproduces the CI steps is a reliable local oracle. On a long-lived
+workstation you can install the toolchain once (`AGENTS_LOCAL.md`, gitignored)
+and reuse it.
 
 > Note: exact paths and whether lake is available depend on the local machine.
 > See `AGENTS_LOCAL.md` (gitignored, not in this repo).

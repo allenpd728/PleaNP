@@ -1,12 +1,36 @@
 # DEC-013 activation checklist (human owner)
 
-**Status:** 2026-09-06, updated after billing cleared — Plan B (CI) **verified green live** (run on `459d38c`: success in ~2 min, 15:11:25-15:13:28 UTC). Plan A (Codespace) needs the owner web-UI click or a token with Codespaces admin scope — the repo-scope token cannot create Codespaces ("Must have admin rights" on POST /user/codespaces).
+**Status:** 2026-09-06 — **Plan B (CI) verified green live** (run on `459d38c`: success in ~2 min). **Plan A (Codespace) is OPTIONAL / dormant**: the owner works from the chat interface with OpenHands agents, so the browser IDE is not part of the workflow. The devcontainer files are kept for future human-interactive days, but nothing is blocked on them.
 
-This is the owner's to-do list for finishing the DEC-013 landing (Plan A +
-Plan B). Everything listed under "Already automated" is committed and pushed;
-everything under "Blocked on owner" needs the GitHub account owner.
+This is the owner's to-do list for finishing the DEC-013 landing. **The
+canonical workflow is agent-driven** (OpenHands in the chat interface): agents
+use the community Mathlib cache + CI as the build oracle, exactly as CI does.
+Plan A (Codespace) is optional and only relevant if a human ever wants the
+interactive Lean IDE in a browser.
 
 ---
+
+## Agent bootstrap (the path that matters for the current workflow)
+
+A fresh agent sandbox converges to a working Lean+Mathlib environment in ~5
+minutes with the community cache — no browser, no Codespace, no M4 box:
+
+```bash
+# 1. elan (Lean version manager)
+curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+export PATH="$HOME/.elan/bin:$PATH"
+# 2. toolchain + Mathlib precompiled oleans (community Azure cache)
+cd lean && lake exe cache get
+# 3. build the clean modules (v4 substrate + Barrier Calculus)
+lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus \
+  PleaNP.Computability.Oracle PleaNP.Computability.OracleComplexity PleaNP.Computability.OracleSmoke
+# 4. gate scanners (Tier 1)
+python3 tooling/gates/hygiene_scan.py --prove-stage lean/PleaNP/Calculus lean/PleaNP/Basic.lean \
+  lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
+```
+
+CI runs the same recipe on every push/PR (`.github/workflows/ci.yml`), so a
+sandbox that reproduces the CI steps is a reliable local oracle.
 
 ## Context: why this list exists
 
