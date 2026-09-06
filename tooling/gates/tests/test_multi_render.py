@@ -84,7 +84,7 @@ class multi_renderTest(unittest.TestCase):
         pending = list(multi_render.review_inbox.PENDING.glob("*.yaml"))
         self.assertEqual(len(pending), 1)
         text = pending[0].read_text()
-        self.assertIn("disagree", text.lower().split("machine_summary:")[1].split("\n")[0].lower())
+        self.assertIn("not machine-verified equivalent", text.lower().split("machine_summary:")[1].split("\n")[0].lower())
         self.assertIn("question:", text)
 
 

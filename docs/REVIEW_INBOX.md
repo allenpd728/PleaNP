@@ -126,6 +126,33 @@ python3 tooling/reviews/review_inbox.py index
 5. **End-of-session report** includes the inbox: new points filed, confirmed,
    flagged (see MULTI_AGENT_WORKFLOW end-of-session).
 
+## How to decide a "disagreement" in plain words (Boolean logic style)
+
+Some review points come from Gate 3: AI wrote several versions of a claim,
+and two versions **are not proven to say the same thing**. That sounds scary,
+but you decide it with plain logic — no Lean, no proofs.
+
+**What the issue shows now:** each version is labeled in plain words — e.g.
+"rendering A (says a box makes the two classes EQUAL)" vs "rendering B (says
+a box makes the two classes DIFFERENT)". Those are **different sentences
+about different things**. Both can be true and wanted: the project can want
+both an equalizing box and a separating box.
+
+**Boolean way to think about it:** you are checking two facts — "fact 1:
+version A claims X" and "fact 2: version B claims Y". Answer:
+
+- **`confirm`** → both facts look right, nothing surprising is claimed. (Even
+  if they disagree with each other — disagreement between versions is fine
+  when they are about different clauses; both can be intended.)
+- **`flag <reason>`** → one version claims something that should NOT be
+  intended (e.g. "says a box makes the classes EQUAL" when you only wanted the
+  separating part).
+
+That is the whole decision. If an issue still shows only "disagree on the
+shape" with no plain-words labels, that is a **tooling bug** — flag it with
+"question does not show what the versions say" so an agent fixes it (and see
+the top of this file for how agents file review points correctly).
+
 ## Reviewer-fatigue protection (recheck-control twins)
 
 **The question:** what protects against the human accidentally confirming
