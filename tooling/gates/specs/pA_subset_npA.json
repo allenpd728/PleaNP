@@ -1,0 +1,38 @@
+{
+  "title": "P^A subset NP^A for every oracle A",
+  "informal": "Any language that can be decided by a deterministic polynomial-time oracle machine (P^A) can also be verified by a nondeterministic polynomial-time oracle machine (NP^A), for every oracle A.",
+  "probes": [
+    {
+      "key": "q1",
+      "kind": "quantifier",
+      "question": "Over what does the claim range?",
+      "choices": ["there exists an oracle", "for every oracle"],
+      "expected": "for every oracle",
+      "hint": "Computerphile style: does this have to work for ALL oracles, or just some helpful one?"
+    },
+    {
+      "key": "q2",
+      "kind": "direction",
+      "question": "Which direction does the containment go?",
+      "choices": ["P implies NP", "NP implies P", "both ways (equal)"],
+      "expected": "P implies NP",
+      "hint": "Numberphile style: 'P is a subset of NP' means one-way — everything in P is in NP, not the reverse."
+    },
+    {
+      "key": "q3",
+      "kind": "bound",
+      "question": "What kind of time bound does the claim use?",
+      "choices": ["at most polynomial", "exactly polynomial", "no time bound"],
+      "expected": "at most polynomial",
+      "hint": "The theorem says the machine runs in AT MOST polynomial steps — a ceiling, not an exact count."
+    },
+    {
+      "key": "q4",
+      "kind": "existence",
+      "question": "Does the claim assert a witness exists?",
+      "choices": ["yes, a certificate exists", "no, it is universal"],
+      "expected": "yes, a certificate exists",
+      "hint": "NP means 'there exists a short certificate that verifies membership' — existence of a witness is the point."
+    }
+  ]
+}

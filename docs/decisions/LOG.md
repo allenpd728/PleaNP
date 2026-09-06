@@ -231,3 +231,26 @@ machine is the witness that the gap is real).
 **Community surface (Zulip) — DEFERRED (2026-09-06):** external contributors do NOT commit to dev; they file issues/PRs, which agents triage into the queue, gate, and merge (docs/CONTRIBUTIONS.md). The community-ready label marks first-contributor-friendly work. **The Zulip connection itself is deliberately deferred**: the maintainer is not Lean-literate and not on Zulip, and prefers the artifact to speak first. The repo stays GitHub-native (issues + PRs + CI) — fully functional without any external chat channel. Revisit Zulip only when (a) the repo has a working, gated, stranger-pickupable state, and (b) the maintainer has a human accountability anchor (a Lean-literate reviewer/co-maintainer) so community trust does not rest on "AI agents did this" alone.
 
 **Rationale:** PleaNP's work is inherently multi-agent (gated rung ladder); the shared GitHub identity needs the muse discipline to prevent double-claims and stranded dependents. The community surface multiplies capacity without crossing the statement-fidelity trust line: external PRs still pass Gates 1-6 before merge.
+
+
+---
+
+### DEC-016
+
+**Date:** 2026-09-06
+**Status:** Active
+**Scope:** Human semantic review layer for a non-proof-writing owner
+
+**Decision:** Add a third layer (the probe checklist) to the human semantic
+review stack, on top of the mechanical gates and the two-translator read-back.
+Rationale: the read-back (Layer 2) still asks the owner to compare two English
+sentences and spot subtle differences (quantifier order, direction, bounds) — a
+high bar for someone with intro math/CS who does not write proofs. The probe
+checklist turns each claim into 3–5 tiny, independent, single-choice probes
+(quantifier/direction/bound/existence) at Numberphile/Computerphile level; one
+wrong answer BLOCKS the claim and names the specific probe. Tool:
+tooling/gates/probe_check.py (specs in tooling/gates/specs/, unit-tested). The
+owner is NEVER the tiebreaker on ambiguity — machines/agents absorb it; the
+human only confirms single concrete facts. Bias-guard: expected probe values
+are derived from the Lean (what the proof says), never from the informal
+wish-list. Doc: docs/STATEMENTS/HUMAN_REVIEW_LAYERS.md.
