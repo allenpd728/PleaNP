@@ -139,6 +139,82 @@ two sources. The system's design guarantee is that any ambiguity lands on the
 
 ---
 
+## "Can't we just use Lean itself as the validator? Is the human step even necessary?"
+
+**Short answer:** you can automate *almost all* of it with Lean-side linter
+rigor — and we now do (`tooling/gates/statement_lint.py`). But there is
+**one irreducible human step**, and here is the proof that it cannot be
+automated away, plus what you'd lose if you tried.
+
+### What Lean itself can verify (pure code, no LLM, no human)
+
+A statement linter classifies the *shape* of a Lean proposition from its
+syntax, with total rigor:
+
+- **quantifier order** — ∀ / ∃ binders (is it "for every oracle" or "there
+  exists an oracle"?)
+- **relation head** — = vs ≠ vs ⊆ vs ∈ (equality, separation, containment,
+  membership)
+- **connective skeleton** — ∧ ∨ → ↔ ¬
+- **oracle dependence** — does the type mention an Oracle?
+- **class constants** — P_A, NP_A, Relativizing, ...
+- **axiom hygiene, vacuity, proof existence, `#barrier_check` verdict** —
+  already in CI.
+
+`statement_lint.py` does exactly this. It answers the Layer-3 probe questions
+(q1 quantifier, q2 direction, q3 bound, q4 existence) *from the Lean text*,
+mechanically. So the human does **not** need to answer those probes — the
+machine already knows the shape.
+
+### What Lean fundamentally cannot do (the hard floor — a theorem, not a tooling gap)
+
+Lean verifies that a proof proves a *proposition*. The proposition is a term
+in the system. But **the informal claim — "I want to know whether P vs NP is
+resolvable" — is not a term in the system.** There is no Lean computation
+that decides "does this theorem prove the real-world P≠NP?", because the
+real-world claim is an *intention outside the formal system*.
+
+This is not a limitation of our tools; it is a theorem (Tarski's
+undefinability of truth / the fact that satisfaction is not internal to a
+consistent system). Concretely:
+
+- `∃ A, P^A = NP^A` and `∃ A, P^A ≠ NP^A` are both first-class Lean
+  propositions. Lean can prove each, verify they are not equivalent, and
+  classify their shapes — but it **cannot know which one you wanted**. That
+  is an intention, not a term.
+- **Gate 3 doesn't buy grounding either:** two renderings being equivalent in
+  Lean means they encode the *same formal claim* — not that the formal claim
+  is the informal one. Independence catches agent error, not intention error.
+
+### What you would lose by removing the human
+
+**Grounding.** A closed Lean loop is perfectly consistent internally but has
+**zero connection to the actual question**. That is exactly Pattern A from
+`docs/FAILURE_AUDIT.md` — the failure mode the entire architecture exists to
+prevent. The green checkmark would prove *something* is true, but not that it
+is the P vs NP result you care about. You would have a perfect, consistent,
+self-contained formalization of... an unstated intention.
+
+You would also lose the last defense against *concept-level* substitution
+(e.g. a unary alphabet, a partial oracle, a silently weakened quantifier) that
+no syntax linter catches because it is a meaning-level change, not a
+token-level one.
+
+### The synthesis (what this means in practice)
+
+1. **Automate everything automatizable** — the statement linter now classifies
+   the shape mechanically. The probe *facts* are machine-derived.
+2. **Keep the human at exactly one hop:** confirm that the machine's English
+   summary of what the Lean *says* matches the intention. That is one yes/no
+   per statement — the minimum viable human touch, and the only one that
+   touches reality.
+3. **Never let the human be the tiebreaker** — disagreements are defects for
+   machines/agents to resolve, not decisions for the human.
+
+So: the human step is **not** necessary as a probe-answerer (automate that),
+but **is** irreducible as a single confirmation — and the loss analysis shows
+exactly why removing it would destroy the project's meaning.
+
 ## Open questions (tracked)
 
 1. **Probe authoring cost.** Every claim needs a 3–5-probe checklist written

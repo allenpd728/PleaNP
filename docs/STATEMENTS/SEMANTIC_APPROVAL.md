@@ -164,6 +164,14 @@ between two translations. Agents must not place those on you.
   + a no-secret read-back smoke step.
 - **Tier-2 axiom check in CI:** `tooling/gates/axiom_check.py` runs in CI;
   asserts only Mathlib-standard axioms, no `sorryAx`.
+**Lean-side automation (2026-09-06):** `tooling/gates/statement_lint.py`
+classifies a statement's shape (quantifiers, relations, oracle-dependence,
+class constants) mechanically from the Lean syntax — the probe *facts* of
+Layer 3 are machine-derived, so the human does not answer probes. The human
+step reduces to ONE confirmation per statement: does the machine's English
+summary of what the Lean says match the intention? (see HUMAN_REVIEW_LAYERS
+"Can't we just use Lean itself?" for why that hop is irreducible — Tarski.)
+
 Remaining gaps (tracked as issues):
 1. **Gate 3 dual-rendering harness — TOOLED (2026-09-06):**
    `tooling/gates/dual_render.py` (`self` = CI-safe single-rendering check;

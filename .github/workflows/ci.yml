@@ -67,3 +67,11 @@ jobs:
             echo "ERROR: wrong answers unexpectedly passed"; exit 1
           fi
           echo "probe-checklist approve/block smoke ok"
+      - name: Statement-lint unit tests (pure-code shape classification)
+        run: python3 tooling/gates/tests/test_statement_lint.py
+      - name: Statement-lint smoke on authored statements (no LLM; Lean-side)
+        run: |
+          python3 ../tooling/gates/statement_lint.py "PleaNP.Computability.OracleComplexity" "PleaNP.Oracles.P_A_subset_NP_A" >/dev/null
+          python3 ../tooling/gates/statement_lint.py "PleaNP.Calculus.BarrierCalculus" "PleaNP.Calculus.thhStatement" >/dev/null
+          echo "statement-lint smoke ok"
+        working-directory: lean
