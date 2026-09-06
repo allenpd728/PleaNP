@@ -254,3 +254,27 @@ owner is NEVER the tiebreaker on ambiguity — machines/agents absorb it; the
 human only confirms single concrete facts. Bias-guard: expected probe values
 are derived from the Lean (what the proof says), never from the informal
 wish-list. Doc: docs/STATEMENTS/HUMAN_REVIEW_LAYERS.md.
+
+
+---
+
+### DEC-017
+
+**Date:** 2026-09-06
+**Status:** Active
+**Scope:** Human review interface — non-blocking, async, multistream-safe
+
+**Decision:** Surface the irreducible human semantic confirmation through a
+review inbox (reviews/ + tooling/reviews/review_inbox.py + docs/REVIEW_INBOX.md):
+one claim = one review point = ONE Numberphile-level yes/no question. Agents
+FILE points and CONTINUE — never blocking on the human (inbox, not gate). The
+human reads a single generated reviews/INBOX.md (batched, oldest-first, merged
+across all parallel agents) and answers with confirm/flag. A flag reopens the
+claim retrospectively (matching the existing retrospective-on-dev model);
+nothing stalls. Rationale: the semantic hop is inherently human-async; making
+it a synchronous gate would serialize the multi-agent stream and concentrate
+review burden. The inbox keeps the human's effort to one page + one command
+per answer, scales across streams, and keeps the machine-derived evidence
+(statement_lint summary + informal claim) attached to every point. Rules:
+expected answers come from the Lean (bias-guard); one point = one question;
+missing evidence is a process failure, not a flag; never block.
