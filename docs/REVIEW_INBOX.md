@@ -7,6 +7,26 @@ across parallel agents and multiple work streams.
 
 ---
 
+## ⭐ The GitHub-issues surface (your comment-based flow — no scripts)
+
+**This is the interface you actually use.** Review points appear as GitHub
+issues (labelled `review:pending`), one claim per issue, one question in the
+body. You review them in the Issues list and answer with a **comment**:
+
+- comment `confirm` → the issue is labelled `review:confirmed` and closed.
+- comment `flag <reason>` → the issue is labelled `review:flagged` and stays
+  open (the claim reopens; agents sweep flagged).
+
+A free GitHub Actions workflow (`.github/workflows/review-issue.yml`) does all
+of it — you never run a script. When an agent files a review point
+(`reviews/pending/*.yaml`), the workflow auto-creates the issue. Your comment
+is the whole interaction.
+
+> **How to find your review list:** GitHub → Issues → filter by the
+> `review:pending` label. That is your dedicated review queue.
+
+---
+
 ## The one idea
 
 A **review point** is a single claim + a single Numberphile-level question.
@@ -44,27 +64,29 @@ The "machine summary" is generated from the Lean itself (statement_lint), so
 the question is asking *you* to confirm the machine's reading matches your
 intention — the irreducible last hop.
 
-## How you answer (2 commands, or edit nothing if it's obviously fine)
+## How you answer
 
-From the repo root:
+**Primary (comment-based — no scripts):** on the review issue, comment:
 
-```bash
-# Confirm: the machine summary matches your intention.
-python3 tooling/reviews/review_inbox.py confirm <id>
-
-# Flag: the machine summary does NOT match your intention.
-# (The claim reopens; an agent will fix it and re-file.)
-python3 tooling/reviews/review_inbox.py flag <id> "why it's wrong"
+```
+confirm
+# or
+flag <why it's wrong>
 ```
 
-Then regenerate the index (so `INBOX.md` reflects your answers):
+The workflow labels the issue (`review:confirmed`+close / `review:flagged`+open)
+and records it. That's the whole interaction.
+
+**Fallback / machine store (for agents, or if you ever prefer the local
+inbox):** the local `reviews/INBOX.md` + `tooling/reviews/review_inbox.py`
+remain the machine-readable store. Agents use them; you generally won't need
+to. (Commands documented below for completeness.)
 
 ```bash
+python3 tooling/reviews/review_inbox.py confirm <id>
+python3 tooling/reviews/review_inbox.py flag <id> "why it's wrong"
 python3 tooling/reviews/review_inbox.py index
 ```
-
-That's the whole interface. One page to read, one command per answer, batch
-whenever convenient (once a day, once a week — your call).
 
 ## Why this improves async-multistream / multi-agent work
 
