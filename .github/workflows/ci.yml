@@ -44,3 +44,8 @@ jobs:
       - name: Axiom check (Gate 6 Tier 2 — no smuggled sorry via meta-programs)
         run: python3 ../tooling/gates/axiom_check.py PleaNP.Computability.Oracle,PleaNP.Computability.OracleComplexity,PleaNP.Computability.OracleSmoke,PleaNP.Calculus.BarrierCalculus PleaNP.Oracles.evalsTo_unique_result PleaNP.Oracles.P_A_subset_NP_A PleaNP.Oracles.smoke_accepts_true PleaNP.Oracles.smoke_rejects_false
         working-directory: lean
+      - name: Read-back harness unit tests (Gate 4; no secrets, no Lean needed)
+        run: python3 tooling/gates/tests/test_readback.py
+      - name: Read-back smoke (Gate 4; deterministic skeleton on a real theorem)
+        run: python3 ../tooling/gates/lean_readback.py "PleaNP.Oracles.evalsTo_unique_result" "PleaNP.Computability.Oracle" >/dev/null && echo "read-back smoke ok"
+        working-directory: lean
