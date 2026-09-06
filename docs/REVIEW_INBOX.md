@@ -144,8 +144,14 @@ control-probe technique from survey and QA methodology, adapted:
   be FLAGGED.**
 - If the human **confirms the control too**, that is a strong fatigue signal:
   `review_inbox.py fatigue` reports it (and fast-confirms < 30s), and the
-  original confirmation is **re-queued** for a fresh review (a sweep action,
-  not automatic — so nothing silently rewrites a human decision).
+  original confirmation is **re-queued automatically** — confirming a control
+  immediately re-files the original claim as a fresh pending point
+  (`reopened_by=<control>`, so nothing is silent). On the GitHub surface, the
+  workflow's `confirm` handler detects the `control_of:` marker and calls the
+  tool to re-queue, then pushes so `sync-pending` files the fresh issue — **no
+  sweep needed**. (Design note: the auto-requeue re-files a *fresh* review of
+  the original claim; it does not silently re-confirm or rewrite the prior
+  decision — the control stays in the archive as the audit record.)
 - **Disclosure (honesty matters for this project):** the *existence* and
   *purpose* of controls is documented openly — this section — and the twin's
   question says explicitly it is a recheck-control. The *identity* of which

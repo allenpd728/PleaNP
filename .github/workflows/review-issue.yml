@@ -72,12 +72,14 @@ jobs:
             sum=$(awk -F': ' '/^machine_summary:/{gsub(/"/,"",$2);print $2}' "$f")
             info=$(awk -F': ' '/^informal:/{gsub(/"/,"",$2);print $2}' "$f")
             exp=$(awk -F': ' '/^expected:/{gsub(/"/,"",$2);print $2}' "$f")
+            kind=$(awk -F': ' '/^kind:/{gsub(/"/,"",$2);print $2}' "$f")
+            control_of=$(awk -F': ' '/^control_of:/{gsub(/"/,"",$2);print $2}' "$f")
             if echo "$existing" | grep -q "$decl"; then
               echo "already filed for $decl; skipping"
               continue
             fi
             BODY="(inbox id: ${f%.yaml})
-          **One question to review (intro-level level):**
+          **One question to review (intro-level):**
 
           **$q**
 
@@ -86,6 +88,8 @@ jobs:
           - **informal (what we wanted):** ${info}
           - **decl:** \`${decl}\`
           - **expected answer:** ${exp}
+          - **kind:** ${kind:-semantic-review}
+          - **control_of:** ${control_of:-none}
 
           ---
           To answer, comment on this issue:
@@ -136,6 +140,7 @@ jobs:
     if: github.event_name == 'issue_comment'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Handle confirm/flag comment on a review:pending issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -158,6 +163,21 @@ jobs:
                 --remove-label "review:pending" \
                 --add-label "review:confirmed"
               gh issue close "$ISSUE" --repo "$REPO" --comment "review:confirmed — machine summary matches intention."
+              # AUTO-REQUEUE on confirmed controls: if this issue is a
+              # recheck-control (body carries 'control_of'), confirming it is a
+              # fatigue signal -> re-file the ORIGINAL claim as a fresh issue so
+              # no sweep is needed. Single source of truth: review_inbox.py
+              # requeue <orig-id> re-files the confirmed original from the repo
+              (we have a checkout), then we push so sync-pending files it.
+              control_of=$(echo "$body" | sed -n 's/.*control_of: *\([a-z0-9-]*\).*/\1/p' | head -1)
+              if [ "$control_of" != "none" ] && [ -n "$control_of" ]; then
+                echo "confirmed a recheck-control (control_of=$control_of): auto-re-queueing original."
+                python3 tooling/reviews/review_inbox.py requeue "$control_of" || true
+                git add reviews/pending/ >/dev/null 2>&1 || true
+                git -c user.name="openhands" -c user.email="openhands@all-hands.dev" \
+                    commit -m "chore: auto-requeue review after confirmed control (#$ISSUE)" >/dev/null 2>&1 || true
+                git push origin main >/dev/null 2>&1 || echo "note: push skipped (auto-requeue recorded locally)"
+              fi
               ;;
             flag)
               reason=$(echo "$body" | sed -n 's/^[Ff]lag[[:space:]]*//p' | head -1)
