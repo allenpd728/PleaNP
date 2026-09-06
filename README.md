@@ -72,6 +72,12 @@ channels (e.g. Zulip) is deliberately deferred until the artifact is
 stranger-pickupable and a human accountability anchor exists — the repo is
 fully GitHub-native in the meantime.
 
+## For newcomers
+
+Want the plain-words version — no math background needed?
+Read [`docs/EXPLAINER_PVPNP_NARRATIVE.md`](docs/EXPLAINER_PVPNP_NARRATIVE.md),
+a beginner-friendly telling of P vs NP and how PleaNP approaches it.
+
 ## Conventions
 
 This project follows Mathlib's naming and style conventions for all Lean code, with project-specific declarations under the `PleaNP` namespace. See `AGENTS.md` for the condensed project reference.
