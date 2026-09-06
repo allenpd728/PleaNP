@@ -77,6 +77,8 @@ jobs:
         working-directory: lean
       - name: Review-inbox unit tests (non-blocking human review surface)
         run: python3 tooling/reviews/tests/test_review_inbox.py
+      - name: Gate 3 churn unit tests (AI-churn → human-mine driver)
+        run: python3 tooling/gates/tests/test_churn.py
       - name: Review-inbox index smoke (INBOX.md stays generated)
         run: |
           python3 tooling/reviews/review_inbox.py index >/dev/null
