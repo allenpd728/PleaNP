@@ -53,15 +53,35 @@ def extract_type(module: str, decl: str, lean_dir: Path) -> str:
         proc = subprocess.run(cmd, cwd=str(lean_dir), capture_output=True,
                               text=True, timeout=420)
         out = (proc.stdout or "") + (proc.stderr or "")
-        # Lean prints:  <decl> : <type>
-        marker = f"{decl} : "
+        # Lean prints:  <decl> <params> : <type>   (possibly across MULTIPLE
+        # lines — parameterized theorems print the proposition body indented
+        # on the next line(s)). Join the signature line with every following
+        # blank/indented continuation until a blank line.
+        marker = f"{decl}"
         type_text = None
-        for line in out.splitlines():
-            if line.strip().startswith(marker):
-                type_text = line.strip()[len(marker):]
+        lines = out.splitlines()
+        for i, line in enumerate(lines):
+            if line.strip().startswith(marker) and " : " in line:
+                collected = [line.strip()]
+                # continuation lines: indented (start with space) and non-empty
+                for cont in lines[i + 1:]:
+                    if cont.strip() == "":
+                        break
+                    if cont[0] in (" ", "\t"):
+                        collected.append(cont.strip())
+                    else:
+                        break
+                # Reconstruct the full type: the first line is '<decl> <params> : <body>'
+                # (params may contain ':' themselves), and continuation lines are
+                # the rest of the body. The decl name is the first token; strip
+                # it, keep everything else (params + body) joined.
+                first_tok = line.strip().split(" ", 1)[0]
+                rest = line.strip()[len(first_tok):].strip()
+                full = " ".join([rest] + collected[1:])
+                type_text = full
                 break
         if type_text is None:
-            # fallback: last line of the check output
+            # fallback: last non-empty line of the check output
             for line in reversed(out.splitlines()):
                 if " : " in line:
                     type_text = line.strip()
@@ -71,6 +91,57 @@ def extract_type(module: str, decl: str, lean_dir: Path) -> str:
         return type_text
     finally:
         checker.unlink(missing_ok=True)
+
+
+def extract_body(module: str, decl: str, lean_dir: Path) -> str:
+    """Return the BODY of a `def` (its value) — for defs whose *type* is just
+    `Prop` but whose proposition lives in the body (e.g. thhStatement).
+
+    Uses `#print <decl>` and returns the text after the first ':=' / ': ' that
+
+    introduces the value. Falls back to extract_type (theorem case) if #print
+    shows no body (theorem-valued constants store no body).
+    """
+    mods = module.split(",")
+    src = "\n".join([f"import {m}" for m in mods] + ["", f"#print {decl}"]) + "\n"
+    with tempfile.NamedTemporaryFile("w", suffix=".lean", delete=False) as f:
+        f.write(src)
+        checker = Path(f.name)
+    try:
+        proc = subprocess.run(["lake", "env", "lean", str(checker)],
+                              cwd=str(lean_dir), capture_output=True,
+                              text=True, timeout=420)
+        out = (proc.stdout or "") + (proc.stderr or "")
+    finally:
+        checker.unlink(missing_ok=True)
+    lines = out.splitlines()
+    for i, line in enumerate(lines):
+        s = line.strip()
+        # 'def' may be preceded by attributes (e.g. '@[reducible]'): find the
+        # 'def' keyword position.
+        di = s.find("def ")
+        if di != -1 and ":=" in s[di:]:
+            # Body after ':=' on this line, plus any following indented lines
+            # (continuation of the body on subsequent lines).
+            head = s[di + len("def "):]
+            body = head.split(":=", 1)[1].strip() if ":=" in head else ""
+            collected = [body] if body else []
+            for cont in lines[i + 1:]:
+                cs = cont.strip()
+                if cs == "":
+                    break
+                # Continuation lines may start with '∀' (not whitespace); they
+                # belong to this decl's body until a new top-level keyword.
+                if cs.startswith(("def ", "theorem ", "lemma ", "instance ",
+                                   "structure ", "class ", "abbrev ",
+                                   "import ", "end ")):
+                    break
+                collected.append(cs)
+            full = " ".join(x for x in collected if x)
+            if full:
+                return full
+    # No body found (theorem) — fall back to the type.
+    return extract_type(module, decl, lean_dir)
 
 
 # --- structural English renderer -------------------------------------------
