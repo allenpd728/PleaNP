@@ -126,6 +126,44 @@ python3 tooling/reviews/review_inbox.py index
 5. **End-of-session report** includes the inbox: new points filed, confirmed,
    flagged (see MULTI_AGENT_WORKFLOW end-of-session).
 
+## Reviewer-fatigue protection (recheck-control twins)
+
+**The question:** what protects against the human accidentally confirming
+something that should have been flagged (fatigue, inattention, rubber-stamping)?
+
+**The honest answer before this: nothing.** A `confirm` was accepted at face
+value. That is now fixed with **recheck-controls** — the attention-check /
+control-probe technique from survey and QA methodology, adapted:
+
+- After a point is confirmed, any agent (or a review sweep) can run
+  `review_inbox.py perturb <id>` to create a **recheck-control twin**: the same
+  claim with **one load-bearing element flipped** (e.g. "for every" ↔ "there
+  exists", "⊆" ↔ "⊇", "=" ↔ "≠").
+- The twin is a normal pending point (so it becomes a GitHub issue to review),
+  but its `expected` answer is **the opposite** of the original — **it should
+  be FLAGGED.**
+- If the human **confirms the control too**, that is a strong fatigue signal:
+  `review_inbox.py fatigue` reports it (and fast-confirms < 30s), and the
+  original confirmation is **re-queued** for a fresh review (a sweep action,
+  not automatic — so nothing silently rewrites a human decision).
+- **Disclosure (honesty matters for this project):** the *existence* and
+  *purpose* of controls is documented openly — this section — and the twin's
+  question says explicitly it is a recheck-control. The *identity* of which
+  points are controls is *not* pre-marked (that would let them be gamed); you
+  discover it by reading the twin's full question. Consequence is benign: a
+  fatigue confirm re-queues, it does not blame or punish.
+
+**What this catches:** rubber-stamping, pattern-matching, inattention, very
+fast batch confirmation.
+**What it does NOT catch (be honest):** a careful-but-mistaken reviewer, or a
+statement subtly wrong in a way the human can't see — those are what the
+two-independent-renderings (Gate 3) and the machine checks exist for. Controls
+are one layer, not a substitute.
+
+Rule for agents: `perturb` a confirmed point and sweep `fatigue` in session
+reports. Rule for the human: treat a recheck-control as "should be flagged";
+if you confirm one by mistake, no blame — it just re-queues that claim.
+
 ## Relationship to the other gates
 
 - **Layer 1 (mechanical)** — CI, no human.

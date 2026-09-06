@@ -61,7 +61,7 @@ class multi_renderTest(unittest.TestCase):
         multi_render.render("demo", "r1", "MA", "TA")
         multi_render.render("demo", "r2", "MB", "TB")
         calls = []
-        def fake(lean_dir, a_mod, a_t, b_mod, b_t):
+        def fake(lean_dir, a_mod, a_t, b_mod, b_t, lemma=None):
             calls.append((a_t, b_t))
             return (True, "ok") if a_t == "TA" and b_t == "TB" else (False, "nope")
         orig = multi_render.dual_render.check_equivalence
@@ -78,7 +78,7 @@ class multi_renderTest(unittest.TestCase):
         multi_render.init("demo", "the informal claim")
         multi_render.render("demo", "r1", "MA", "TA")
         multi_render.render("demo", "r2", "MB", "TB")
-        multi_render.dual_render.check_equivalence = lambda ld, a, b, c, d: (False, "disagree")
+        multi_render.dual_render.check_equivalence = lambda ld, a, b, c, d, lemma=None: (False, "disagree")
         self.assertEqual(multi_render.check("demo", Path(".")), 0)
         self.assertEqual(multi_render.mine("demo"), 0)
         pending = list(multi_render.review_inbox.PENDING.glob("*.yaml"))

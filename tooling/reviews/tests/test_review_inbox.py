@@ -103,6 +103,60 @@ class ReviewInboxTest(unittest.TestCase):
         self.assertEqual(d2["claim"], "a: claim with colon")
         self.assertEqual(d2["status"], "pending")
 
+    # --- fatigue protection (recheck-control twins) ---
+
+    def _add_and_confirm(self) -> str:
+        review_inbox.add(_base_fields())
+        pid = next(review_inbox.PENDING.glob("*.yaml")).stem
+        review_inbox._move(pid, "confirmed", None)
+        return pid
+
+    def test_flip_flips_load_bearing_token(self):
+        flipped, what = review_inbox._flip(
+            "A statement about [P, NP] relating by containment for every oracle")
+        self.assertIn("there exists", flipped)
+        self.assertIn("for every", what)
+
+    def test_flip_returns_original_when_no_token(self):
+        flipped, what = review_inbox._flip("no load-bearing words here")
+        self.assertEqual(flipped, "no load-bearing words here")
+
+    def test_perturb_requires_confirmed(self):
+        review_inbox.add(_base_fields())
+        pid = next(review_inbox.PENDING.glob("*.yaml")).stem
+        self.assertEqual(review_inbox.perturb(pid), 1)  # not confirmed yet
+
+    def test_perturb_creates_control_twin(self):
+        pid = self._add_and_confirm()
+        self.assertEqual(review_inbox.perturb(pid), 0)
+        twins = list(review_inbox.PENDING.glob("*.yaml"))
+        self.assertEqual(len(twins), 1)
+        d = review_inbox._MiniYaml.load(twins[0].read_text())
+        self.assertEqual(d.get("kind"), "recheck-control")
+        self.assertEqual(d.get("control_of"), pid)
+        self.assertEqual(d.get("expected"), "no")
+        self.assertIn("RECHECK-CONTROL", d.get("question", ""))
+
+    def test_fatigue_clean_when_no_controls(self):
+        self._add_and_confirm()
+        self.assertEqual(review_inbox.fatigue(), 0)
+
+    def test_fatigue_detects_confirmed_control(self):
+        pid = self._add_and_confirm()
+        review_inbox.perturb(pid)
+        twin = next(review_inbox.PENDING.glob("*.yaml")).stem
+        review_inbox._move(twin, "confirmed", None)
+        self.assertEqual(review_inbox.fatigue(), 1)
+
+    def test_fatigue_detects_fast_confirm(self):
+        import datetime
+        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        review_inbox.add(_base_fields() + [f"created={now}"])
+        pid = next(review_inbox.PENDING.glob("*.yaml")).stem
+        review_inbox._move(pid, "confirmed", None)
+        # created=now, confirmed_at=now -> <30s -> fast
+        self.assertEqual(review_inbox.fatigue(), 1)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
