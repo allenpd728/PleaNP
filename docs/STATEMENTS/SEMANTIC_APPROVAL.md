@@ -1,5 +1,13 @@
 # Semantic approval without Lean literacy — the Plain-English Anchor
 
+> **Your map if you do NOT write proofs:** see
+> `docs/STATEMENTS/HUMAN_REVIEW_LAYERS.md`. It adds the third layer —
+> the **probe checklist** (`tooling/gates/probe_check.py`) — which replaces
+> "compare two English sentences" with 3–5 tiny single-choice probes you can
+> answer with Numberphile/Computerphile-level intuition. The process here
+> (Layers 1–2 + gates) is the full pipeline; HUMAN_REVIEW_LAYERS.md is the
+> operator's manual for the human in it.
+
 **Audience:** the project owner (not Lean-literate). **Purpose:** how the human
 approves the *meaning* (semantics) of Lean statements and incremental barrier
 claims without reading Lean code, and how agents prove that meaning is

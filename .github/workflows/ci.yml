@@ -58,3 +58,12 @@ jobs:
           python3 ../tooling/gates/dual_render.py self "PleaNP.Calculus.BarrierCalculus" "PleaNP.Calculus.thhStatement" >/dev/null
           echo "Gate 3 self-checks ok"
         working-directory: lean
+      - name: Probe-checklist unit tests (Gate 4 Layer 3; no secrets, no Lean)
+        run: python3 tooling/gates/tests/test_probe_check.py
+      - name: Probe-checklist approve/block smoke (Layer 3)
+        run: |
+          python3 tooling/gates/probe_check.py checklist tooling/gates/specs/pA_subset_npA.json --answers tooling/gates/specs/pA_subset_npA.answers.ok.json >/dev/null
+          if python3 tooling/gates/probe_check.py checklist tooling/gates/specs/pA_subset_npA.json --answers tooling/gates/specs/pA_subset_npA.answers.wrong.json >/dev/null 2>&1; then
+            echo "ERROR: wrong answers unexpectedly passed"; exit 1
+          fi
+          echo "probe-checklist approve/block smoke ok"
