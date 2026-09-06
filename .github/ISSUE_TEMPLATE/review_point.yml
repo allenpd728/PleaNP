@@ -1,0 +1,63 @@
+name: Review point
+description: One claim = one question for the human (Gate 3/4 churn-mine flow).
+title: "[review] <short claim>"
+labels: [review:pending]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## One question to review (Numberphile level)
+
+        **This issue is one review point: one claim, one question.** It was
+        filed automatically from a machine/AI review or from Gate 3 churn
+        (independent renderings of the same statement). Answer with a comment:
+          - `confirm` — the machine summary matches my intention
+          - `flag <reason>` — it does not; the claim reopens (reason recorded)
+
+  - type: input
+    id: claim
+    attributes:
+      label: Claim
+      description: Short plain-English title
+    validations:
+      required: true
+
+  - type: input
+    id: machine_summary
+    attributes:
+      label: Machine summary (from Lean)
+      description: statement_lint / read-back output
+    validations:
+      required: true
+
+  - type: input
+    id: informal
+    attributes:
+      label: Informal (what we wanted)
+    validations:
+      required: false
+
+  - type: input
+    id: decl
+    attributes:
+      label: Declaration
+      description: Fully-qualified Lean name
+    validations:
+      required: false
+
+  - type: dropdown
+    id: expected
+    attributes:
+      label: Expected answer
+      options:
+        - "yes"
+        - "no"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        > Filed by the Gate 3/4 churn-mine pipeline. See
+        > `docs/REVIEW_INBOX.md` and `docs/GRANT_READINESS.md`.

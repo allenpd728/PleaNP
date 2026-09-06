@@ -39,6 +39,27 @@ that must agree, plus concrete examples**.
 
 ---
 
+## The Gate-3 "AI churn → human mine" model (2026-09-06)
+
+For target theorems (especially the barriers), the fastest path to a *frozen,
+independently-verified* statement is machine churn + human mining:
+
+1. **AI churn:** N agents/LLM passes each write an *independent* Lean rendering
+   of the same informal claim (`tooling/gates/churn.py render`).
+2. **Machine equivalence:** pairwise `dual_render.check` — renderings that
+   machine-prove the IFF cluster together.
+3. **Human mine:** every pair that is NOT machine-verified equivalent becomes a
+   review point (`churn mine` → review inbox → GitHub issue). The human mines
+   it: one Numberphile-level question, `confirm` or `flag <reason>`.
+4. **Outcome:** confirmed agreements freeze the statement; flagged
+   disagreements reveal where the claim's *shape* is ambiguous and send an
+   agent back to revise — incrementally mapping the shape of all three
+   barriers, and simultaneously producing the external/independent-rendering
+   evidence grants want (GRANT_READINESS Tier-2 #7).
+
+This is the concrete bridge from "tooling project" to "fundable formalization
+research" described in `docs/GRANT_READINESS.md`.
+
 ## The process (for a new statement or barrier claim)
 
 Every semantic claim passes through these stages. The agent drives; you approve
