@@ -155,3 +155,32 @@ All three would have been caught by:
 The v3 fix (commit `5fd85c6`) addresses the three flaws: step branches on the oracle answer, DecidesInTime references the real step function, NP_A uses a per-input AcceptsInTime predicate. But the process lesson — that behavioral evidence must be demanded per definition — is the lasting fix, recorded here.
 
 **See also:** `docs/VALIDATION_SUITE.md` (the full validation requirements), `tooling/gates/binder_usage_scan.py` (Gate 7), the harsh review (2026-08-18).
+
+---
+
+### DEC-012
+
+**Date:** 2026-09-06
+**Status:** Active
+**Scope:** Roadmap expansion — three new target components(priority order: Barrier Calculus, Anchor Object, Lower-Bound Compiler).
+
+**Decision:** Adopt the three components as new rungs of the ladder,with rung numbers in `docs/ROADMAP.md`: **Rung 5 — Barrier Calculus** (`Relativizing` typeclass + `#barrier_check` elaborator + THH unit test —the crown jewel — negative-space specification turned into a typechecking question); **Rung 6 — Anchor Object** (machine-checked P/NP model-equivalence across ≥2 upstream formalizations + Levin universal search rendering `P_eq_NP_iff` as an explicit `#eval`-able term); **Rung 8 — Lower-Bound Compiler** (Williams' transfer theorem as a Lean elaborator emitting verified `NEXP ⊄ C` from a verified CircuitSAT algorithm + runtime bound — lower priority than #1, not blocking — under `PleaNP.Circuits`). Former rungs are renumbered(7 Graded benchmark, 9 AI proof-search loop;,  10 Open problems below P vs NP;,  11 Novel barrier-evasion arguments). Existing out-of-scope boundaries unchanged: still not claiming to resolve P vs NP, still deferring P/NP's base definition to upstream Mathlib. The `lean/` tree stays the sole first-class code artifact.
+
+**Levin-search / decision-gap item(logged as a scoped open lemma, NOT a blocker):** Extending the Anchor Object from the *search* version(Levin universal search,`#eval`-able term)to the *decision* version(`P_eq_NP_iff`)as a decision problem needs **(1) self-reducibility** of the search problem,and **(2) a Hutter-style proof-search wrapper** that turns a bounded search into a decision. Neither is in scope of the current rung's "done" definition; both are formulable as a single scoped,publishable lemma as soon as one base computational model lands upstream. Cite this entry when the search⟶decision gap is discussed,so it isn't glossed over nor silently treated as done.
+
+
+
+**Rationale:** The project's core bet is negative-space specification: formalize the constraints a proof must satisfy,not the proof itself,. Confirmed as a genuine gap — no proof assistant has formalized these barriers; Coq/Isabelle Cook–Levin formalizations(2021/2023) stalled with no barrier follow-through precisely because they had no demand-pull artifact. `#barrier_check` *is* that artifact — every future claimed-proof triage run creates the pull. The three components are independently valuable and prioritized by leverage(5:the demand-pull device itself; 6: robust statement;  8:the widest eventual force-multiplier,but non-blocking).
+
+
+---
+
+### DEC-013
+
+**Date:** 2026-09-06
+**Status:** Proposed (recommendation — not yet adopted; record for a future DEC once the .devcontainer + CI-cache landing is scheduled)
+**Scope:** Persistent toolchain strategy (Lean 4 + Mathlib) without the local M4 box or from-scratch sandbox builds.
+
+**Decision (proposal):** Adopt the community cache as the persistence layer and a warm devcontainer as the environment entry point. Concretely: (1) add a .devcontainer (elan + lean-toolchain pin + lake exe cache get + prebuild of the PleaNP import closure) so any cloud editor (GitHub Codespaces free 60 h/mo, Gitpod free 50 h/mo) or any fresh sandbox converges to a warm state in minutes; (2) keep .github/workflows/ci.yml as the always-free headless build oracle (public repo = unlimited Actions minutes), adding a Mathlib olean cache-restore step; (3) use the lean4web playgrounds (live.lean-lang.org, lean.math.hhu.de) for single-file experiments; (4) compartmentalize by keeping new modules import-light and the calculus layer physically separable as its own mini lake project if needed. Do NOT vendor Mathlib or self-host the olean cache — the community Azure cache is the decentralization already in place, and DEC-003 (import upstream) stays intact.
+
+**Rationale:** Verified in-session (2026-09-06): elan installs in seconds and lake exe cache get restores ~8.5k Mathlib oleans in minutes; with cache warm, a single PleaNP module builds in ~4 s. The expensive, non-persistent step (full Mathlib build) never needs to happen in any environment — the community cache is persistent, free, and public. The M4 box is a convenience, not a prerequisite. Options researched live (Codespaces/Gitpod requirements, mathlib cache mechanics, lean4web, globally-shared-install pattern) — see docs/TOOLCHAIN_SOLUTIONS.md.

@@ -1,4 +1,5 @@
 import PleaNP.Basic
+import PleaNP.Calculus.BarrierCalculus
 import PleaNP.Computability.Oracle
 import PleaNP.Computability.OracleComplexity
 import PleaNP.Barriers.Basic
