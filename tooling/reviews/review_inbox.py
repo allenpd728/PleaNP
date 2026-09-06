@@ -69,6 +69,30 @@ _POINT_SCHEMA = {
 _REQUIRED = {"kind", "run", "agent", "created", "claim", "module", "decl",
              "machine_summary", "informal", "question", "expected"}
 
+# Load-bearing token pairs used to build recheck-control twins (perturbations).
+# Flipping one of these changes the claim's meaning — a control twin should be
+# FLAGGED, so confirming it is a fatigue signal.
+_PERTURB_PAIRS = [
+    ("for every", "there exists"),
+    ("∀", "∃"),
+    ("⊆", "⊇"),
+    ("subset", "superset"),
+    ("containment", "reverse containment"),
+    ("equality (=)", "inequality (≠)"),
+    ("equals", "does not equal"),
+]
+
+
+def _flip(text: str) -> tuple[str, str]:
+    """Flip the first load-bearing token found in `text`.
+    Returns (flipped_text, description_of_what_was_flipped)."""
+    for a, b in _PERTURB_PAIRS:
+        if a in text:
+            return text.replace(a, b, 1), f"'{a}' -> '{b}'"
+        if b in text:
+            return text.replace(b, a, 1), f"'{b}' -> '{a}'"
+    return text, "expected-answer flipped (no load-bearing token found)"
+
 
 class _MiniYaml:
     """Minimal YAML-subset reader/writer for our flat schema (no deps)."""
@@ -173,11 +197,90 @@ def _move(pid: str, target: str, reason: str | None) -> int:
     d["status"] = target
     if reason:
         d["reason"] = reason
+    if target == "confirmed":
+        d["confirmed_at"] = _dt.datetime.now(_dt.timezone.utc).isoformat()
     (CONFIRMED if target == "confirmed" else FLAGGED).mkdir(parents=True, exist_ok=True)
     final = _point_path(pid, target)
     final.write_text(_MiniYaml.dump(d), encoding="utf-8")
     path.unlink(missing_ok=True)
     print(f"{target} {pid} (was {st})")
+    return 0
+
+
+def perturb(pid: str) -> int:
+    """Create a recheck-control twin of a CONFIRMED point: same claim with one
+    load-bearing element flipped. The twin should be FLAGGED — confirming it is
+    a fatigue signal (the human rubber-stamped the original).
+
+    This is the "second async review that changes the content" (fatigue
+    protection). Disclosed honestly in the twin's question: the control exists,
+    is not marked in advance, and confirming it re-queues the original.
+    """
+    if not _ID_RE.match(pid or ""):
+        print(f"error: bad point id {pid!r}", file=sys.stderr)
+        return 2
+    path, st = _find(pid)
+    if path is None or st != "confirmed":
+        print(f"error: {pid!r} not found / not confirmed (need a confirmed point)",
+              file=sys.stderr)
+        return 1
+    orig = _MiniYaml.load(path.read_text(encoding="utf-8"))
+    summary_flipped, what = _flip(orig.get("machine_summary", ""))
+    twin = dict(orig)
+    twin["kind"] = "recheck-control"
+    twin["control_of"] = pid
+    twin["created"] = _dt.datetime.now(_dt.timezone.utc).isoformat()
+    twin["machine_summary"] = summary_flipped
+    twin["expected"] = "no" if orig.get("expected") == "yes" else "yes"
+    twin["question"] = (
+        f"RECHECK-CONTROL of {pid}: you confirmed the original. This twin has "
+        f"[{what}] flipped. It should be FLAGGED — confirming it indicates "
+        f"possible fatigue and re-queues the original.")
+    twin["status"] = "pending"
+    # drop control-specific fields that shouldn't copy
+    twin.pop("confirmed_at", None)
+    twin.pop("reason", None)
+    new_id = _id()
+    PENDING.mkdir(parents=True, exist_ok=True)
+    (PENDING / f"{new_id}.yaml").write_text(_MiniYaml.dump(twin), encoding="utf-8")
+    print(f"recheck-control {new_id} created from confirmed {pid} (flipped: {what})")
+    return 0
+
+
+def fatigue() -> int:
+    """Report fatigue signals: confirmed points whose recheck-control twin the
+    human also confirmed (the rubber-stamp signal), and very-fast confirms."""
+    controls = 0
+    confirmed_controls = []
+    for p in sorted(CONFIRMED.glob("*.yaml")):
+        d = _load_or_none(p)
+        if d.get("kind") == "recheck-control":
+            controls += 1
+            confirmed_controls.append(p.stem)
+    # fast-confirm heuristic: original confirmed within 30s of its created time
+    fast = []
+    for p in sorted(CONFIRMED.glob("*.yaml")):
+        if p.stem in confirmed_controls:
+            continue
+        d = _load_or_none(p)
+        created = d.get("created", "")
+        conf_at = d.get("confirmed_at", "")
+        try:
+            import datetime
+            c = datetime.datetime.fromisoformat(created)
+            a = datetime.datetime.fromisoformat(conf_at)
+            if (a - c).total_seconds() < 30:
+                fast.append(p.stem)
+        except Exception:
+            pass
+    print(f"recheck-controls confirmed by the human: {len(confirmed_controls)}"
+          f"{' -> ' + ', '.join(confirmed_controls) if confirmed_controls else ''}")
+    print(f"fast confirms (<30s): {len(fast)}{' -> ' + ', '.join(fast) if fast else ''}")
+    if confirmed_controls or fast:
+        print("ACTION: re-queue the originals of any confirmed recheck-controls;")
+        print("consider pausing review for the fast-confirm author (fatigue).")
+        return 1
+    print("no fatigue signals detected.")
     return 0
 
 
@@ -273,17 +376,26 @@ def main() -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     p_add = sub.add_parser("add", help="add a pending review point (key=value ...)")
     p_add.add_argument("fields", nargs="+")
+    p_add.add_argument("--control", action="store_true",
+                       help="file this as a recheck-control (kind=recheck-control)")
     sub.add_parser("index", help="regenerate reviews/INBOX.md")
     p_ok = sub.add_parser("confirm", help="confirm a pending point")
     p_ok.add_argument("id")
     p_fl = sub.add_parser("flag", help="flag a pending point (claim reopens)")
     p_fl.add_argument("id")
     p_fl.add_argument("reason", nargs="?", default=None)
+    p_pt = sub.add_parser("perturb", help="make a recheck-control twin of a confirmed point")
+    p_pt.add_argument("id")
+    sub.add_parser("fatigue", help="report fatigue signals (confirmed controls, fast confirms)")
     p_ls = sub.add_parser("list", help="list review points")
     p_ls.add_argument("--status", choices=["pending", "confirmed", "flagged"], default=None)
     args = ap.parse_args()
 
     if args.cmd == "add":
+        if args.control:
+            # force kind=recheck-control: drop any user-kind, append ours last
+            args.fields = [f for f in args.fields if not f.startswith("kind=")]
+            args.fields.append("kind=recheck-control")
         return add(args.fields)
     if args.cmd == "index":
         return index()
@@ -291,6 +403,10 @@ def main() -> int:
         return _move(args.id, "confirmed", None)
     if args.cmd == "flag":
         return _move(args.id, "flagged", args.reason)
+    if args.cmd == "perturb":
+        return perturb(args.id)
+    if args.cmd == "fatigue":
+        return fatigue()
     if args.cmd == "list":
         return list_points(args.status)
     return 2
