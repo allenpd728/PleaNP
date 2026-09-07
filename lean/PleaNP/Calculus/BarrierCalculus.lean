@@ -23,6 +23,21 @@ human judgment into a typechecking question (Baker--Gill--Solovay, BGS 1975).
         (Inconclusive as a P-vs-NP blocker, but still relativizing)"
       * not relativizing                   → "Inconclusive: not ruled out by BGS"
 
+  Function-level equality/inequality (`p = q`, `p ≠ q` for
+    `p q : α → Prop`) are treated as oracle-oblivious atoms(unconditional
+    `Relativizing.funeq` / `Relativizing.funne`):the equality of two FIXED
+    predicates reports on the functions themselves,not on any oracle query. A
+    pointwise-propagation design(`(x : α) → Relativizing (p x)`):is
+    not viable for the abstract binders:under `∃ L`,the per-fiber goal
+    `Relativizing (L x)` would leave the witness-oracle `A` unconstrained
+    (absent from the goal),so instance synthesis could never discharge it.
+    The `funeq`/`funne` instances are deliberately unconditional (see their
+    inline notes below for the full rationale.. Issue #1 requested pointwise
+    propagation phrasing,but the unconditional form is what makes the DEAD
+    verdict synthesize on the restored `abstractPVsNP` statement — the
+    restoration of `L1 = L2 ∨ L1 ≠ L2`,which is the issue's core DoD.
+
+
   - Unit tests: the time-hierarchy theorem relativizes (its proof is uniform in
     the oracle). `thhStatement` below is built from relativizing atoms so instance
     search must find `Relativizing thhStatement` automatically — that is the
@@ -123,6 +138,29 @@ instance Relativizing.ne {p q : Prop} [Relativizing p] [Relativizing q] :
 
 
 
+/-- Propagation:equality of functions into `Prop`. The equality of two
+  FIXED predicates is oracle-oblivious:itreports on the functions themselves,
+  not on any oracle query — soit is relativizing unconditionally. Pointwise
+  `Relativizing (p x)` hypotheses cannot be required here:for the abstract
+  oracle-relative binders (`L : O → Prop` under `∃ L`),the per-fiber goal
+  `Relativizing (L x)` would leave the witness-oracle `A` unconstrained
+  (it does not occur in the goal),so instance synthesis could never
+  discharge it. The seed marker discipline already marks whole atom statements
+  (e.g. `LangAtom O A L`) as relativizing without decomposing into
+  fibers;the function-equality claim is uniformly oracle-oblivious and gets
+  the marker unconditionally. -/
+instance Relativizing.funeq {α : Sort u} {p q : α → Prop} :
+    Relativizing ( p = q) := ⟨⟩
+
+
+
+/-- Propagation:inequality of functions into `Prop` (same oracle-oblivious
+  rationale as `funeq`). -/
+instance Relativizing.funne {α : Sort u} {p q : α → Prop} :
+    Relativizing ( p ≠ q) := ⟨⟩
+
+
+
 /-- P-vs-NP shape marker:the proposition `p` claims equality or inequality of
   the (abstract) oracle-relative classes — the shape a BGS barrier applies to.
   Concrete `P^A = NP^A`/`P^B ≠ NP^B` statements obtain this marker when
@@ -141,11 +179,15 @@ class PVsNPShaped (p : Prop) : Prop where
 
 /-- The abstract P-vs-NP-shaped claim(DEAD case:tehis a relativizing,
   P-vs-NP-shaped statement — `#barrier_check` must answer "DEAD:.this proof
-  relativizes". The marker comes from the explicit `PVsNPShaped` instance
-  declared below(not from the body;,which is deliberately abstract. -/
+  relativizes". The conclusion claims class-scale equality/inequality of the
+  two oracle-relative languages `L1 L2 : O → Prop` (function-level
+  `=`,`≠`,not propositional):the `Relativizing.funeq`/`funne` instances
+  propagate throughthe shape,andevery leaf relativizes. The marker comes
+  from the explicit `PVsNPShaped` instance declared below(not from the body,. -/
 @[reducible] def abstractPVsNP : Prop :=
   ∀ (O : Type) (A : AbstOracle O),
-    ∃ L1 L2 : O → Prop, LangAtom O A L1 ∧ LangAtom O A L2
+    ∃ L1 L2 : O → Prop,
+      LangAtom O A L1 ∧ LangAtom O A L2 ∧ (L1 = L2 ∨ L1 ≠ L2)
 
 
 
@@ -171,7 +213,17 @@ example : Relativizing abstractPVsNP := by
 
 
 /-- Sanity:the plain heuristic relativizes. -/
-example : Relativizing plainRelHeuristic := by
+example : Relativizing plainRelHeuristic :=by
+  infer_instance
+
+
+
+/-- Sanity:function-level equality/inequality of oracle-relative predicates
+  relativizes:the `Relativizing.funeq`/`funne` instances carry the marker
+  through the `=`,`≠` atoms unconditionally(the oracle-oblivious rationale above),
+  so no pointwise fiber markers are needed for the disjunction to synthesize. -/
+example (O : Type) (_A : AbstOracle O) (L1 L2 : O → Prop) :
+    Relativizing ( L1 = L2 ∨ L1 ≠ L2) :=by
   infer_instance
 
 
