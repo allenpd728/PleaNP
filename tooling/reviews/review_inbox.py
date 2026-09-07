@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as _dt
+import json
 import re
 import sys
 from pathlib import Path
@@ -62,6 +63,7 @@ _POINT_SCHEMA = {
     "question",        # ONE plain-language yes/no question for the human
     "expected",        # the answer the agent asserts ("yes" or "no")
     "refs",            # optional; commit hash / issue link
+    "spec",            # optional; path to a rendering-disagreement spec JSON (renders the probe checklist in the index)
     "reason",          # optional; set only when flagged
     "status",          # pending | confirmed | flagged (managed by the tool)
 }
@@ -345,6 +347,16 @@ def fatigue() -> int:
     return 0
 
 
+def _import_probe_check():
+    """Lazy-import the Gate-4 probe-checklist renderer (stdlib; avoids a hard
+    dependency between the inbox and the gates tooling)."""
+    gates_dir = Path(__file__).resolve().parents[2] / "tooling" / "gates"
+    if str(gates_dir) not in sys.path:
+        sys.path.insert(0, str(gates_dir))
+    import probe_check
+    return probe_check
+
+
 def _render_point(pid: str, d: dict) -> str:
     lines = [
         f"### {pid}",
@@ -358,6 +370,25 @@ def _render_point(pid: str, d: dict) -> str:
     ]
     if d.get("refs"):
         lines.append(f"- refs: {d['refs']}")
+    spec = d.get("spec")
+    if spec:
+        try:
+            pc = _import_probe_check()
+            spec_path = ROOT / spec
+            data = json.loads(spec_path.read_text(encoding="utf-8"))
+            violations = pc.validate_rendering_disagreement_spec(data)
+            if violations:
+                lines.append("")
+                lines.append(f"⚠️ spec failed probe-checklist validation: {'; '.join(violations)}")
+            else:
+                lines.append("")
+                lines.append("Probe checklist (rendering disagreement):")
+                lines.append("```")
+                lines.append(pc.render_checklist(data))
+                lines.append("```")
+        except Exception as exc:
+            lines.append("")
+            lines.append(f"⚠️ could not render spec {spec!r}: {exc}")
     lines.append("")
     return "\n".join(lines)
 
