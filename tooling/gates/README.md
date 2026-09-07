@@ -66,6 +66,26 @@ body). Catches:
 - Declarations never applied / fields never read (Flaw B shape)
 - Bound variables absent from their own conjunct (Flaw C shape)
 
-Usage: `python3 binder_usage_scan.py lean/PleaNP`
+Usage:`python3 binder_usage_scan.py lean/PleaNP`
 
 See `docs/VALIDATION_SUITE.md` for the full validation requirements.
+
+## Gate 3 — Multi-rendering driver (`multi_render.py`)
+
+The multi-rendering engine — "AI produces many renderings; humans mine the
+shape." Pipeline (`init` → `render` → `check` → `mine`): independent Lean
+renderings of one informal claim are registered in `churn/<slug>/renderings/`,
+pairwise machine-verified equivalent via `dual_render`,ford disagreements
+become **review points** in the review inbox (`review_inbox.py`; one plain-
+language question each),filed as GitHub issues by `review-issue.yml`.
+
+**Merge/registration step (`merge <slug>`; 2026-09-07,#25).** Pulls each
+contributor's submission manifest (`churn/<slug>/submissions/<slot>.json`) into
+`renderings/`,then re-runs `check`(＋ `churn/<slug>/lemmas.json` if present)
+and `mine` on the merged set. **Idempotent**: re-running is harmless — re-
+registration overwrites the same `<id>.json`,check rewrites `matrix.json`,and
+`mine` dedupes review points by stable key (`run` + `decl` pair),so no
+duplicate pending points nor GitHub issues are filed (the #7-#16 double-
+filing bug class; see `review-issue.yml`'s inbox-id dedupe). 
+
+Usage: `python3 tooling/gates/multi_render.py merge <slug> [--lean-dir lean]`

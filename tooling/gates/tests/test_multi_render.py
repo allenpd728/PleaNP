@@ -87,6 +87,44 @@ class multi_renderTest(unittest.TestCase):
         self.assertIn("not machine-verified equivalent", text.lower().split("machine_summary:")[1].split("\n")[0].lower())
         self.assertIn("question:", text)
 
+    def test_merge_registers_submissions_idempotently(self):
+        # A merge/registration step: pull submission manifests into renderings/,
+        # re-run check (+ lemmas) + mine. Idempotent on re-run. 
+        self._merge_workspace_with_submissions()
+        self.assertEqual(multi_render.merge("demo", Path(".")), 0)
+        renderings = sorted(p.name for p in multi_render._ws("demo").glob("renderings/*.json"))
+        self.assertEqual(renderings, ["s1.json", "s2.json"])
+        matrix = json.loads((multi_render._ws("demo") / "matrix.json").read_text())
+        self.assertEqual(len(matrix["pairs"]), 1)
+        # Second run: harmless — no double registration, no errors.
+        self.assertEqual(multi_render.merge("demo", Path(".")), 0)
+        sorted2 = sorted(p.name for p in multi_render._ws("demo").glob("renderings/*.json"))
+        self.assertEqual(sorted2, ["s1.json", "s2.json"])
+
+    def test_mine_is_idempotent_no_duplicate_review_points(self):
+        # The sync-pending dedupe fix (#25b): re-running mine must not file
+        # duplicate review points (stable key = run + decl pair)..
+        multi_render.init("demo", "the informal claim")
+        multi_render.render("demo", "r1", "MA", "TA")
+        multi_render.render("demo", "r2", "MB", "TB")
+        multi_render.dual_render.check_equivalence = lambda ld, a, b, c, d, lemma=None: (False, "disagree")
+        self.assertEqual(multi_render.check("demo", Path(".")), 0)
+        self.assertEqual(multi_render.mine("demo"), 0)
+        self.assertEqual(multi_render.mine("demo"), 0)
+        pending = list(multi_render.review_inbox.PENDING.glob("*.yaml"))
+        self.assertEqual(len(pending), 1)
+        self.assertIn("run: multi-rendering-demo", pending[0].read_text())
+        self.assertIn("decl: r1,r2", pending[0].read_text())
+
+    def _merge_workspace_with_submissions(self):
+        multi_render.init("demo", "the informal claim")
+        import json as _json
+        subs = multi_render._ws("demo") / "submissions"
+        subs.mkdir(parents=True, exist_ok=True)
+        (subs / "s1.json").write_text(_json.dumps({"id": "s1", "module": "M1", "theorem": "T1"}))
+        (subs / "s2.json").write_text(_json.dumps({"id": "s2", "module": "M2", "theorem": "T2"}))
+        multi_render.dual_render.check_equivalence = lambda ld, a, b, c, d, lemma=None: (True, "ok")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
