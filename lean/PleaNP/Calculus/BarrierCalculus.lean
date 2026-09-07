@@ -56,7 +56,10 @@ Build status (2026-09-06): compiles clean under Lean v4.31.0 / Mathlib v4.31.0;
 all four `#barrier_check` unit tests produce the intended verdicts. The two
 `binder_usage_scan` REVIEW items (`hasInstance`, `nonRelativizingControl`) are
 false positives — both are referenced from inside the elaborator command /
-`#barrier_check` invocation, which the Python scanner cannot see.
+`#barrier_check` invocation. As of #2 (2026-09-07), the `binder_usage_scan`
+now treats `elab_rules` bodies and `#barrier_check <id>` invocations as
+reference sources,so these two REVIEW items are gone — see
+`tooling/gates/binder_usage_scan.py` and `tooling/gates/tests/case13_elab_check_refs.lean`.
 -/
 
 namespace PleaNP
