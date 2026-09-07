@@ -93,6 +93,34 @@ is dormant).
 5. **CI green on the clean surface, expected-sorry modules quarantined and
    written up** (not "red CI" by surprise).
 
+---
+
+## Measured corpus experiment (Tier-1 #3 — results, 2026-09-07)
+
+**Run** (issue #19): `python3 tooling/gates/corpus_campaign.py bgs barrier-verdict
+   --skip-mine --previously-mined bgs:5` → `tooling/gates/corpus_campaign.json`.
+
+The multi-rendering loop (`multi_render check --lemmas` + `mine`) ran over
+2 campaign workspaces (6 independent renderings of the two barrier-shaped
+informal claims: the BGS clauses and the barrier-calculus DEAD shape).
+
+| Campaign | Claim | Renderings | Pairs | Machine-equivalent | Disagreements | Mined (this run) | Mined (historical) |
+|---|---|---|---|---|---|---|---|
+| `bgs` | BGS: oracles separate/equalize P^A vs NP^A | 4 | 6 | 1 (A≡C, by proved IFF lemma) | 5 | 0 (re-mine skipped; dedupe per #20) | 5 (#7–#16, swept) |
+| `barrier-verdict` | DEAD-shape: relativizing + P-vs-NP-shaped | 2 | 1 | 1 (A≡B, by proved IFF lemma) | 0 | 0 | 0 |
+| **Total** | | **6** | **7** | **2 (29%)** | **5 (71%)** | **0** | **5** |
+
+**Read:** the machine can verify renderings that agree structurally (2/7
+pairwise = 29% EQUIVALENT with proved IFF lemmas); the disagreements (5/7)
+are cross-clause set-equality-vs-witness shape ambiguities — exactly the
+places a statement can be silently wrong and the places the human mines
+(#7–#16, acknowledged; dedupe by inbox id per #19 DoD). The
+`barrier-verdict` campaign closes fully equivalent (the DEAD shape is robust
+across binder orders) — bisherie measured agreement evidence for the
+`Relativizing`/`#barrier_check` calculus. Re-runs via `corpus_campaign.py`
+(recompute matrices + counts;`--skip-mine --previously-mined bgs:5` for the
+already-mined bgs disagreements).
+
 ### Tier 2 — differentiators
 6. **Frozen + read-back-checked BGS statement** (Gates 1–4 complete), even
    absent the proof.
@@ -159,7 +187,7 @@ major pivot.)
 - [ ] Prove BGS clause (b) zero-sorry (needs substrate + diagonalization)
 - [ ] Freeze + read-back the BGS statement (Gates 1–4)
 - [ ] Soundness proof for `#barrier_check` (Relativizing ⟹ BGS-relativizing)
-- [ ] Measured `#barrier_check` corpus experiment
+- [x] Measured `#barrier_check` corpus experiment (landed 2026-09-07, #19; see the table above)
 - [ ] Name a lead + find a co-PI/ally
 - [ ] Write the paper skeleton
 - [ ] Date-stamp the upstream audit; add reproducibility note
