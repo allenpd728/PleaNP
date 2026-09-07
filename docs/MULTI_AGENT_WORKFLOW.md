@@ -207,6 +207,19 @@ An agent that reads a sibling's rendering before its own is submitted violates t
 campaign (recorded in the slot comment);the merge step's pairwise matrix is the
 enforcement point,not the barrier.
 
+**Slot-diversity discipline (2026-09-07,#27).** Every campaign slot must carry a
+*distinct named lens* (e.g. structure-first / machine-construction /
+witness-predicate / per-length-family),not merely a fresh random seed. All agent
+work uses the same LLM: identical prompts → identical canonical shapes regardless of
+decoding randomness — temperature/entropy cannot force *structural* divergence. A
+lens directs the renderer to a different corner of the statement-shape space;
+disagreements between lenses are the interesting, human-mineable places. If a campaign
+comes back **all EQUIVALENT** (no disagreements),that is itself a measured result —
+the claim is unambiguous across the lenses — and the human still reviews exactly ONE
+confirm probe on the agreed shape + a perturb-control twin (`review_inbox.py perturb`,
+per the fatigue protocol;the control should be FLAGGED,proving the review isn't
+rubber-stamp);there is no "nothing to review" state in a campaign.
+
 ## Blockers
 
 When an agent cannot start or complete a task (unclear spec, missing context,
