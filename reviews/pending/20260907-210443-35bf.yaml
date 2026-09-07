@@ -1,0 +1,14 @@
+agent: openhands
+claim: Relativizing.funeq/funne are oracle-oblivious atoms, not pointwise-propagated
+created: "2026-09-07T21:10:00Z"
+decl: PleaNP.Calculus.Relativizing.funeq
+expected: yes
+informal: Issue #1 requested the marker propagate from pointwise Relativizing (p x) for function-level equality/inequality
+kind: semantic-review
+machine_summary: "Instances Relativizing (p = q) and Relativizing (p ≠ q) for p q : α → Prop,declared unconditionally(no pointwise Relativizing-fiber hypotheses)"
+module: lean/PleaNP/Calculus/BarrierCalculus.lean
+question: Is it correct that function equality/inequality of FIXED predicates us marked oracle-oblivious(unconditionally relativizing),even though individual fibers may be oracle-dependent?
+refs: e46fd23
+run: 20260907-2035-k7m2
+spec: none
+status: pending
