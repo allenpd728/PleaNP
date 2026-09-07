@@ -36,6 +36,9 @@ jobs:
       - name: Barrier-check verdict harness (Rung-5,#3; asserts the four #barrier_check verdict lines)
         run: python3 ../tooling/gates/barrier_check_test.py /tmp/barcheck.log
         working-directory: lean
+      - name: Build tests exe (funeq/funne propagation + DEAD verdict;#30)
+        run: lake build tests
+        working-directory: lean
       - name: Hygiene scan (Gate 6 Tier 1)
         run: python3 tooling/gates/hygiene_scan.py --prove-stage lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
       - name: Vacuity scan (Gate 5 Tier 1)
