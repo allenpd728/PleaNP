@@ -189,6 +189,19 @@ class ReviewInboxTest(unittest.TestCase):
             review_inbox.PENDING.joinpath(pending[0] + ".yaml").read_text())
         self.assertEqual(d.get("reopened_by"), "auto-requeue")
 
+    def test_index_renders_spec_checklist(self):
+        # A rendering-disagreement review point carries spec=;the INBOX renderer
+        # must inline the probe checklist (batch narrative + probes + hints + expected)。
+        spec_rel = "tooling/gates/specs/rendering_disagreement.example.json"
+        fields = _base_fields() + [f"spec={spec_rel}"]
+        self.assertEqual(review_inbox.add(fields), 0)
+        review_inbox.index()
+        text = (review_inbox.REVIEWS / "INBOX.md").read_text(encoding="utf-8")
+        self.assertIn("Probe checklist", text)
+        self.assertIn("batch narrative:", text)
+        self.assertIn("choices:", text)
+        self.assertIn("expected:", text)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

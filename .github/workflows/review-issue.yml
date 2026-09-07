@@ -43,6 +43,10 @@ on:
         description: "Expected answer (yes/no)"
         required: false
         type: string
+      spec:
+        description: "Optional path to a rendering-disagreement spec under tooling/gates/specs/ (renders its probe checklist into the body)"
+        required: false
+        type: string
   issue_comment:
     types: [created]
 
@@ -76,6 +80,14 @@ jobs:
             exp=$(awk -F': ' '/^expected:/{gsub(/"/,"",$2);print $2}' "$f")
             kind=$(awk -F': ' '/^kind:/{gsub(/"/,"",$2);print $2}' "$f")
             control_of=$(awk -F': ' '/^control_of:/{gsub(/"/,"",$2);print $2}' "$f")
+            spec=$(awk -F': ' '/^spec:/{gsub(/"/,"",$2);print $2}' "$f")
+            # Rendering-disagreement checklist (optional): if the point YAML
+            # carries spec=, inline the renderer's probe checklist into the issue
+            # body (question+choices+hint+expected per probe; batch narrative prepended)。
+            CHECKLIST=""
+            if [ -n "$spec" ] && [ -f "tooling/gates/specs/${spec}" ]; then
+              CHECKLIST=$(python3 tooling/gates/probe_check.py checklist "tooling/gates/specs/${spec}" 2>/dev/null | sed 's/^/  /')
+            fi
             # Dedupe by inbox id (unique per point), not decl (shared by
             # mined/churned points — the earlier bug that doubled issues
             # #7-#16). The issue body carries '(inbox id: <id>)'.
@@ -97,6 +109,11 @@ jobs:
           - **control_of:** ${control_of:-none}
 
           ---
+          **Probe checklist (from the spec):**
+
+          ${CHECKLIST}
+          ---
+
           To answer, comment on this issue:
           - \`confirm\` — the machine summary matches my intention
           - \`flag <reason>\` — it does not; the claim reopens (reason recorded)"
@@ -119,23 +136,37 @@ jobs:
           INFO="${{ github.event.inputs.informal }}"
           DECL="${{ github.event.inputs.decl }}"
           EXP="${{ github.event.inputs.expected }}"
-          BODY=$(cat <<'EOF'
-          **One question to review (intro-level level):**
+          SPEC="${{ github.event.inputs.spec }}"
+          CHECKLIST=""
+          if [ -n "$SPEC" ] && [ -f "tooling/gates/specs/${SPEC}" ]; then
+            CHECKLIST=$(python3 tooling/gates/probe_check.py checklist "tooling/gates/specs/${SPEC}" 2>/dev/null | sed 's/^/  /')
+          fi
+          BODY="**One question to review (intro-level):**"
+          BODY="$BODY
 
           **$Q**
 
           - **claim:** $CLAIM
           - **machine summary (from Lean):** $SUM
           - **informal (what we wanted):** $INFO
-          - **decl:** `$DECL`
-          - **expected answer:** $EXP
+          - **decl:** \`$DECL\`
+          - **expected answer:** $EXP"
+          if [ -n "$CHECKLIST" ]; then
+            BODY="$BODY
+
+          ---
+          **Probe checklist (from the spec):**
+
+          $CHECKLIST
+          ---"
+          fi
+          BODY="$BODY
 
           ---
           To answer, comment on this issue:
-          - `confirm` — the machine summary matches my intention
-          - `flag <reason>` — it does not; the claim reopens (reason recorded)
-          EOF
-          )
+          - \`confirm\` —the machine summary matches my intention
+          - \`flag <reason>\` — it does not;the claim reopens (reason recorded)"
+
           gh issue create --repo "${{ github.repository }}" \
             --title "$CLAIM — review" \
             --label "review:pending" \

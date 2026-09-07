@@ -128,30 +128,49 @@ python3 tooling/reviews/review_inbox.py index
 
 ## How to decide a "disagreement" in plain words (Boolean logic style)
 
-Some review points come from Gate 3: AI wrote several versions of a claim,
-and two versions **are not proven to say the same thing**. That sounds scary,
-but you decide it with plain logic — no Lean, no proofs.
+## Rendering disagreements ARE probe checklists
 
-**What the issue shows now:** each version is labeled in plain words — e.g.
-"rendering A (says a box makes the two classes EQUAL)" vs "rendering B (says
-a box makes the two classes DIFFERENT)". Those are **different sentences
-about different things**. Both can be true and wanted: the project can want
-both an equalizing box and a separating box.
+Since 2026-09-07 (#28),a multi-rendering disagreement is no longer reviewed
+as an open-ended "what did you intend" question. It arrives as a **probe
+checklist**: 3-5 tiny, independent, single-choice probes derived mechanically
+from the Lean renderings, each with:
 
-**Boolean way to think about it:** you are checking two facts — "fact 1:
-version A claims X" and "fact 2: version B claims Y". Answer:
+- a concrete `question` (one small fact you can reason about),
+- labeled `choices` (pick one),
+- a `hint` / inline `gloss` (plain-language, intro-level),
+- the machine-derived `expected` answer (from the Lean, not the informal wish).
 
-- **`confirm`** → both facts look right, nothing surprising is claimed. (Even
-  if they disagree with each other — disagreement between versions is fine
+The contract is the same one-wrong-ao-blocked rule as every probe check: one wrong
+answer = the claim is wrong. The batch narrative (if present) recaps why two
+renderings diverged,so you never need to reassemble the disagreement from
+scattered labels.
+
+**Rule:** any disagreement that cannot be decomposed into >= 3 concrete probes
+returns to the agents as 'not yet reviewable' - no intent-ratification anywhere.
+
+The probes appear inside the review issue body (and in `reviews/INBOX.md`),so
+you answer them the same way: `confirm` when every answer matches your reading;
+`flag <reason>` otherwise (the claim reopens). Nothing else changes.
+
+
+## Boolean way to think about it (traditional Gate-3 points
+
+If a review point still arrives as the older plain-words-only form (no probes),
+you are checking two facts: "fact 1: version A claims X" and "fact 2:
+version B claims Y". Answer:
+
+- **`confirm`** -> both facts look right, nothing surprising is claimed. (Even
+  if they disagree with each other - disagreement between versions is fine
   when they are about different clauses; both can be intended.)
-- **`flag <reason>`** → one version claims something that should NOT be
+- **`flag <reason>`** -> one version claims something that should NOT be
   intended (e.g. "says a box makes the classes EQUAL" when you only wanted the
   separating part).
 
 That is the whole decision. If an issue still shows only "disagree on the
-shape" with no plain-words labels, that is a **tooling bug** — flag it with
-"question does not show what the versions say" so an agent fixes it (and see
-the top of this file for how agents file review points correctly).
+shape" with no plain-words labels, and no probe checklist, that is a **tooling
+bug** - flag it with "question does not show what the versions say" so an agent
+fixes it (and see the top of this file for how agents file review points
+correctly).
 
 ## Reviewer-fatigue protection (recheck-control twins)
 

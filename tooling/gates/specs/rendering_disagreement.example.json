@@ -1,0 +1,42 @@
+{
+  "campaign": "bgs-u-b-in-np",
+  "lens_a": "structure-first",
+  "lens_b": "witness-predicate",
+  "informal_claim": "The unary language U_B is in NP with oracle B: a nondeterministic polynomial-time oracle machine guesses an n-bit input x, queries the oracle about x, and accepts iff the oracle answers yes.",
+  "batch_narrative": "Two renderings disagreed on how the membership claim is shaped. Renderings A (structure-first) puts the quantifier skeleton front-and-center; rendering B (witness-predicate) bundles the guessed witness x right into the membership predicate. Both encode the same intended claim; your answers close the disagreement.",
+  "probes": [
+    {
+      "key": "q1",
+      "kind": "quantifier",
+      "question": "Does the machine have a way to choose which input to try?",
+      "choices": ["yes, it guesses non-deterministically", "no, it must try them one at a time"],
+      "expected": "yes, it guesses non-deterministically",
+      "hint": "NP means 'there exists a guess that leads to acceptance' — the machine is free to pick the right x if one exists.",
+      "gloss": "non-determininistic: a machine that can branch and accept if ANY branch accepts."
+    },
+    {
+      "key": "q2",
+      "kind": "direction",
+      "question": "Which statement does the claim assert?",
+      "choices": ["U_B is in NP with oracle B", "NP with oracle B is in U_B"],
+      "expected": "U_B is in NP with oracle B",
+      "hint": "The claim is a membership claim about U_B, not a containment direction between classes."
+    },
+    {
+      "key": "q3",
+      "kind": "existence",
+      "question": "Does the proof need to exhibit a concrete oracle machine?",
+      "choices": ["yes, a machine witnesses membership", "no, abstract existence suffices"],
+      "expected": "yes, a machine witnesses membership",
+      "hint": "NP membership is witnessed by a machine + a witness; forging that machine is the point of the campaign."
+    },
+    {
+      "key": "q4",
+      "kind": "bound",
+      "question": "What time bound does the claim use?",
+      "choices": ["at most polynomial", "exactly polynomial", "no bound mentioned"],
+      "expected": "at most polynomial",
+      "hint": "'in NP' is a ceiling: the machine runs in at most polynomial time."
+    }
+  ]
+}
