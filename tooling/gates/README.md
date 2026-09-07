@@ -89,3 +89,25 @@ duplicate pending points nor GitHub issues are filed (the #7-#16 double-
 filing bug class; see `review-issue.yml`'s inbox-id dedupe). 
 
 Usage: `python3 tooling/gates/multi_render.py merge <slug> [--lean-dir lean]`
+
+
+## Rung-5 `#barrier_check` verdict harness (`barrier_check_test.py`; 2026-09-07; #3
+
+Asserts the four `#barrier_check` verdicts logged by
+`lean/PleaNP/Calculus/BarrierCalculus.lean` during compile:
+
+  - `thhStatement`            -> "relativizes, not P-vs-NP-shaped"
+  - `abstractPVsNP`           -> "DEAD"
+  - `plainRelHeuristic`       -> "relativizes, not P-vs-NP-shaped"
+  - `nonRelativizingControl`  -> "Inconclusive"
+
+The elaborator's verdict print via `logInfo`;CI's build step `tee`s its output
+to a log file,then the harness runs on that log and fails if any expected
+verdict segment is missing or wrong - so a regression (a DEAD flipping to
+Inconclusive, an instance that stops synthesizing, a message rewrite) kills
+the build mechanically. Dash-family chars are folded before matching
+(terminal/encoding-tolerant). Unit tests: `tests/test_barrier_check_test.py`
+(stdlib, no Lean,no secrets).
+
+Usage: `python3 barrier_check_test.py <build-log>` (or `--run-lake [MODULE]`
+to build locally first). See `docs/STATEMENTS/BarrierCheckVerdicts.spec.md`.

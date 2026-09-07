@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+"""Unit tests for the `#barrier_check` verdict harness (barrier_check_test.py) - stdlib only.
+
+Tests the harness LOGIC (verdict-segment matching, dash tolerance, log-file
+exit codes)using fixed sample logs - no Lean toolchain, no secrets. The
+real-lake integration is exercised in CI (the build step tees its output and
+the harness runs on the captured log) and by the local `--run-lake` path.
+
+Run:
+    python3 tooling/gates/tests/test_barrier_check_test.py
+"""
+from __future__ import annotations
+
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import barrier_check_test  # noqa: E402
+
+
+VERDICT_LINES = """
+info: PleaNP/Calculus/BarrierCalculus.lean:287:0: #barrier_check PleaNP.Calculus.thhStatement: relativizes, not P-vs-NP-shaped -> Inconclusive as a P-vs-NP blocker.
+
+info: PleaNP/Calculus/BarrierCalculus.lean:288:0: #barrier_check PleaNP.Calculus.abstractPVsNP: DEAD - this proof relativizes,and concludes a P-vs-NP-shaped claim;so BGS rules it out.
+
+
+
+info: PleaNP/Calculus/BarrierCalculus.lean:289:0: #barrier_check PleaNP.Calculus.plainRelHeuristic: relativizes, not P-vs-NP-shaped -> Inconclusive as a P-vs-NP blocker.
+
+
+
+info: PleaNP/Calculus/BarrierCalculus.lean:298:0: #barrier_check PleaNP.Calculus.nonRelativizingControl: Inconclusive - no Relativizing instanceon this statement;so it is not ruled out by BGS.
+
+
+
+"""
+
+
+class VerdictHarnessTest(unittest.TestCase):
+    def test_all_verdicts_present(self):
+        missing = barrier_check_test.check_log(VERDICT_LINES)
+        self.assertEqual(missing, [])
+
+    def test_missing_verdict_detected(self):
+        log = VERDICT_LINES.replace("#barrier_check PleaNP.Calculus.abstractPVsNP: DEAD",
+                           "#barrier_check PleaNP.Calculus.abstractPVsNP: DEA D")
+        missing = barrier_check_test.check_log(log)
+        self.assertEqual(len(missing), 1)
+        self.assertIn("#barrier_check PleaNP.Calculus.abstractPVsNP: DEAD", missing)
+
+    def test_dash_tolerance(self):
+        # Dashes (em and hyphen) are all folded by the harness;either family
+        # must pass.
+        log = VERDICT_LINES.replace("\u2014", "-")
+        missing = barrier_check_test.check_log(log)
+        self.assertEqual(missing, [])
+
+    def test_check_log_tolerates_no_file_prefix(self):
+        # The harness matches the declaration+verdict segment without needing
+        # the `info:` file/line/col prefix..
+        log = VERDICT_LINES.replace("info: PleaNP/Calculus/BarrierCalculus.lean:", "")
+        missing = barrier_check_test.check_log(log)
+        self.assertEqual(missing, [])
+
+    def test_check_file_missing_reports_failure(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".log", delete=False) as f:
+            f.write(VERDICT_LINES.replace("DEAD", "DEA D"))
+        try:
+            rc = barrier_check_test.check_file(Path(f.name))
+            self.assertEqual(rc, 1)
+        finally:
+            Path(f.name).unlink(missing_ok=True)
+
+    def test_check_file_ok(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".log", delete=False)as f:
+            f.write(VERDICT_LINES)
+        try:
+            rc = barrier_check_test.check_file(Path(f.name))
+            self.assertEqual(rc, 0)
+        finally:
+            Path(f.name).unlink(missing_ok=True)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -31,7 +31,10 @@ jobs:
       # actually clean, so the "build oracle" stays green; widen to the full tree
       # when the pending sorries are resolved.
       - name: Build clean modules (Basic + v4 substrate + Barrier Calculus; sorry-as-error)
-        run: lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus PleaNP.Computability.Oracle PleaNP.Computability.OracleComplexity PleaNP.Computability.OracleSmoke
+        run: lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus PleaNP.Computability.Oracle PleaNP.Computability.OracleComplexity PleaNP.Computability.OracleSmoke 2>&1 | tee /tmp/barcheck.log
+        working-directory: lean
+      - name: Barrier-check verdict harness (Rung-5,#3; asserts the four #barrier_check verdict lines)
+        run: python3 ../tooling/gates/barrier_check_test.py /tmp/barcheck.log
         working-directory: lean
       - name: Hygiene scan (Gate 6 Tier 1)
         run: python3 tooling/gates/hygiene_scan.py --prove-stage lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
@@ -46,6 +49,8 @@ jobs:
         working-directory: lean
       - name: Read-back harness unit tests (Gate 4; no secrets, no Lean needed)
         run: python3 tooling/gates/tests/test_readback.py
+      - name: Barrier-check verdict harness unit tests (Rung-5,#3; stdlib-only, no Lean,no secrets)
+        run: python3 tooling/gates/tests/test_barrier_check_test.py
       - name: Read-back smoke (Gate 4; deterministic skeleton on a real theorem)
         run: python3 ../tooling/gates/lean_readback.py "PleaNP.Oracles.evalsTo_unique_result" "PleaNP.Computability.Oracle" >/dev/null && echo "read-back smoke ok"
         working-directory: lean
