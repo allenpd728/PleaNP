@@ -1,0 +1,11 @@
+{
+  "slug": "barrier-verdict",
+  "pairs": [
+    {
+      "a": "A",
+      "b": "B",
+      "equivalent": true,
+      "detail": "Equivalent by proved lemma PleaNP.Calculus.abstractPVsNP_iff_verdictB."
+    }
+  ]
+}
