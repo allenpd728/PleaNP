@@ -30,6 +30,7 @@ Usage (from the repo root):
     python3 tooling/gates/multi_render.py render <slug> <id> <module> <theorem>
     python3 tooling/gates/multi_render.py check <slug> [--lean-dir lean]
     python3 tooling/gates/multi_render.py mine <slug>
+    python3 tooling/gates/multi_render.py merge <slug> [--lean-dir lean]
 
 Exit codes: 0 ok, 1 error, 2 usage.
 """
@@ -117,12 +118,29 @@ def check(slug: str, lean_dir: Path, lemmas: dict | None = None) -> int:
     print(f"wrote {shown}")
     return 0
 
+def _review_point_exists(run: str, decl: str) -> bool:
+    """Idempotency guard for `mine`: true if a review point with the same stable
+    key (`run` + `decl` pair) already exists in ANY status dir (pending, confirmed,
+    flagged). `mine` is re-run by the merge step, sostable keys prevent double-
+    filing (the #7-#16 double-filing bug class)."""
+    from review_inbox import _MiniYaml, CONFIRMED, FLAGGED, PENDING
+    for status_dir in (PENDING, CONFIRMED, FLAGGED):
+        if not status_dir.is_dir():
+            continue
+        for f in status_dir.glob("*.yaml"):
+            try:
+                d = _MiniYaml.load(f.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if d.get("run") == run and d.get("decl") == decl:
+                return True
 
 def mine(slug: str) -> int:
     ws = _ws(slug)
     matrix = json.loads((ws / "matrix.json").read_text(encoding="utf-8"))
     informal = (ws / "informal.md").read_text(encoding="utf-8").split("> ", 1)[-1].strip()
     mined = 0
+    run_key = f"multi-rendering-{slug}"
     # Map a rendering id to a plain-words tag (equalizing vs separating) so
     # the human question is boolean-style and self-describing.
     def _tag(rid: str) -> str:
@@ -140,6 +158,8 @@ def mine(slug: str) -> int:
     for pair in matrix["pairs"]:
         if pair["equivalent"]:
             continue
+        if _review_point_exists(run_key, f"{pair['a']},{pair['b']}"):
+            continue
         q = (f"Two AI-written versions of the claim disagree. "
              f"Version 1: {_tag(pair['a'])}. "
              f"Version 2: {_tag(pair['b'])}. "
@@ -149,7 +169,7 @@ def mine(slug: str) -> int:
              f"if one version says something that should NOT be intended.")
         rc = review_inbox.add([
             "kind=semantic-review",
-            f"run=multi-rendering-{slug}",
+            f"run={run_key}",
             "agent=multi-rendering",
             f"created={_dt.datetime.now(_dt.timezone.utc).isoformat()}",
             f"claim={slug} (Gate 3 disagreement)",
@@ -165,6 +185,34 @@ def mine(slug: str) -> int:
             mined += 1
     print(f"mined {mined} review point(s) from {slug} disagreements")
     return 0
+def merge(slug: str, lean_dir: Path) -> int:
+    """Merge/registration step (#25a): pull each contributor's submission manifest
+    (`churn/<slug>/submissions/<slot>.json`) into the campaign's renderings/,then
+    (re-run `check` — with `lemmas.json` if present — + `mine` on the merged set.
+
+    Idempotent: re-running merge is harmless (re-registration overwrites the
+    same `<id>.json`, check rewrites matrix.json, and mine's stable-key dedupe
+    skips already-filed review points)."""
+    ws = _ws(slug)
+    if not ws.exists():
+        print(f"error: no multi-rendering workspace for {slug!r} (run init first)", file=sys.stderr)
+        return 1
+    reg = ws / "renderings"
+    subs = ws / "submissions"
+    if subs.is_dir():
+        for f in sorted(subs.glob("*.json")):
+            entry = json.loads(f.read_text(encoding="utf-8"))
+            rid = str(entry.get("id", f.stem))
+            (reg / f"{rid}.json").write_text(json.dumps(entry, indent=2), encoding="utf-8")
+            print(f"merged submission {f.name} -> renderings/{rid}.json")
+    lemmas_file = ws / "lemmas.json"
+    lemmas = None
+    if lemmas_file.exists():
+        lemmas = json.loads(lemmas_file.read_text(encoding="utf-8"))
+    rc = check(slug, lean_dir, lemmas)
+    if rc != 0:
+        return rc
+    return mine(slug)
 
 
 def main() -> int:
@@ -179,6 +227,8 @@ def main() -> int:
     p_c.add_argument("--lemmas", default=None,
                      help="optional JSON file mapping 'idA|idB' -> proved IFF lemma FQN")
     p_m = sub.add_parser("mine"); p_m.add_argument("slug")
+    p_mg = sub.add_parser("merge"); p_mg.add_argument("slug")
+    p_mg.add_argument("--lean-dir", default="lean")
     args = ap.parse_args()
 
     if args.cmd == "init":
@@ -193,7 +243,9 @@ def main() -> int:
         return check(args.slug, Path(args.lean_dir), lemmas)
     if args.cmd == "mine":
         return mine(args.slug)
-    return 2
+    if args.cmd == "merge":
+        return merge(args.slug, Path(args.lean_dir))
+    return  2
 
 
 if __name__ == "__main__":
