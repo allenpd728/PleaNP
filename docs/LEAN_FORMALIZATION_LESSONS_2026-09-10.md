@@ -33,7 +33,7 @@
 **NOT established (and why PleaNP must keep its human gates):**
 - The **paper↔Lean translation** of the informal Clay problem(C/D)is *not* independently audited yet(the repository itself says "self-assessed").Lean vouchses only for the formal chain;thatching informal↔formal hop is exactly what PleaNP Gates 3–4 (dual-render, read-back, probe review)exist to pin with human-in-the-loop review.
 
-- No global acceptance:Clay's conditions (publication in a qualifying venue,≥2 years,general community acceptance)have not begun to run;prediction markets and commentary agree this is months-to-years out同仁
+- No global acceptance:Clay's conditions (publication in a qualifying venue,≥2 years,general community acceptance)have not begun to run;prediction markets and commentary agree this is months-to-years out
 
 ---
 
@@ -45,7 +45,7 @@
 
 
 
-**What PleaNP adopts.** For each barrier theorem(and each frozen statement spec),the formal statement PleaNP proves must be checked against an **independent, externally-sourced reference statement**,machine-checkably,with a `Comparator.lean`-style challenge module + `permitted_axioms` pin,per the template in `docs/STATEMENTS/ComparatorChallenge.template.md`. Where no external Lean reference exists(the barriers are new ground — see `docs/PRIOR_ART.md`),PleaNP produces the *first* reference:our `docs/STATEMENTS/*.md` specs are the human-verified informal anchors,and the challenge module for BGS(a)/(b) etc. is authored from a *different* source than the proof root(as `STATEMENTS/` specs are written by thenon-Lean-writing driver per `docs/STATEMENTS/README.md` — the structural independence already exists in the statement-spec channel;this makes it machine-readable系).
+**What PleaNP adopts.** For each barrier theorem(and each frozen statement spec),the formal statement PleaNP proves must be checked against an **independent, externally-sourced reference statement**,machine-checkably,with a `Comparator.lean`-style challenge module + `permitted_axioms` pin,per the template in `docs/STATEMENTS/ComparatorChallenge.template.md`. Where no external Lean reference exists(the barriers are new ground — see `docs/PRIOR_ART.md`),PleaNP produces the *first* reference:our `docs/STATEMENTS/*.md` specs are the human-verified informal anchors,and the challenge module for BGS(a)/(b) etc. is authored from a *different* source than the proof root(as `STATEMENTS/` specs are written by thenon-Lean-writing driver per `docs/STATEMENTS/README.md` — the structural independence already exists in the statement-spec channel;this makes it machine-readable.).
 
 
 
@@ -69,7 +69,7 @@
 
 
 
-**What PleaNP adopts.** A frozen formal claim lives inits own standalone Lean file(imported bya root module,and covered by CI builds + `#print axioms` checks**before** any proof search attaches toit. This is Gate 1 (statement-freeze)rendered as *file layout*,not discipline — and it matches the existing "statement spec → rendered statement file → proof file" split in `docs/STATEMENTS/LOCAL_AGENT_WORKFLOW.md`.The BGS zero-sorry milestone,#18,should land as`PleaNP/Barriers/Relativization.lean`(statement file,zero-sorry,Comparator-checked)plus a separate proof-only scratch module attached later -- keep them physically separate files from the start汶.
+**What PleaNP adopts.** A frozen formal claim lives inits own standalone Lean file(imported bya root module,and covered by CI builds + `#print axioms` checks**before** any proof search attaches toit. This is Gate 1 (statement-freeze)rendered as *file layout*,not discipline — and it matches the existing "statement spec → rendered statement file → proof file" split in `docs/STATEMENTS/LOCAL_AGENT_WORKFLOW.md`.The BGS zero-sorry milestone,#18,should land as`PleaNP/Barriers/Relativization.lean`(statement file,zero-sorry,Comparator-checked)plus a separate proof-only scratch module attached later -- keep them physically separate files from the start.
 
 
 ---
@@ -80,7 +80,7 @@
 - **Do not move to "10,000 agents."** PleaNP's problems(barrier theorems,gate-constrained claims)need *precision over parallelism*:each statement must pass 7 gates;the parallel-search-to-verify-a-PDE construction doesn't transfer to oracle diagonalizations.Keep claim-sized agents.
 .
 - **Do not formalize P vs NP directly.** 166 pages of analysis ⟹ 640K lines of Lean ⇒ a real P≠NP proof would dwarf any current formalization effort.That is strong evidence for PleaNP's "barrier-library, not P/NP proof" scope decision(README; ROADMAP scope note DEG-012).
-- **Do not treat a green `#print axioms` as substituting for human read-back.** It checks the formal chain only;the informal claim((is this actually (C)/(D)?)still needs the human gate(their manifest says "self-assessed";PleaNP's Gates 3–4 stay mandatory).
+- **Do not treat a green `#print axioms` as substituting for human read-back.** It checks the formal chain only;the informal claim(is this actually (C)/(D)?)still needs the human gate(their manifest says "self-assessed";PleaNP's Gates 3–4 stay mandatory).
 - **Do not treat the *single* Comparator reference as sufficient** for PleaNP's stronger standard:dual-render requires *two* independent renderings to agree;Comparator is one machine-checkable reference on top — not a replacement for the second rendering.
 
 - **Do not vendor inline deps.** Their challenge inlines code adapted from DeepMind (license-compliant,but one-off);PleaNP imports upstream(DEC-003)and keeps `docs/STATEMENTS/` as the frozen-informal anchor channel.
@@ -100,3 +100,23 @@ OpenAI and Buckmaster–Alpöge just executed, at enormous scale, three of PleaN
 - Rung 7 (benchmark)row should eventually cite `NavierStokesAndEuler` asan external "large-scale AI-built Lean formalization" data point(scale:2,655 files/640K lines; through-put:97h discovery+formalization for 166 pp)for calibrating formalization-cost estimates in PleaNP's benchmark planning.
 
 - The OpenAI `formalization.yaml` automation section(model `GPT-6 Astra`,framework `Codex`)is an example of the "automation manifest" PleaNP mulls for Rung 9 reproducibility — adopt as a *reference format*,not as the exact data(no Astra/Codex here:OpenHands is the model per DEC-021)
+
+
+---
+
+## 6. Beyond sorry/vacuity: the creativity/authority gates (DEC-023
+
+The releases' deepest lesson for an AI-authority-in-Lean project isn't "0 sorries" or "not vacuous" — it's **the constraint net is what makes creative construction search tractable and non-cheating,and human-legible explanation is what makes its authority real.** Two things the mechanical gates cannot see,which PleaNP has now adopted as creat/authority gates(see `docs/decisions/LOG.md` DEC-023):
+
+1. **Discovery tractability = constraint density compiled into cheap rejectors** — their scale jump (~100 agents/50h Euler disproof vs ~10,000/88h NS)was NOT "bigger compute" but **constraint density**:each dense constraint is a cheap filter rejecting most candidates,so search concentrates on the residual freedom. PleaNP now has a `CREATIVE_PROTOCOL.md` Phase ‎2.5(Constraint-Net Cartography, the executable-filter step:enumerate the independent constraint net,specify an automated rejector per constraint,before creative search)and stacks its proto-rejectors(`#barrier_check`,validation must-refute lemmas,Comparator refs DEC-022,load-bearing-choice audit)This turns "creative search" from "generate-then-pick"(cherry-picking)crank-adjacent into "compile-time-constrained search" whose rejection traces are evidence**
+
+2. **Authority = human legibility,not compilation** — Buckmaster's "AI slop" verdict on a Lean-verified proof,and OpenAI's "self-assessed" manifest,show a machine-checked proof can still fail the authority test if no human can read the reasoning. PleaNP has adopted **(a)** a proof-intuition record per AI-discovered claim(`docs/STATEMENTS/ProofIntuition.template.md`:5-layer plain-words construction,load-bearing audit,perturbation tests,cheap-outs confession,steelman,reviewer checklist——the "explanation" slot the 166-page paper filled)and **(b)** a load-bearing-choice audit in `docs/VALIDATION_SUITE.md`(extending binder-lethality from *definitions* to *proofs*:which choices do the work,internal-mechanism-or-choice-bought,meet the "internal mechanism,externally-perturbable" standard——flag constructions whose conclusion is bought by an exact choice)The no-sorry/no-vacuity gates are necessary,but not sufficient,for a construction to be authoritative——now PleaNP checks *how the construction was found* and *whether humans can own it*,orthogonal to hygiene(Gate 6)and vacuity(Gate 5)**
+
+**Pointer table (where each adoption lives):**
+
+| Adoption | Lives in |
+|---|---|
+| Constraint-net cartography (Phase 2.5) | `docs/CREATIVE_PROTOCOL.md` |
+| Load-bearing-choice audit | `docs/VALIDATION_SUITE.md` §"Load-bearing-choice audit" |
+| Proof-intuition record template | `docs/STATEMENTS/ProofIntuition.template.md` |
+| Decision record | `docs/decisions/LOG.md` DEC-023 |

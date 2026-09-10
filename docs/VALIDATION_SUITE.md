@@ -56,13 +56,32 @@ Definitions progress through an explicit status ladder:
 ## Red-team pass on definitions
 
 Before proving theorems from a new definition, a separate agent or human must try to prove the absurdities it must exclude:
-- `∀ L, DecidesInTime ... L ...` (everything is decidable — Flaw A)
+- `∀ L, DecidesInTime . L .` (everything is decidable — Flaw A)
 - Oracle-independence of behavior (Flaw B)
 - `NP_A A ⊆ P_A A` (Flaw C — nondeterminism is trivial)
 
 Success = the definition is broken. This is Gate 3's independence principle generalized from statements to definitions.
 
 ---
+
+## Load-bearing-choice audit (creativity-honesty gate, DEC-023)
+
+**Purpose.** A proof can compile,pass the vacuity scan,and still be *creatively dishonest* if a *choice*(a parameter,a hypothesis,an encoding,an oracle,a force-like datum)carries the conclusion rather than an *internal mechanism*. This extends the binder-lethality discipline( `binder_usage_scan.py`: every parameter,binder,and declaration must be load-bearing)** from *definitions* to *proofs*. It is the "chosen-to-work" detector -- the authority mechanism the no-sorry/no-vacuity gates cannot see(see `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §3/§4,and the template `docs/STATEMENTS/ProofIntuition.template.md` §3.
+
+
+
+**Requirement.** Every claimed barrier/lower-bound proof whose construction involves substantive *choices*(oracles, machine-enumeration orderings, encodings, perturbation scales, viscosity-like parameters, force-like data — anything the theorem's conclusion is sensitive to)must ship,with its proof-intuition record,an audit of which choices do the work;
+
+- For each choice:what it is,which clause of the conclusion it carries,**internal mechanism or choice-bought?**,and the **perturbation test**(if you perturb this choice slightly,does the construction surviveand the claim with it)?
+- The standard to meet(find the calibration:**"internal mechanism, externally-perturbable"** —the vortex/cascade phenomenon was robust even though the exact theorem needed fine tuning).A construction whose conclusion is *bought* by an exact,un-perturbable choice has thee same geometry as a post-hoc-selected Navier–Stokes force:it is non-vacuous-in-shape but not authoritative — and must be flagged,and reviewed harder,not silently accepted.
+
+
+
+**Success / failure:**
+- **Pass:** every load-bearing choice is backed by an internal mechanism that survives perturbation(test it;record the results inthe intuition record).
+- **Fail:** a load-bearing choice with no mechanism(conclusion sensitive to an exact choice),or the flight-to-cheap-outs pattern(any §4-class move of `docs/STATEMENTS/ProofIntuition.template.md` actually doing work in disguise).Then the claim is**not authoritative-ready** — it stays "formally checked but not yet human-legible"until they mechanism is found or the construction is redesigned.
+
+
 
 ## Granularity rule
 

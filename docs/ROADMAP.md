@@ -1,6 +1,6 @@
 # Roadmap:the rung ladder
 
-> **Scope note (2026-09-06, DEC-012):** Three target components have been added since the original roadmap: **Barrier Calculus** (Rung 5), **Anchor Object** (Rung 6),and **Lower-Bound Compiler** (Rung 8),in that priority order. They are described in their own sections below; the former rungs are renumbered. The core bet:is *negative-space specification*: formalizing the constraints a proof must satisfy, not the proof itself,. The `#barrier_check` artifact (Rung 5) is the demand-pull device that turns "does this proof relativize?" from per-paper human judgment into a typechecking question
+> **Scope note (2026-09-06, DEC-012):** Three target components have been added since the original roadmap: **Barrier Calculus** (Rung 5), **Anchor Object** (Rung 6),and **Lower-Bound Compiler** (Rung 8),in that priority order. They are described in their own sections below; the former rungs are renumbered. The core bet:is *negative-space specification*: formalizing the constraints a proof must satisfy, not the proof itself. The `#barrier_check` artifact (Rung 5) is the demand-pull device that turns "does this proof relativize?" from per-paper human judgment into a typechecking question
 
 This is the development ladder for PleaNP. Each rung is independently valuable; the project produces a defensible research contribution at every rung, independent of whether the top rung is ever reached.
 
@@ -52,9 +52,9 @@ PleaNP imports whichever lands upstream, rather than picking a side. Our only lo
 - **3b (natural proofs):** formalizes the *conditional* (`OWF exists ⟹ no natural property gives superpoly lower bounds`); the one-way function enters as a **hypothesis**, not a constructed object — PleaNP does *not* build a PRF, it states the conditional cleanly (no importable Lean/Coq/Isabelle crypto substrate exists; see `docs/PRIOR_ART.md`, crypto-substrate section).
 - **3c (algebrization):** pin the **original Aaronson–Wigderson 2009 (multiquadratic) formulation** as the v1 target; track the ITCS 2026 multilinear-strengthening as a candidate v2, not part of v1 (prevents formalizing a moving folk theorem).
 
-**Status:** Not started. Depends on Rung 2 (oracle machines, P/NP)..
+**Status:** Not started. Depends on Rung 2 (oracle machines, P/NP).
 
- **Statement-fidelity tooling (adopted DEC-022,2026-09-10):** every frozen barrier statement will additionally ship as a Comparator-style challenge module + JSON pin, per `docs/STATEMENTS/ComparatorChallenge.template.md`（and be recorded in the repo `formalization.yaml` manifest)—— machinery adopted from the OpenAI `NavierStokesAndEuler` release(2026-09-08/10);see `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md`. Phasing: when a barrier statement is next touched(`#18` BGS separating-oracle proof path),create `lean/PleaNP/Challenges/Relativization.lean` + `lean/ComparatorChallenges/Relativization.json` perthe template,with the `Comparator` lake dependency aspirational(no CI change until Comparator is available)。
+ **Statement-fidelity tooling (adopted DEC-022,2026-09-10):** every frozen barrier statement will additionally ship as a Comparator-style challenge module + JSON pin, per `docs/STATEMENTS/ComparatorChallenge.template.md`(and be recorded in the repo `formalization.yaml` manifest)-- machinery adopted from the OpenAI `NavierStokesAndEuler` release(2026-09-08/10);see `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md`. Phasing: when a barrier statement is next touched(`#18` BGS separating-oracle proof path),create `lean/PleaNP/Challenges/Relativization.lean` + `lean/ComparatorChallenges/Relativization.json` perthe template,with the `Comparator` lake dependency aspirational(no CI change until Comparator is available).
 
 ---
 
@@ -79,16 +79,16 @@ PleaNP imports whichever lands upstream, rather than picking a side. Our only lo
 
 **Design sketch (prototype-landing in this repo):**
 - `Relativizing`as a prop-carrying typeclass(over theorem statements/definitions):an instance says "this construction is uniform in the oracle and step-counting is oracle-oblivious" (relativizes).
-- Propagation instances:composition (relativizing pieces composed relativize), application, quantification, equality/inequality over oracle-relative classes,, etc. — so the typeclass diffuses through the dependency graph automatically.
+- Propagation instances:composition (relativizing pieces composed relativize), application, quantification, equality/inequality over oracle-relative classes, etc. — so the typeclass diffuses through the dependency graph automatically.
 .
  A constructed proof gets its instances built from its *parts*;no human annotation per-lemma beyond the seed instances`Relativizing P`, `Relativizing NP`, `Relativizing (P[O])`, etc.
 - `#barrier_check` (elaborator):mark a declaration;the elaborator walks its dependency closure (recursively collecting `Relativizing` instances),and:
-  - if every leaf is relativizing and the conclusion separates or collapses `P`/`NP` — emit **"DEAD: this proof relativizes"**;
-  - if any leaf is non-relativizing — emit **"Inconclusive."**
+ - if every leaf is relativizing and the conclusion separates or collapses `P`/`NP` — emit **"DEAD: this proof relativizes"**;
+ - if any leaf is non-relativizing — emit **"Inconclusive."**
 
 **Unit-test it against the time hierarchy theorem**, which genuinely *does* relativize —that's the correctness check before trusting it on anything else. The time-hierarchy theorem (THH: `DTIME(f) ⊊ DTIME(g)` for `f = o(g)` reasonable time bounds) is relativizing (it holds relative to any oracle with the same proof), so `#barrier_check` on a THH-shaped statement must emit "DEAD"; because THH is not a P-vs-NP claim, this alsovalidates the tool outputs "Inconclusive" for the P-vs-NP-shaped claims that aren't actually barrier-laden. Holds also as a negative test: a proof of `P ≠ NP` *without* any `Relativizing` instance must emit "Inconclusive" (not DEAD), since non-relativizing proofs escape BGS.
 
-**Placement:** `lean/PleaNP/Calculus/BarrierCalculus.lean` (new directory `PleaNP.Calculus`.. `#barrier_check` is an elaborator command, so it needs `elab` syntax — the local agent renders it; prototypes may live in `lean/PleaNP/Calculus/` and a `#barrier_check`-marked test file.
+**Placement:** `lean/PleaNP/Calculus/BarrierCalculus.lean` (new directory `PleaNP.Calculus`. `#barrier_check` is an elaborator command, so it needs `elab` syntax — the local agent renders it; prototypes may live in `lean/PleaNP/Calculus/` and a `#barrier_check`-marked test file.
 
 **Status:** In progress (prototype landing —thenew first concrete task of the scope expansion;see `lean/PleaNP/Calculus/BarrierCalculus.lean` and `docs/decisions/LOG.md` DEC-012.) Unit test against THH shape. NOT gated on upstream P/NP — it is meta-level (typeclass propagation over *relative* classes),so it can proceed while Rung 2's upstream substrate is still blocked.
 
@@ -131,7 +131,7 @@ PleaNP imports whichever lands upstream, rather than picking a side. Our only lo
 
 
 
-**Status:** Not started (placeholder note only). Lower priority than #1 — it's the widest force-multiplier eventually,but isn't blocking. Depends on Rung 4(circuit library)+ a verified CircuitSAT algorithm (harvested from Rung 7 benchmark work)..
+**Status:** Not started (placeholder note only). Lower priority than #1 — it's the widest force-multiplier eventually,but isn't blocking. Depends on Rung 4(circuit library)+ a verified CircuitSAT algorithm (harvested from Rung 7 benchmark work).
 
 ---
 
