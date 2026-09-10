@@ -52,7 +52,9 @@ PleaNP imports whichever lands upstream, rather than picking a side. Our only lo
 - **3b (natural proofs):** formalizes the *conditional* (`OWF exists ⟹ no natural property gives superpoly lower bounds`); the one-way function enters as a **hypothesis**, not a constructed object — PleaNP does *not* build a PRF, it states the conditional cleanly (no importable Lean/Coq/Isabelle crypto substrate exists; see `docs/PRIOR_ART.md`, crypto-substrate section).
 - **3c (algebrization):** pin the **original Aaronson–Wigderson 2009 (multiquadratic) formulation** as the v1 target; track the ITCS 2026 multilinear-strengthening as a candidate v2, not part of v1 (prevents formalizing a moving folk theorem).
 
-**Status:** Not started. Depends on Rung 2 (oracle machines, P/NP).
+**Status:** Not started. Depends on Rung 2 (oracle machines, P/NP)..
+
+ **Statement-fidelity tooling (adopted DEC-022,2026-09-10):** every frozen barrier statement will additionally ship as a Comparator-style challenge module + JSON pin, per `docs/STATEMENTS/ComparatorChallenge.template.md`（and be recorded in the repo `formalization.yaml` manifest)—— machinery adopted from the OpenAI `NavierStokesAndEuler` release(2026-09-08/10);see `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md`. Phasing: when a barrier statement is next touched(`#18` BGS separating-oracle proof path),create `lean/PleaNP/Challenges/Relativization.lean` + `lean/ComparatorChallenges/Relativization.json` perthe template,with the `Comparator` lake dependency aspirational(no CI change until Comparator is available)。
 
 ---
 

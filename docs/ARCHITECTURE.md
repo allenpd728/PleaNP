@@ -40,6 +40,10 @@ Two *independent* formalizations of the same informal statement are produced (by
 
 **Implementation:** Two formalization passes, isolated pipelines, with an equivalence check. Disagreement blocks the claim and triggers human review.
 
+> **Adopted (DEC-022,2026-09-10):** Also produce an **independent, machine-checkable reference statement** for every frozen claim — a Comparator-style challenge module (`docs/STATEMENTS/ComparatorChallenge.template.md`): an externally-sourced (or `docs/STATEMENTS/*.md`-anchored) reference that the proof root must *not* import, plus a JSON pin(theorem names + `permitted_axioms`)that `lake exe comparator` checks machine-ably,when the Comparator lake dependency is available. This adds a *formal* reference-equality check on top of the two-rendering agreement — the pattern OpenAI's `NavierStokesAndEuler` release(2026-09-08/10) executed at ~640K Lean lines. See `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md`。
+
+
+
 ### Gate 4 — Read-back
 
 Auto-generate an informal English statement *from* the formal Lean statement (formal → informal, the reverse direction), and check it matches the intended target.

@@ -1,0 +1,177 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+
+# formalization.yaml (v0.4): repo-root metadata for formalization projects.
+
+# Adopted (DEC-022, 2026-09-10) — see docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md §3.2.
+# Ships as raw text: no yaml/lake tooling in the write sandbox. Validate with a YAML
+# parser when tooling is available before relying on it; align ontology with the mathlib-initiative
+# schema (the OpenAI NavierStokesAndEuler release used this exact schema version).
+# The manifest is declarative data — the executable gate scanners remain the source of truth
+# (tooling/gates/*.py). A future CI job may assert the rows(e.g. run `axiom_check.py` per
+# declared `axioms[]`)as aspirational follow-up,not implemented in this commit.
+
+version: "v0.4"
+
+project:
+ name: "PleaNP"
+ description: >-
+ Formal barrier landscape of computational complexity theory in Lean 4: relativization,
+ natural proofs, and algebrization, plus the barrier-calculus integrity machinery that makes
+ AI-assisted proof search honest. Not a claim to resolve P vs NP;imports P/NP from upstream Mathlib.
+
+ authors:
+ - "PleaNP contributors"
+ license: "Apache-2.0"
+
+sources:
+ - title: "Relativizations of the P =? NP Question"
+ authors:
+ - "Baker"
+ - "Gill"
+ - "Solovay"
+ type: "article"
+ location: "Theorem (a) and (b)"
+ relationship: "formalizes"
+ - title: "The algorithm for a natural proof"
+ authors:
+ - "Razborov"
+ - "Rudich"
+ type: "article"
+ location: "Main theorem (natural proofs barrier)"
+ relationship: "formalizes"
+ - title: "Algebrization: A New Barrier in Complexity Theory"
+ authors:
+ - "Aaronson"
+ - "Wigderson"
+ type: "article"
+ location: "Main theorem (algebrization barrier)"
+ relationship: "formalizes"
+
+related_formalizations:
+ - id: "https://github.com/openai/NavierStokesAndEuler"
+ relationship: "methodological-reference"
+ note: >-
+ Comparator challenge + formalization.yaml + standalone paper-theorem-file layout
+ adopted from this two-thousand-six-hundred-fifty-five-file forced-Navier-Stokes Lean release
+ (2026-09-08/10). See docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md.
+ - id: "https://github.com/tristanbuckmaster/fluid_lean"
+ relationship: "methodological-reference"
+ note: >-
+ Concurrent forced-Euler + Boussinesq Lean release (2026-09-08) — same statement-fidelity
+ family as a 3,748-file Lean archive. See docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md.
+
+
+classification:
+ arxiv:
+ - "cs.CC"
+ msc2020:
+ - "68Q15"
+ - "68Q17"
+
+status:
+ scope: "Formal barrier library + integrity gates (rungs 1–11 per docs/ROADMAP.md)."
+ sorry_count: 2
+ sorry_in_definitions: 0
+ main_results:
+ - description: >-
+ (BGS clause a) Existence of an oracle A with P^A = NP^A.(Statement rendered,sorry.)
+ declaration: "PleaNP.Barriers.Relativization.exists_equalizing_oracle"
+ file: "lean/PleaNP/Barriers/Relativization.lean"
+ sorry_count: ‎1
+ axioms:
+ - "sorryAx"
+ comparator_config: "NOT_YET_CREATED"
+ status: "rendered-not-frozen"
+ - description: >-
+ (BGS clause b) Existence of an oracle B with P^B ≠ NP^B.(Statement rendered,sorry.)
+ declaration: "PleaNP.Barriers.Relativization.exists_separating_oracle"
+ file: "lean/PleaNP/Barriers/Relativization.lean"
+ sorry_count: ‎1
+ axioms:
+ - "sorryAx"
+ comparator_config: "NOT_YET_CREATED"
+ status: "rendered-not-frozen"
+ - description: >-
+ Oracle-machine substrate: decidability in polynomial time over a machine+oracle. Clean
+ (0 sorries), Green in CI)
+ declaration: "PleaNP.Oracles.DecidesInTime"
+ file: "lean/PleaNP/Computability/Oracle.lean"
+ sorry_count: ‎0
+ axioms:
+ - "propext"
+ - "Classical.choice"
+ - "Quot.sound"
+ status: "validated-in-ci"
+ - description: >-
+ P^A / NP^A complexity classes over the oracle substrate (clean, green in CI)
+ declaration: "PleaNP.Oracles.P_A_subset_NP_A"
+ file: "lean/PleaNP/Computability/OracleComplexity.lean"
+ sorry_count: ‎0
+ axioms:
+ - "propext"
+ - "Classical.choice"
+ - "Quot.sound"
+ status: "validated-in-ci"
+ - description: >-
+ Oracle-sensitivity smoke test (two oracles one machine:accept/reject distinction)
+ declaration:: "PleaNP.Oracles.smoke_accepts_true"
+ file: "lean/PleaNP/Computability/OracleSmoke.lean"
+ sorry_count: ‎0
+ axioms:
+ - "propext"
+ - "Classical.choice"
+ - "Quot.sound"
+ status: "validated-in-ci"
+ - description: >-
+ Barrier Calculus: Relativizing typeclass + #barrier_check elaborator (clean, green in CI)
+ declaration: "PleaNP.Calculus.BarrierCalculus"
+ file: "lean/PleaNP/Calculus/BarrierCalculus.lean"
+ sorry_count: ‎0
+ axioms:
+ - "propext"
+ - "Classical.choice"
+ - "Quot.sound"
+ status: "validated-in-ci"
+
+automation:
+ methods:
+ - method: "agent"
+ models:
+ - "OpenHands"
+ framework: "multi-agent-github-issue-protocol"
+
+review:
+ status: "self-assessed"
+
+alignment:
+ namespaces:
+ - "PleaNP.Barriers"
+ - "PleaNP.Calculus"
+ - "PleaNP.Computability"
+ - "PleaNP.Oracles"
+ statements:
+ - source: "BGS 1975 Theorem (a)/ (b) (per docs/STATEMENTS/Relativization.md)"
+ lean: "PleaNP.Barriers.Relativization.exists_equalizing_oracle"
+ module: "PleaNP.Barriers.Relativization"
+ status: "rendered-not-frozen"
+ - source: "BGS 1975 Theorem (b)/ (b) (per docs/STATEMENTS/Relativization.md)"
+ lean: "PleaNP.Barriers.Relativization.exists_separating_oracle"
+ module: "PleaNP.Barriers.Relativization"
+ status: "rendered-not-frozen"
+ - source: "P^A ⊆ NP^A inclusion (VALIDATION_SUITE must-prove)"
+ lean: "PleaNP.Oracles.P_A_subset_NP_A"
+ module: "PleaNP.Computability.OracleComplexity"
+ status: "proved"
+ - source: "Oracle-sensitivity smoke (VALIDATION_SUITE smoke test) "
+ lean::"PleaNP.Oracles.smoke_accepts_true"
+ module: "PleaNP.Computability.OracleSmoke"
+ status: "proved"
+ - source: "Barrier Calculus unit test against time hierarchy (THH relativizes → DEAD)"
+ lean: "PleaNP.Calculus.BarrierCalculus.thh_relativizing"
+ module: "PleaNP.Calculus.BarrierCalculus"
+ status: "proved"
+
+acknowledgements: >-
+ Mathlib, Lean 4, the integrity-gate tooling, prior-art sources per docs/PRIOR_ART.md,
+ and the openai/NavierStokesAndEuler + tristanbuckmaster/fluid_lean releases (2026-09-08)
+ whose Comparator/formalization.yaml/layout discipline informed DEC-022.
