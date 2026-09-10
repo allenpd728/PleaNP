@@ -202,7 +202,7 @@ machine is the witness that the gap is real).
 
 
 
-**Rationale:** The project's core bet is negative-space specification: formalize the constraints a proof must satisfy,not the proof itself,. Confirmed as a genuine gap — no proof assistant has formalized these barriers; Coq/Isabelle Cook–Levin formalizations(2021/2023) stalled with no barrier follow-through precisely because they had no demand-pull artifact. `#barrier_check` *is* that artifact — every future claimed-proof triage run creates the pull. The three components are independently valuable and prioritized by leverage(5:the demand-pull device itself; 6: robust statement; 8:the widest eventual force-multiplier,but non-blocking).
+**Rationale:** The project's core bet is negative-space specification: formalize the constraints a proof must satisfy,not the proof itself. Confirmed as a genuine gap — no proof assistant has formalized these barriers; Coq/Isabelle Cook–Levin formalizations(2021/2023) stalled with no barrier follow-through precisely because they had no demand-pull artifact. `#barrier_check` *is* that artifact — every future claimed-proof triage run creates the pull. The three components are independently valuable and prioritized by leverage(5:the demand-pull device itself; 6: robust statement; 8:the widest eventual force-multiplier,but non-blocking).
 
 
 ---
@@ -398,3 +398,34 @@ agent-pair protocol.
 
 
 **Phasing:**(i) this commit: lessons doc + template + manifest + docs updates(no code,no Lean,no CI change);(ii) next practical step when a barrier statement is next touched: create `lean/PleaNP/Challenges/Relativization.lean` + `lean/ComparatorChallenges/Relativization.json` per the template,and add the `Comparator` lake dependency aspirational,as tracked in `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §3.1;(iii) whenthe Comparator dependency lands,the CI job assertthe comparator configs(as aspirational follow-up). **Sandbox note:** no `lake`/`python-yaml` inthe write sandbox, so the `formalization.yaml` ships as raw text and is not build-validatedin this commit; validatewhen tooling is available.(See the note inthe manifest header and the lessons doc §3.2.)
+
+
+### DEC-023
+
+**Date:** 2026-09-10
+**Status:** Active
+**Scope:** Creativity/authority gates for AI-discovered formal claims — lessons from the 2026-09-08 Navier–Stokes releases (beyond sorry/vacuity).
+
+**Decision:** Beyond DEC-022's three statement-fidelity adoptions, adopt three creativity/authority components from the NS releases (details in `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §3–§5):
+
+1. **Constraint-Net Cartography** — add as `docs/CREATIVE_PROTOCOL.md` Phase ‎2.5 (the executable-filter step): before creative search on a hard rung, enumerate the full independent-constraint net the construction must satisfy,and specify an automated cheap rejector per constraint,so the search concentrates on residual freedom,not cherry-picking. Stack the existing proto-rejectors (`#barrier_check`, validation must-refute lemmas, Comparator refs (DEC-022), load-bearing-choice audit (below). This turns "creative search" from "generate-then-pick" into "constraint-guided search"; rejection traces are kept as evidence.
+
+
+
+2. **Proof-intuition record** — new template `docs/STATEMENTS/ProofIntuition.template.md`: each AI-discovered formal claim ships a human-legibility record(5-layer plain-words construction, load-bearing audit, perturbation tests, cheap-outs confession, steelman, reviewer checklist -- the "explanation" slot OpenAI filled with its 166-page paper. A claim is not authoritative-ready until humans can testify "I understand this construction and why it is right." "Formally checked but not yet human-legible" is a finding, not a blocker;if no human can fill the record,record that honestly.
+
+
+
+3. **Load-bearing-choice audit** — extend `docs/VALIDATION_SUITE.md` (§"Load-bearing-choice audit")izin binder-lethality from *definitions* to *proofs*: audit which *choices* do the work(oracle, encoding, enumeration-ordering, force-like datum.)— internal mechanism or choice-bought? Meet the "internal mechanism, externally-perturbable" standard (the NS calibration);flag constructions whose conclusion is bought by an exact choice. This is the "chosen-to-work" detector the no-sorry/no-vacuity gates cannot see.
+
+
+
+**Why:** The NS releases' deepest creativity lesson:their scale jump (~100 agents/50h Euler disproof vs ~10,000/88h NS)was **constraint density**,not raw compute -- each dense constraint (smooth force, bounded energy, exact residual cancellation)is a cheap rejector,so the parallel search concentrated on the residual freedom. And authority came from the 166-page paper,not the green build:Buckmaster called the LLM-generated Lean-verified proof "AI slop" and rewrote itfor clarity;OpenAI's own `formalization.yaml` says "self-assessed". A proof can compile, pass vacuity, and still be *creatively dishonest* if a *choice* carries the conclusion rather than an *internal mechanism*(the "define a force after the fact.arrange terms to cancel" move). These gates check *how the construction was found* and *whether humans can own it*,orthogonal to hygiene(Gate 6)and vacuity(Gate 5) -- the authority mechanism at the frontier,the mechanical gates cannot see.
+
+
+
+**Phasing:**(i ) this commit: DEC-023 record + ProofIntuition template + VALIDATION_SUITE audit section + CREATIVE_PROTOCOL Phase ‎2.5 + docs pointers(no code, no Lean, no CI change).(ii ) apply when a barrier proof is next claimed (#18 BGS or Rung 9/11 output):file the intuition record per template, and run the load-bearing audit alongside Gate 4.(iii ) when creative search on Rung 9/11 begins, run Phase ‎2.5 first, keeping the rejection traces as evidence. **Sandbox note:** no `lake`/`python-yaml` inthe write sandbox -- docs-only edits, validated by structure/sweep only.
+
+
+
+**Rationale:** CREATIVE_PROTOCOL's Phase 2(constraint cartography)listed constraints as *intellectual context*;Phase ‎2.5 upgrades them to *executable filters* -- which is what separates compile-time-constrained search from post-hoc-selected construction(turning "synthesize" into auditable work, completing DEC-019's protocol).The proof-intuition record is the missing authority mechanism:Gate 4 reads back the *statement*, nothing yet reads back the *proof's explanation* -- the NS releases show explanation is load-bearing for authority, not cosmetic;`sorry`-freeness and non-vacuity are necessary, not sufficient, for a construction to be authoritative.

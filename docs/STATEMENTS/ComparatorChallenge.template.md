@@ -17,7 +17,7 @@ The proof root must **not** import the challenge module;the challenge module mus
 **Content:** the frozen problem *statement*,rendered from the corresponding `docs/STATEMENTS/<Name>.md` spec into Lean,with:
 - definitions + theorem *types* only — no proofs(any `sorry` here is a permitted placeholder only until the spec's validation suite passes?see `docs/VALIDATION_SUITE.md`).
 - a docstring citing the spec file + the original source paper(BGS 1975, RR 1994,or AW 2009),and noting any leaning constants it reuses(per Gate 2,no local redefinitions of `P`/`NP`/`Complexity.*`).
-- an explicit note of which informal clause(s)of the spec it encodes((a)/(b)for BGS,etcor),so the adapter alignment in §4 is unambiguous.
+- an explicit note of which informal clause(s)of the spec it encodes(a)/(b)for BGS,etcor),so the adapter alignment in §4 is unambiguous.
 
 
 

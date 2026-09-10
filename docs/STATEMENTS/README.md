@@ -30,13 +30,14 @@ For the **operating procedure** the local agent follows to turn these specs into
 | [`OracleComplexity.lean.spec.md`](./OracleComplexity.lean.spec.md) | P^A / NP^A complexity classes (the layer on top of Oracle.lean) | 2 (local piece) | Draft — spec; local agent's job; waits on Oracle.lean freeze |
 | [`Relativization.md`](./Relativization.md) | Baker–Gill–Solovay (1975) | 3a | Draft — scaffold |
 | [`Relativization.lean.spec.md`](./Relativization.lean.spec.md) | BGS Lean *statement* rendering spec (the Gate-1 frozen formal target) | 3a | Draft — spec; waits on OracleComplexity.lean |
-| [`Relativization.proof-strategy.md`](./Relativization.proof-strategy.md) | BGS informal proof strategy (sandwich (a) + diagonalization (b)) | 3a | Informal — NOT a frozen proof spec |
+| [`Relativization.proof-strategy.md`](./Relativization.proof-strategy.md) | BGS informal proof strategy (sandwich (a) + diagonalization (b) | 3a | Informal — NOT a frozen proof spec |
 | [`NaturalProofs.md`](./NaturalProofs.md) | Razborov–Rudich (1994) | 3b | Draft — scaffold |
 | [`NaturalProofs.proof-strategy.md`](./NaturalProofs.proof-strategy.md) | RR informal proof strategy (natural property → distinguisher reduction) | 3b | Informal — NOT a frozen proof spec |
 | [`Algebrization.md`](./Algebrization.md) | Aaronson–Wigderson (2008) | 3c | Draft — scaffold |
 | [`Algebrization.proof-strategy.md`](./Algebrization.proof-strategy.md) | AW09 informal proof strategy (low-degree extension + hiding lemma + two-sided oracles) | 3c | Informal — NOT a frozen proof spec |
 | [`HygieneEnforcement.spec.md`](./HygieneEnforcement.spec.md) | CI hygiene enforcement (sorry-as-error + linters + CI) | cross-cutting | Draft — spec; local agent's job |
 | [`ComparatorChallenge.template.md`](./ComparatorChallenge.template.md) | Independent machine-checkable reference statement ("Comparator challenge") per frozen statement (DEC-022); imports/namespace separation; JSON pin + comparator check | cross-cutting (statement-fidelity) | Adopted — template; apply per barrier statement |
+| [`ProofIntuition.template.md`](./ProofIntuition.template.md) | Human-legibility record per AI-discovered claim (DEC-023): 5-layer plain-words construction, load-bearing audit, perturbation tests, cheap-outs confession, steelman, reviewer checklist | cross-cutting (creativity/authority) | Adopted — template; apply per AI-discovered formal claim |
 
 **Order of work** (per `docs/GAP_AUDIT.md` prioritization): `Oracle.lean.spec.md` first (the unblocked Rung-2 local piece — no upstream dependency, everything else keys off it) → 3a (relativization, cleanest, depends only on oracle machines) → 3b (natural proofs, depends on circuits + OWF-as-hypothesis) → 3c (algebrization, depends on 3a's oracles + finite fields). Relativization is the first *barrier* because GAP_AUDIT §4 calls it "the most foundational barrier and the one with the cleanest formalization target"; the oracle substrate is the *first thing to build* because it's unblocked and the relativization statement waits on it.
 
