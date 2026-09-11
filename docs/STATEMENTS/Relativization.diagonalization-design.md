@@ -117,9 +117,8 @@ The BGS clause-(b) strategy (per `Relativization.proof-strategy.md` §2):
 ## 4. What is missing (gaps to file as sub-tasks when the design is
 approved)besides D1-D6:
 
-- **Fintype Query decision** (#27): the blocking human choice that (a/b/c)
-  picks the query family.(ALL of D2-D6 wait on it in the current
-  substrate - though D1 is pure combinatorics and can start).
+- **Fintype Query decision** (#27): **RESOLVED (DEC-024, 2026-09-11)** — Option Ω (word-query oracle substrate,:the query is read from a tape's content over the machine's own finite alphabet, per the spec's "oracle tape" model (`Oracle.lean.spec.md` §2.2);recorded options ((a) finite query family,(c) per-length reindexing) become unnecessary;`Query = Σ n, Bits n` and **all frozen statements stay unchanged**;the fix is substrate-wiring-only (#33 work order,#35 implementation). D2's "finite-query-family reindex" row below is **no longer needed**;D3–D6 proceed over the repaired substrate in dependency order.
+
 - **Machine encoding of FinTM2-oracle machines** (D3): no upstream
   instance; `Partrec.Code` is the closest reusable substrateand needs a
   reduction/bridge argument.

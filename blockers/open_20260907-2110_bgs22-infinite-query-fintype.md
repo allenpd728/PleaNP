@@ -53,6 +53,12 @@ under the wall,so no separation..
 
 
 
+## Resolution (2026-09-11, DEC-024): Option Ω — word-query oracle substrate
+
+**Chosen direction:** same as #26's blocker resolution (see `blockers/open_20260907-0953_bgs26-infinite-query-fintype.md` — rewire the oracle substrate so the query is read from a **tape's content** over the machine's own finite alphabet, per the spec's "oracle tape" model. `Query = Σ n, Bits n` stays unchanged; no frozen statement changes shape; cost model (query = exactly 1 step), totality, `P^∅ = P` survive. Recorded options ((a)/(c) become unnecessary. **Next:** #33 → #35 → #37 (this issue's D1-D6 diagonalization work moves to #37, blocked-by #35. We keep this issue `status:blocked-needs-input` until #35 lands.
+
+---
+
 ## What is needed to unblock
 
 The same human decision as #26/#27 (see that blocker file for options (a/b/c)):
