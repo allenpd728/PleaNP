@@ -63,27 +63,8 @@ So any machine witnessing #26 forces, by transport along `hΓ`,
      the contradiction)..
 
  
-## What is needed to unblockow
+---
 
-A human decision among (at least):
+## Resolution (2026-09-11, DEC-024)
 
-- **(a)** Change the oracle query type in #21's frozen `BGSDiagonal.lean` to a
-  **finite** family,e.g. `Query := Fin N → Bool` for a fixed bound `N`, or a
-  bounded union `Σ n : Fin N, Bits n`— but then the unary language `U_B` and
-  `Bits n` per-input typing must be reworked,and the boundedness must be BGS-faithful.
-
-- **(b)** Generalize the oracle substrate (`Oracle.lean`/`OracleComplexity.lean`)
-  to allow **infinite input/query alphabets** (weaken/removed the `[Γk₀Fin : Fintype (Γ k₀)]`
-  requirement, or add a non-finite variant of the machine model) — a substrate-
-  level design change touching the v4 repair's invariants.
-
-- **(c)** Rephrase the membership target not via `NP_A (alpha := Nat)B` but via a
-  per-length finite-reindexed oracle (e.g. hangthe finiteness off the
-  length-n input, making alpha = `Bits n` per a fixed n, with the query type the
-  same per-length finite alphabet — changes the shape of the claimed language/
-  DoD theorem,i.e. a new spec)...
-
-Per the workflow's blocker quality bar, this is a **decision**, not a mechanism:
-the contradiction is rigorous and Lean-verified, and I cite the exact definitions
-involved — it cannot be resolved by agent guessing.Per `docs/MULTI_AGENT_WORKFLOW.md` §Blockers, I file this and move on, leaving #26 at
-`status:blocked-needs-input`.
+**Chosen direction:** **Option Ω — word-query oracle substrate** (see `docs/decisions/LOG.md` DEC-024; work order #33, implementation #35`. The query is read from a **tape's content** (a finite word over the machine's own finite alphabet, per the spec's own "oracle tape" model — `docs/STATEMENTS/Oracle.lean.spec.md` §2.2), instead of fusing the query type into the input-alphabet slot. `Query = Σ n, Bits n` **stays unchanged**; no frozen statement changes shape; cost model (query = exactly 1 step), totality, `P^∅ = P`, andthe BGS counting all survive. Recorded options ((a) finite query family,and (c) per-length reindexing) become **unnecessary** — they solved the interface bug by bending the theorem. **Next:** #33 (v5 work-order spec,#35 (implementation,#36 (U_B-in-NP,#37 (diagonalization,#38 (campaign re-scope,#39 (audit,#40 (tests. This blocker file stays `status:blocked-needs-input` until #35 lands (the human decision is recorded;the substrate fix is agent work now).
