@@ -134,6 +134,7 @@ and reuse it.
 ## Git workflow
 
 **Branch discipline (minimum flow -- mandatory):** All changes go to the `dev` branch first. A *different* agent (or a human) reviews on `dev` before anything is merged to `main`. **Nothing is pushed directly to `main` without review.** This is the integrity architecture applied to the repo itself: the agent that writes a change is not the agent that approves it (the same isolation as Gate 1/Gate 3, one level up).
+**A commit is not complete until it is pushed to `dev`:** `git push origin dev` immediately after every commit, before closing the issue or citing the commit in a done comment. The system of record is `git log origin/dev` — work that exists only in a local clone is invisible to siblings and review, so it counts as undone until pushed.
 
 ```bash
 # 1. Work on dev (create it from main if needed, else check out the shared dev)

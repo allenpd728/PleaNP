@@ -116,8 +116,15 @@ agents are safe because **each** agent respects this rule.
    if its run-id is not yours, a sibling won — back off and pick a different
    item.
 5. **Do the work; prove the done.** Commit directly to `dev` (no PR — review
-   happens retrospectively on `dev`). Swap `status:claimed` → `status:done` and
-   close the issue with a comment linking the commits. **Tasks with
+   happens retrospectively on `dev`). **The commit is not done until it is
+   pushed**: run `git push origin dev` before closing the issue — the system of
+   record is `git log origin/dev`, and a sibling agent cannot see, review, or
+   build on a commit that exists only in your local clone. A done comment that
+   cites a local-only commit is a stranded claim (and no sweep will resurrect
+   it, because `origin/dev` has no trace of it). Swap
+   `status:claimed` → `status:done` and close the issue with a comment linking
+   the pushed commits (use `git rev-parse HEAD` after pushing, so the link is
+   the sha that actually exists on `origin`). **Tasks with
    known-answer criteria (conformance counts, gate commands, `#barrier_check`
    verdicts) close only when the done comment includes the gate command and its
    output** — a done claim without evidence is how full maps shipped empty and
@@ -125,6 +132,10 @@ agents are safe because **each** agent respects this rule.
 
    **Concurrent-work rules** (agents run in parallel against `dev`):
    - Pull before you start, and again before you push.
+   - **Push every commit immediately after composing it** - before moving
+     onto the next task, before closing the issue, and before commenting "done".
+     A commit that stays local is invisible to every sibling agent and to
+     review; it might as well not exist.
    - On push rejection (non-fast-forward): `git pull --rebase origin dev`,
      resolve conflicts, push again. Repeat as needed.
    - **Rebase revealed a sibling landed the same work?** Compare the two
