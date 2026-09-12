@@ -68,7 +68,7 @@ is an **external** dependency for Rung 6 only.
 | #72 | 4 | AC⁰ lower bound: parity ∉ AC⁰ via switching lemma | #71 | N | 2 | available |
 | #74 | 4 | Monotone circuit bounds (Razborov CLIQUE) | #71 | N | 3 | available |
 | #75 | 4 | ProofComplexity resolution width/size (pigeonhole width) | #71 (soft) | N | 2 | available |
-| #76 | 4 | Williams transfer: NEXP ⊄ ACC⁰ (non-relativizing existence) | #71, #72/#74 idioms | H | 10–15 | available |
+| #76 | 4 | Williams transfer: NEXP ⊄ ACC⁰ (non-relativizing existence) — umbrella; passes sub-issued as #88–#91 (claimable units) | #71, #72/#74 idioms | H | 10–15 | available |
 | #73 | 4 | Barrier classifications: techniques are relativizing/natural/algebrizing | #65, #72/#74/#75/#76 | N | 3 | available |
 | #65 | 5 | `#barrier_check` soundness: Relativizing ⇒ BGS-relativizing | — | H | 1–2 (abstract) | available |
 | #82 | 5 | Rung 5 concrete integration: Relativizing seeds on P_A/NP_A | #35, #65 | N | 2 | available |
@@ -117,15 +117,17 @@ counts:
 
 > **Ledger-sum method (2026-09-12, authoritative).** The per-block ranges above
 > were the *judgment* estimates from Part-3 (phase 1 flush). Now that every
-> task carries an `**Effort:`** line and a pass-decomposed `**Passes:**` block
+> task carries an `**Effort:**` line and a pass-decomposed `**Passes:**` block
 > (airtight rule), the authoritative total is the **sum of the ledger rows**,
 > computed live from the issue queue on 2026-09-12:
 >
-> - Rung 2 = **4–6 runs**, Rung 3 = **22–28 runs**, Rung 4 = **26–34 runs**,
->   Rung 5 = **3 runs**, Rung 6 = **6–8 runs**, Rung 7 = **2 runs**,
->   Rung 8 = **2 runs**. **Grand total (all in-scope) = 65–83 runs.**
+> - Rung 2 = **4–6 runs**, Rung 3 = **22–28 runs**, Rung 4 = **25–29 runs**
+>   (the #76 Williams umbrella is pass-sub-issued as #88–#91; its Effort is the
+>   sub-issue sum ≈9–10), Rung 5 = **3 runs**, Rung 6 = **6–8 runs**,
+>   Rung 7 = **2 runs**, Rung 8 = **2 runs**.
+>   **Grand total (all in-scope) = 64–78 runs.**
 > - Proof-search entry (Rungs 2+3+4+5+6, the ROADMAP dependency note):
->   **61–79 runs**, of which **55–71 runs** are unblocked now and **6–8 runs**
+>   **60–74 runs**, of which **54–66 runs** are unblocked now and **6–8 runs**
 >   are the upstream-P-gated Rung 6 slice.
 >
 > The per-block table above is retained as the conservative planning envelope;
