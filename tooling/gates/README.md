@@ -26,6 +26,23 @@ Scans for local redefinitions of canonical types and forbidden namespace usage �
 
 **Does NOT catch** a subtly-weaker redefinition using a different name (e.g. `def MyNP := ...`) — that is Gate 4 (read-back) and the review layer's job. "Gate 2 passed" = Tier 1 + review.
 
+## Gate 8 — Unicode-hygiene scanner (`unicode_scan.py`, 2026-09-12)
+
+Scans for **stray, non-valid characters** in tracked source (`.lean`, `.py`, `.md`, `.yaml`, `.yml`, `.json`, `.toml`) — the class of LLM/CJK-IME authoring artifacts that are not valid parts of Lean 4, the metaprogramming layer, or the project's English prose:
+
+- **fullwidth/halfwidth forms** U+FF01..U+FF5E + U+FF61..U+FFEF (fullwidth parens `U+FF08`/`U+FF09`, fullwidth comma `U+FF0C`, fullwidth plus `U+FF0B` — ASCII swaps)
+- **CJK punctuation** U+3000..U+303F (ideographic full stop `U+3002`, ideographic comma `U+3001`, corner-bracket/quote forms) and CJK radicals U+2E80..U+2FDF
+- **CJK ideographs/kana/hangul** (keeps non-English text out of the tree)
+- **invisible format chars**: zero-width space/joiner (U+200B..U+200D), LRM/RLM/bidi controls (U+200E..U+200F, U+202A..U+202E), invisible operators (U+2060..U+2064), BOM/soft-hyphen/line-sep
+- **combining diacritics** U+0300..U+036F — flagged when standalone or glued to a non-letter (the `U+0304`-before-digit heading corruption and the `U+0368`-after-space corruption); legal after a Letter (B + U+0303 = B-tilde, the only correct spelling, used in the Algebrization spec)
+- **Devanagari danda** U+0964
+- **circled/enclosed alphanumerics** U+2460..U+24FF (enclosed digits like `U+2463` — authoring artifacts as section refs)
+- **variation selectors** U+FE00..U+FE0F — VS-16 legal only after an allowed emoji base (the `U+26A0`+`U+FE0F` warning sign used in CLI output)
+
+**Allows** the repo's genuine non-ASCII: Greek, math operators/arrows (∀ ∃ ∈ ⊆ ▸ ⟨⟩ ℕ ∅ …), en/em dash, curly quotes, superscripts/subscripts, box drawing, emoji with VS-16, precomposed accents, and the two bidi-sensitive files' LRM (`docs/decisions/LOG.md`, `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md`) reported as SOFT. An audited `--allow` / `--allow-file` escape hatch exists for a future file that genuinely needs a form (document it there, not by smuggling).
+
+Run: `python3 tooling/gates/unicode_scan.py .` — exit 0 clean, 1 violations, 2 usage error.
+
 ## Two tiers (different agents, different trust boundaries)
 
 Both gates are implemented in two tiers, because the sneaky cases require the Lean toolchain:
@@ -81,7 +98,7 @@ language question each),filed as GitHub issues by `review-issue.yml`.
 
 **Merge/registration step (`merge <slug>`; 2026-09-07,#25).** Pulls each
 contributor's submission manifest (`churn/<slug>/submissions/<slot>.json`) into
-`renderings/`,then re-runs `check`(＋ `churn/<slug>/lemmas.json` if present)
+`renderings/`,then re-runs `check`(+ `churn/<slug>/lemmas.json` if present)
 and `mine` on the merged set. **Idempotent**: re-running is harmless — re-
 registration overwrites the same `<id>.json`,check rewrites `matrix.json`,and
 `mine` dedupes review points by stable key (`run` + `decl` pair),so no

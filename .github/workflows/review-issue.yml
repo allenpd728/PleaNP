@@ -83,7 +83,7 @@ jobs:
             spec=$(awk -F': ' '/^spec:/{gsub(/"/,"",$2);print $2}' "$f")
             # Rendering-disagreement checklist (optional): if the point YAML
             # carries spec=, inline the renderer's probe checklist into the issue
-            # body (question+choices+hint+expected per probe; batch narrative prepended)。
+            # body (question+choices+hint+expected per probe; batch narrative prepended).
             CHECKLIST=""
             if [ -n "$spec" ] && [ "$spec" != none ] && [ -f "tooling/gates/specs/${spec}" ]; then
               CHECKLIST=$(python3 tooling/gates/probe_check.py checklist "tooling/gates/specs/${spec}" 2>/dev/null | sed 's/^/  /')

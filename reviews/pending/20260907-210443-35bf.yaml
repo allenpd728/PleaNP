@@ -9,7 +9,7 @@ machine_summary: "Instances Relativizing (p = q) and Relativizing (p ≠ q) for 
 module: lean/PleaNP/Calculus/BarrierCalculus.lean
 question: Is it correct that function equality/inequality of FIXED predicates us marked oracle-oblivious(unconditionally relativizing),even though individual fibers may be oracle-dependent?
 refs: e46fd23
-resolution: "DEC-024-adjacent (2026-09-11, run=20260911-0944-qmzn): no human math-call — resolved by two-candidate campaign #41 (slot 1: as-implemented unconditional-atom;slot  ͨ2: as-#1-requested pointwise-propagation;machine-compare, mine disagreements into one plain-language intent-probe). Field precedent: algebrization/semi-relativization keep the coarse notion + build the finer analysis separately. #29 stays review:pending, non-blocking."
+resolution: "DEC-024-adjacent (2026-09-11, run=20260911-0944-qmzn): no human math-call — resolved by two-candidate campaign #41 (slot 1: as-implemented unconditional-atom;slot 2: as-#1-requested pointwise-propagation;machine-compare, mine disagreements into one plain-language intent-probe). Field precedent: algebrization/semi-relativization keep the coarse notion + build the finer analysis separately. #29 stays review:pending, non-blocking."
 run: 20260907-2035-k7m2
 spec: none
 status: pending
