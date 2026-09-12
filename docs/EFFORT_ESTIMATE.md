@@ -139,6 +139,42 @@ counts:
 
 ---
 
+## Beyond the frontier: proof-search effort (post negative-space mapping)
+
+> Scope: everything *after* the 61–79 runs of Rungs 2–8 are done. This
+> section is a **v0 prior with LOW confidence** — zero measured search
+> datapoints exist; the estimation framework's first job is to replace these
+> numbers with base rates from the Rung-7 ladder. Two objects, three
+> confidence levels. `E[runs(T)] = base_rate(tier) × novelty ×
+> rejector_density × (1/p_success)` is the model; v0 priors below.
+
+**A. Rung-9 defined milestone** (search loop solves ≥1 Rung-7 task
+end-to-end through the gates):
+
+| Component | Runs | Basis |
+|---|---|---|
+| Search harness (premise-selection on LeanDojo/ReProver + gates + runner) | 5–15 | scoped new build |
+| First Tier-1 textbook task through the gates | 1–5 | LeanDojo/MiniF2F-class prover rates + PleaNP gate overhead |
+| Batch of ≈5 Tier-1 tasks (safest milestone) | 5–20 | |
+| **Rung-9 milestone total** | **≈15–40** | roadmap "done" bar |
+| Tier-2 Cook–Levin push | ≈50–150 | Coq/Isabelle reference = the cost anchor |
+| Tier-3 recent lower-bound paper | ≈50–200+ | re-enters Rung-4 territory; not in the defined milestone |
+
+**B. Open problem (novel barrier-evasion, Rung 11): no point estimate —
+unbounded above.** The negative-space map provides only (i) a rejection
+lever (`#barrier_check` DEAD ⇒ `E[runs]=0`; rejector density is the
+qualitative ~100× Euler-vs-NS lever, not a number) and (ii) a lower bound on
+candidate difficulty (must survive the gates). No upper bound exists; the
+only prior is 50+ years of human failure. Unquantified **by design**; the
+framework never claims a closure on P vs NP.
+
+**Model + confidence:** v0 priors per the table above; updated on demand from
+Run Records (per-agent delta = 0; sweep-side one-time collector; see issue
+#84). First measured Tier-1 ladder task replaces the v0 prior for Tier 1;
+nothing in this framework converts to a point estimate for the open problem.
+
+---
+
 ## Effort-model notes
 
 - **The OpenAI NavierStokesAndEuler surprise is deliberately NOT a yardstick
