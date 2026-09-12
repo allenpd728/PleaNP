@@ -17,8 +17,6 @@
 - run: `20260907-2035-k7m2`  agent: openhands  created: 2026-09-07T21:10:00Z
 - refs: e46fd23
 
-⚠️ could not render spec 'none': [Errno 2] No such file or directory: '/workspace/project/PleaNP/none'
-
 ## Confirmed
 
 _none_

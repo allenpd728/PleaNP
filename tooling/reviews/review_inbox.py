@@ -65,6 +65,7 @@ _POINT_SCHEMA = {
     "refs",            # optional; commit hash / issue link
     "spec",            # optional; path to a rendering-disagreement spec JSON (renders the probe checklist in the index)
     "reason",          # optional; set only when flagged
+    "resolution",      # optional; free-text resolution/provenance note (preserved through confirm/flag round-trips)
     "status",          # pending | confirmed | flagged (managed by the tool)
 }
 
@@ -357,6 +358,16 @@ def _import_probe_check():
     return probe_check
 
 
+def _spec_path(spec: str | None) -> Path | None:
+    """Resolve a `spec` field to a file path, or None when absent/empty/
+    literal `none` (the filing sentinel for no-spec)。"""
+    if not spec:
+        return None
+    if str(spec).strip().lower() == "none":
+        return None
+    return ROOT / str(spec)
+
+
 def _render_point(pid: str, d: dict) -> str:
     lines = [
         f"### {pid}",
@@ -371,10 +382,10 @@ def _render_point(pid: str, d: dict) -> str:
     if d.get("refs"):
         lines.append(f"- refs: {d['refs']}")
     spec = d.get("spec")
-    if spec:
+    spec_path = _spec_path(spec)
+    if spec_path:
         try:
             pc = _import_probe_check()
-            spec_path = ROOT / spec
             data = json.loads(spec_path.read_text(encoding="utf-8"))
             violations = pc.validate_rendering_disagreement_spec(data)
             if violations:
