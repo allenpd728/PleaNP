@@ -113,12 +113,25 @@ counts:
 | Rung 4 lower-bound library + classifications | 45 → 80 | #70, #76 (heaviest) |
 | Rung 5 soundness + concrete | 6 → 12 | #65, #82 |
 | Rung 6 Anchor Object | 10 → 20 | upstream P (external) |
-| **Total to Rung-9 entry** | **~115 → ~235 runs** | upstream P is the only external clock |
+| **Total to Rung-9 entry (sum of the ledger rows above)** | **61 → 79 runs** (55 → 71 excluding upstream-blocked Rung 6) | upstream P is the only external clock |
 
-At a sustained fleet doing 5–15 substantive runs/day this is roughly
-**9–47 productive days** (optimistic ≈ 2–4 weeks; pessimistic ≈ 2–4 months),
-entirely gated on upstream P for the Rung 6 slice. This file is deliberately a
-*cache* — the queue and `git log origin/dev` decide what is *actually* done.
+> **Ledger-sum method (2026-09-12, authoritative).** The per-block ranges above
+> were the *judgment* estimates from Part-3 (phase 1 flush). Now that every
+> task carries an `**Effort:`** line and a pass-decomposed `**Passes:**` block
+> (airtight rule), the authoritative total is the **sum of the ledger rows**,
+> computed live from the issue queue on 2026-09-12:
+>
+> - Rung 2 = **4–6 runs**, Rung 3 = **22–28 runs**, Rung 4 = **26–34 runs**,
+>   Rung 5 = **3 runs**, Rung 6 = **6–8 runs**, Rung 7 = **2 runs**,
+>   Rung 8 = **2 runs**. **Grand total (all in-scope) = 65–83 runs.**
+> - Proof-search entry (Rungs 2+3+4+5+6, the ROADMAP dependency note):
+>   **61–79 runs**, of which **55–71 runs** are unblocked now and **6–8 runs**
+>   are the upstream-P-gated Rung 6 slice.
+>
+> The per-block table above is retained as the conservative planning envelope;
+> the ledger sum is the current best estimate. Recompute by summing the live
+> issue Effort lines (or `python3 tooling/gates/pass_scan.py` for queue
+> health).
 
 ---
 
