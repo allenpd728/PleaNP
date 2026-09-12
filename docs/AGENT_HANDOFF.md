@@ -32,7 +32,7 @@ conventions; this doc is the "what do I do on day one" summary.
 - **Lean builds:** clean modules green (BarrierCalculus, Oracle substrate,
   BgsRenderings); `Relativization.lean` + `OracleUpstreamP.lean` fail ONLY on
   their tracked sorries (expected; see SORRY_TRACKER).
-- **Tools (all tested, 51 unit tests):** hygiene/vacuity/model/binder scans,
+- **Tools (all tested; pytest tooling/gates/tests/ tooling/reviews/tests/ — 75 passing at this commit):** hygiene/vacuity/model/binder scans,
   `axiom_check.py` (no sorryAx), `lean_readback.py`, `readback.py` (two
   translators must agree), `dual_render.py` (+`--lemma`), `statement_lint.py`
   (pure-code shape classification), `multi_render.py` (init/render/check/mine),
