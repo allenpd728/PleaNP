@@ -150,11 +150,11 @@ alignment:
  - "PleaNP.Computability"
  - "PleaNP.Oracles"
  statements:
-    - source: "BGS 1975 Theorem (a)/ (b) (per docs/STATEMENTS/Relativization.md)"
+    - source: "BGS 1975 Theorem (a), per docs/STATEMENTS/Relativization.md"
       lean: "PleaNP.Barriers.Relativization.exists_equalizing_oracle"
       module: "PleaNP.Barriers.Relativization"
       status: "rendered-not-frozen"
-    - source: "BGS 1975 Theorem (b)/ (b) (per docs/STATEMENTS/Relativization.md)"
+    - source: "BGS 1975 Theorem (b), per docs/STATEMENTS/Relativization.md"
       lean: "PleaNP.Barriers.Relativization.exists_separating_oracle"
       module: "PleaNP.Barriers.Relativization"
       status: "rendered-not-frozen"
