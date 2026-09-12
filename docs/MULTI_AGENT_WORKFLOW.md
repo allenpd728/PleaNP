@@ -72,10 +72,37 @@ comment records which pass was completed and what the next pass is. This
 mirrors the OpenAI Navier-Stokes pattern — long-horizon targets worked as
 successive sessions with intermediate checkpoints — while keeping PleaNP's
 *claim-sized* agents (DEC-022 anti-pattern: precision over parallelism).
+
+The rule, made airtight (each requirement is a hard DoD of claiming a
+multi-pass issue):
+
+1. **Effort says what it means.** The `**Effort:**` line's max is the number
+   of enumerated `Pass N —` lines in the same body (each pass = one run). If
+   they disagree, fix the Effort line, not the pass list — a claim on an
+   inconsistent issue is void until it is consistent.
+2. **One claim = one pass.** Do NOT claim a multi-pass issue "whole." The
+   claim comment MUST name the pass (`claiming Pass 2 of #NN`). The one-claim
+   rule applies to passes exactly as to issues: a claimed pass is the single
+   `status:claimed` you may hold.
+3. **A pass is done when its end-state is done.** A pass-complete commit is a
+   normal commit on `dev` — it closes only that pass (its own gate evidence
+   in the done comment). The *issue* stays open until its final pass reports
+   the full gate evidence.
+4. **A pass may only land on the issue's own precedents.** A later pass is
+   not claimable until its prerequisite passes have landed (same lineage
+   logic as `Blocked by` — the pass list is a micro-lineage within the issue).
+5. **Pass order is load-bearing.** Working pass 3 before pass 1 is a process
+   violation, just like working a task whose blocker is open.
+6. **Scanner is the backstop.** `tooling/gates/pass_scan.py` (CI-wired unit
+   test, runnable live) enforces: multi-run Effort without a `Passes` block =
+   violation (exit 1); fewer pass lines than the Effort max = under-spec
+   warning. A queue that shows violations or under-spec warnings is
+   *not* ready for claiming — fix the issue body first.
+
 Filing a multi-pass issue is not atomic-till-complete; the issue flips to
-`status:available` once Pass 1 can start, and the claim comment says which
-pass is claimed. A pass-complete commit closes only that pass; the issue stays
-open until the final pass reports the full gate evidence.
+`status:available` once Pass 1 can start. A pass-complete commit closes only
+that pass; the issue stays open until the final pass reports the full gate
+evidence and is `status:done`.
 
 ## Dependencies
 
@@ -92,7 +119,11 @@ a `Tests:` follow-up, or a blocker-resolution — not just tasks.
 **One claim per agent at a time.** An agent holds **exactly one**
 `status:claimed` label across the entire issue tracker. Finish the claimed
 item (commit + close + unblock dependents) before claiming the next. Parallel
-agents are safe because **each** agent respects this rule.
+agents are safe because **each** agent respects this rule. For a multi-pass
+issue (see §Task definition), a **pass** is the claimed unit: claim comment
+MUST name the pass (`claiming Pass 2 of #NN`), and one claimed pass is the
+single `status:claimed` you may hold — the issue itself stays open until its
+final pass is done.
 
 1. **Sweep stale claims.** Before selecting work, list all `status:claimed`
    issues. For each, if the claim comment is older than **1 hour** with no
