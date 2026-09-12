@@ -20,8 +20,12 @@ conventions; this doc is the "what do I do on day one" summary.
    atomic API call, self-assign, comment `claimed by <name> run=<run-id> at
    <utc>`. **Generate a run-id** `<YYYYMMDD-HHMM>-<4 chars>` and use it in
    every claim/done/blocker comment.
-6. **Do the work; prove the done:** commit to `dev` (never force-push);
-   include gate evidence in the done comment (gate commands + output); swap
+6. **Do the work; prove the done:** commit to `dev` (never force-push)
+   and **push to `dev` immediately after the commit** — `git push origin dev`
+   — before closing the issue or citing it in the done comment. A commit
+   that exists only locally is invisible to siblings (the system of record is
+   `git log origin/dev`) and counts as undone until pushed. Then include gate
+   evidence in the done comment (gate commands + output); swap
    `status:claimed` → `status:done` and close with the commit link.
 7. **No task available?** Fall through: `Tests:` issues → PR review comments →
    blockers. Only when all are exhausted is the queue empty.
