@@ -85,7 +85,7 @@ jobs:
             # carries spec=, inline the renderer's probe checklist into the issue
             # body (question+choices+hint+expected per probe; batch narrative prepended)。
             CHECKLIST=""
-            if [ -n "$spec" ] && [ -f "tooling/gates/specs/${spec}" ]; then
+            if [ -n "$spec" ] && [ "$spec" != none ] && [ -f "tooling/gates/specs/${spec}" ]; then
               CHECKLIST=$(python3 tooling/gates/probe_check.py checklist "tooling/gates/specs/${spec}" 2>/dev/null | sed 's/^/  /')
             fi
             # Dedupe by inbox id (unique per point), not decl (shared by
@@ -138,7 +138,7 @@ jobs:
           EXP="${{ github.event.inputs.expected }}"
           SPEC="${{ github.event.inputs.spec }}"
           CHECKLIST=""
-          if [ -n "$SPEC" ] && [ -f "tooling/gates/specs/${SPEC}" ]; then
+          if [ -n "$SPEC" ] && [ "$SPEC" != none ] && [ -f "tooling/gates/specs/${SPEC}" ]; then
             CHECKLIST=$(python3 tooling/gates/probe_check.py checklist "tooling/gates/specs/${SPEC}" 2>/dev/null | sed 's/^/  /')
           fi
           BODY="**One question to review (intro-level):**"

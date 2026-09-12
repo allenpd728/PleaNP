@@ -189,6 +189,26 @@ class ReviewInboxTest(unittest.TestCase):
             review_inbox.PENDING.joinpath(pending[0] + ".yaml").read_text())
         self.assertEqual(d.get("reopened_by"), "auto-requeue")
 
+    def test_spec_none_skips_checklist(self):
+        # A `spec: none` (the no-spec sentinel) must be treated as absent:
+        # no ⚠️ could-not-render line, no probe-checklist block.
+
+        fields = _base_fields() + ["spec=none"]
+        self.assertEqual(review_inbox.add(fields), 0)
+        review_inbox.index()
+        text = (review_inbox.REVIEWS / "INBOX.md").read_text(encoding="utf-8")
+        self.assertNotIn("⚠️ could not render spec", text)
+        self.assertNotIn("Probe checklist", text)
+
+    def test_resolution_survives_confirm_roundtrip(self):
+        fields = _base_fields() + ["resolution=DEC-024-adjacent: no human math-call"]
+        review_inbox.add(fields)
+        pid = next(review_inbox.PENDING.glob("*.yaml")).stem
+        review_inbox._move(pid, "confirmed", None)
+        d = review_inbox._MiniYaml.load(
+            review_inbox.CONFIRMED.joinpath(pid + ".yaml").read_text())
+        self.assertEqual(d.get("resolution"), "DEC-024-adjacent: no human math-call")
+
     def test_index_renders_spec_checklist(self):
         # A rendering-disagreement review point carries spec=;the INBOX renderer
         # must inline the probe checklist (batch narrative + probes + hints + expected)。
