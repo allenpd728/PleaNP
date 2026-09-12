@@ -38,14 +38,21 @@ from pass_scan import effort_minmax, fetch_live, load_json  # noqa: E402
 # with the ledger's table. Entries for issues that have no Effort line yet are
 # still listed here so the summary can report them as "no effort" (they won't
 # be falsely counted as 0).
+# NOTE (2026-09-12, #84): #76 (Williams transfer) is now a tracking umbrella;
+# its four passes are the claimable sub-issues #88–#91, which carry the
+# pass-level Effort. The sub-issues are listed here (they are real Rung 4
+# work) and the umbrella #76 is NOT (its Effort line only enumerates the
+# passes; the effort lives in the sub-issues). This keeps the Rung 4 total
+# honest without double-counting.
 RUNG_MAP = {
     4: "2", 18: "3", 22: "3", 23: "3", 26: "3", 35: "2", 36: "3", 37: "3",
     40: "2",
     62: "3", 63: "3", 64: "3", 65: "5", 66: "3", 67: "3", 68: "3", 69: "3",
-    70: "4", 71: "4", 72: "4", 73: "4", 74: "4", 75: "4", 76: "4",
+    70: "4", 71: "4", 72: "4", 73: "4", 74: "4", 75: "4",
     77: "6", 78: "6", 79: "6",
     80: "8", 81: "7", 82: "5",
     83: "meta", 84: "sweep",
+    88: "4", 89: "4", 90: "4", 91: "4",
 }
 # Rungs counted in "proof-search entry path" (ROADMAP dependency note).
 PROOF_SEARCH_RUNGS = ("2", "3", "4", "5", "6")

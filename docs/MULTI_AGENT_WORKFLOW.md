@@ -94,7 +94,8 @@ multi-pass issue):
 5. **Pass order is load-bearing.** Working pass 3 before pass 1 is a process
    violation, just like working a task whose blocker is open.
 6. **Scanner is the backstop.** `tooling/gates/pass_scan.py` (CI-wired unit
-   test, runnable live) enforces: multi-run Effort without a `Passes` block =
+   test, runnable live — and a **mandatory step of the start-of-session sweep**,
+   §Claiming step 1a) enforces: multi-run Effort without a `Passes` block =
    violation (exit 1); fewer pass lines than the Effort max = under-spec
    warning. A queue that shows violations or under-spec warnings is
    *not* ready for claiming — fix the issue body first.
@@ -131,11 +132,35 @@ final pass is done.
    `status:claimed`, restore the prior label, and comment that the work was
    reclaimed (audit trail). A fresh claim comment carrying a run-id that is not
    yours belongs to a live sibling — leave it alone.
-1a. **Sweep protocol violations.** An issue carrying two status labels at once
+1a. **Sweep pass-sizing compliance.** Every start-of-session sweep also runs
+   the multi-run pass-sizing scanner (the queue-health backstop for §Task
+   definition rule 6):
+   ```bash
+   python3 tooling/gates/pass_scan.py                    # live (needs GITHUB_TOKEN)
+   python3 tooling/gates/pass_scan.py --json-file issues.json   # offline
+   ```
+   Act on every line of output per the **sweep action table**:
+
+   | Scanner output | Meaning | Sweep action (before the issue is claimable) |
+   |---|---|---|
+   | `[VIOLATION] #NN … Effort claims N-M runs … no '**Passes:**' block` | Multi-run epic without a pass decomposition | The claiming agent adds a `**Passes:**` block (`Pass 1 … Pass n`, one per run) to the issue body — or splits the epic into sub-issues. |
+   | `[warning] #NN … Passes block has only n pass line(s); under-specified` | Pass lines < Effort max | Add the missing `Pass` lines, or tighten the `**Effort:**` range to match the pass list (rule 1 — fix the Effort line, not the pass list, when the Effort overstates). |
+   | `[warning] #NN … no Effort line found` (only with `--warn-no-effort`) | Legacy issue predates the Effort convention | Backfill an `**Effort:**` line (legacy-bulk with the filed issue numbers, or per-claim as the issue is picked up). |
+
+   A queue that shows violations or under-spec warnings is **not** ready for
+   claiming — fix the issue body first (rule 6). Exit code 0 with warnings is
+   still a claimable queue; exit 1 (violations) means fix before claiming.
+   Re-run against the local file (`--json-file`) in the offline sweep
+   environment; the action table is identical, only the fetch source changes.
+   For multi-claim umbrellas (e.g. #76), file one `status:available` sub-issue
+   per enumerated pass (each `Blocked by` the umbrella) — the umbrella itself
+   stays `status:available` with its warning resolved instead of permanent
+   (see action-table row 1).
+1b. **Sweep protocol violations.** An issue carrying two status labels at once
    is in an illegal state. The sweep repairs it: the *older* label wins
    (`blocked-needs-input` outranks `claimed`), the extra label is removed, and
    a comment records the repair.
-1b. **Docs coherence sweep.** Check that `README.md`, `AGENTS.md`,
+1c. **Docs coherence sweep.** Check that `README.md`, `AGENTS.md`,
    `docs/ROADMAP.md`, `docs/decisions/LOG.md`, and `docs/SORRY_TRACKER.md`
    agree with each other: if a recently-closed task changed the design, the
    plan, or the task list, the sibling docs must reflect it in the same
@@ -360,6 +385,9 @@ Before finishing, every agent reports (with its run-id):
 - Test specs written (linked `Tests:` issues) and any completed tasks whose test
   follow-up never landed
 - Stale claims reclaimed during the sweep
+- Pass-sizing findings acted on (violations fixed, under-spec claims repaired,
+  sub-issues filed for umbrellas — the `pass_scan.py` output from §Claiming
+  step 1a with the scan exit code)
 - Protocol violations repaired (issues found with two status labels)
 - Duplicate filings closed (twins with lower issue numbers surviving)
 - Work dropped at rebase because a sibling landed it first

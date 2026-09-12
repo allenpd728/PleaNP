@@ -123,6 +123,13 @@ design/decomposition tasks (whose deliverable *is* the pass list) are exempt.
 - **Usage:** `python3 pass_scan.py` (live GitHub, needs `GITHUB_TOKEN`; the
   52 open issues scanned 2026-09-12 give 0 violations) or
   `python3 pass_scan.py --json-file issues.json` (offline, same shape).
+- **Sweep step.** Since 2026-09-12 the scanner is a **mandatory start-of-session
+  sweep step** (§Claiming step 1a): every sweep runs it and acts on the output
+  per the sweep action table (violation → add the `Passes` block or split the
+  epic; under-spec warning → complete the pass lines or tighten `Effort`;
+  no-Effort → backfill). Umbrella multi-claim epics (e.g. #76) are filed as one
+  `status:available` sub-issue per pass so the umbrella's warning resolves
+  instead of lingering.
 - **Not a Lean gate** — a queue-health scan, like the stale-claim sweep.
 
 ## Effort re-sum (`effort_summary.py`, 2026-09-12)
