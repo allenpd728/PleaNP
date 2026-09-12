@@ -21,16 +21,18 @@
 > history (61 issue-runs in the 2026-09-06→12 burst, of which a minority were
 > substantive Lean work; the D1 counting lemma took several runs across 4 days).
 >
-> **Multi-run tasks are Pass-decomposed (2026-09-12).** The larger rows
-> (≥2 runs: #62/#63/#69/#70/#71/#72/#73/#74/#76/#77/#78/#79/#80/#81) carry an
-> explicit **`**Passes:**`** block (Pass 1..n, each = one run) in their issue
-> body, per the multi-run sizing rule added to `docs/MULTI_AGENT_WORKFLOW.md`
-> §Task definition. An issue flips to `status:available` when Pass 1 can
-> start; the claim comment says which pass is claimed; the issue stays open
-> until the final pass reports full gate evidence. **Do not sum the passes as
-> separate issues** — the effort ranges below already estimate the *total*
-> runs across all passes; the pass split is about claim-size discipline, not
-> about multiplying the row count.
+> **Multi-run tasks are Pass-decomposed (2026-09-12).** Every row estimated
+> at ≥2 runs carries an explicit **`**Passes:**`** block (Pass 1..n, each =
+> one run) in its issue body: #62/#63/#69/#70/#71/#72/#73/#74/#75/#76/#77/#78/
+> #79/#80/#81/#82. The design-only rows (#67/#68, 1–2 runs) are single-claim
+> by design — their deliverable *is* the decomposition. Per the multi-run
+> sizing rule added to `docs/MULTI_AGENT_WORKFLOW.md` §Task definition, an
+> issue flips to `status:available` when Pass 1 can start; the claim comment
+> says which pass is claimed; the issue stays open until the final pass
+> reports full gate evidence. **Do not sum the passes as separate issues** —
+> the effort ranges below already estimate the *total* runs across all
+> passes; the pass split is about claim-size discipline, not about
+> multiplying the row count.
 
 Rows ≤ the BGS milestone and the substrate-critical path do not require
 upstream P/NP (PleaNP-local classes suffice per `#18`'s precedent). The
