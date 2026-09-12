@@ -95,6 +95,8 @@ jobs:
         run: python3 tooling/gates/tests/test_corpus_campaign.py
       - name: Pass-sizing compliance scanner unit tests (multi-run pass rule; stdlib, no secrets, no Lean)
         run: python3 tooling/gates/tests/test_pass_scan.py
+      - name: Effort re-sum unit tests (reproducible per-rung totals; stdlib, no secrets, no Lean)
+        run: python3 tooling/gates/tests/test_effort_summary.py
       - name: Review-inbox index smoke (INBOX.md stays generated)
         run: |
           python3 tooling/reviews/review_inbox.py index >/dev/null
