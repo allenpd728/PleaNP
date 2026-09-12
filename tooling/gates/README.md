@@ -104,9 +104,26 @@ design/decomposition tasks (whose deliverable *is* the pass list) are exempt.
   `Effort` max (under-specified), or (with `--warn-no-effort`) legacy issues
   with no `Effort` line.
 - **Usage:** `python3 pass_scan.py` (live GitHub, needs `GITHUB_TOKEN`; the
-  51 open issues scanned 2026-09-12 give 0 violations) or
+  52 open issues scanned 2026-09-12 give 0 violations) or
   `python3 pass_scan.py --json-file issues.json` (offline, same shape).
 - **Not a Lean gate** — a queue-health scan, like the stale-claim sweep.
+
+## Effort re-sum (`effort_summary.py`, 2026-09-12)
+
+Reproducible recomputation of the per-rung run totals in `docs/EFFORT_ESTIMATE.md`
+by summing each in-scope issue's `**Effort:**` line from the live queue (or an
+offline JSON dump). One command replaces hand-summing the ledger:
+
+- **Output:** per-rung totals, in-scope total (Rungs 2–8), proof-search entry
+  (Rungs 2+3+4+5+6), and the unblocked-now vs upstream-gated (Rung 6) split.
+- **`--csv`:** per-issue rows (issue, rung, effort_lo, effort_hi, title).
+- **`--table-rows`:** Markdown table rows for `docs/EFFORT_ESTIMATE.md`.
+- **Rung map** (`RUNG_MAP` in the file): the single source of truth for
+  issue→rung; keep in sync with the ledger when tasks are filed, closed, or
+  re-runged.
+- **Usage:** `python3 effort_summary.py` (live, needs `GITHUB_TOKEN`) or
+  `python3 effort_summary.py --json-file issues.json` (offline). Unit tests in
+  `tests/test_effort_summary.py`, CI-wired.
 
 
 ## Rung-5 `#barrier_check` verdict harness (`barrier_check_test.py`; 2026-09-07; #3

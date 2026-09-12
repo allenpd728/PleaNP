@@ -129,9 +129,11 @@ counts:
 >   are the upstream-P-gated Rung 6 slice.
 >
 > The per-block table above is retained as the conservative planning envelope;
-> the ledger sum is the current best estimate. Recompute by summing the live
-> issue Effort lines (or `python3 tooling/gates/pass_scan.py` for queue
-> health).
+> the ledger sum is the current best estimate. **Recompute with one command**:
+> `python3 tooling/gates/effort_summary.py` (live queue) or
+> `--json-file issues.json` (offline) — sums the live `**Effort:**` lines by
+> the `RUNG_MAP` in the tool (keep it in sync with this table). Queue health:
+> `python3 tooling/gates/pass_scan.py`.
 
 ---
 
