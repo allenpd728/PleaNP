@@ -61,6 +61,22 @@ Sizing rule: one task = completable in one agent run (well under an hour of
 work). If a task can't be done in one run, it gets decomposed further before
 becoming `available`.
 
+**Multi-run tasks (adopted 2026-09-12, DEC-023 constraint-density
+learnings — see `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §4/§6).** Tasks
+that are honest multi-run epics (parity ∉ AC⁰, Williams transfer, Natural
+Proofs, full proof paths) must NOT be compressed into a single oversized claim.
+Adopt an iterative pass decomposition **at issue-body level before the claim
+starts**: the issue body lists `Pass 1 → Pass n` with the concrete end-state
+and done-evidence for each pass, each pass sized to a run, and the done
+comment records which pass was completed and what the next pass is. This
+mirrors the OpenAI Navier-Stokes pattern — long-horizon targets worked as
+successive sessions with intermediate checkpoints — while keeping PleaNP's
+*claim-sized* agents (DEC-022 anti-pattern: precision over parallelism).
+Filing a multi-pass issue is not atomic-till-complete; the issue flips to
+`status:available` once Pass 1 can start, and the claim comment says which
+pass is claimed. A pass-complete commit closes only that pass; the issue stays
+open until the final pass reports the full gate evidence.
+
 ## Dependencies
 
 Dependencies are expressed as GitHub "blocked by" relationships, forming
@@ -174,6 +190,35 @@ without passing the gates:**
 - **Build:** the module compiles under `lake build` (v4.31.0 / Mathlib v4.31.0).
 - **`#barrier_check`:** any P-vs-NP-shaped claim is triaged with the Rung-5
   elaborator; a **DEAD** verdict means the claim cannot resolve P vs NP.
+
+**DEC-022 statement-fidelity (adopted 2026-09-10 from the OpenAI
+NavierStokesAndEuler release — see `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §3):**
+- Every frozen barrier statement ships a **Comparator-style challenge module**
+  + JSON pin (theorem names + `permitted_axioms`), per
+  `docs/STATEMENTS/ComparatorChallenge.template.md`. The proof root must
+  **not** import the challenge module.
+- The statement lives in its own **standalone paper-theorem file** (the
+  "PaperResults" layout) — the claim is frozen as a file, CI-built, and
+  `#print axioms`-checked **before** any proof search attaches.
+- The `formalization.yaml` manifest row (incl. `sorries`, `axioms`,
+  comparator config) updates in the **same commit** as the claim (same rule as
+  `docs/SORRY_TRACKER.md`).
+
+**DEC-023 creativity/authority gates (adopted 2026-09-10 from the same
+releases):**
+- A claimed **barrier/lower-bound proof** whose construction makes substantive
+  *choices* (oracles, machine enumerations, encodings, perturbation scales)
+  must ship a **proof-intuition record**
+  (`docs/STATEMENTS/ProofIntuition.template.md`) plus the
+  **load-bearing-choice audit** (`docs/VALIDATION_SUITE.md`) run alongside
+  Gate 4 — the "internal mechanism, externally-perturbable" standard. A
+  construction whose conclusion is *bought* by an exact choice is flagged, not
+  silently accepted.
+- **Constraint-net cartography** (`docs/CREATIVE_PROTOCOL.md` Phase 2.5):
+  before creative search, enumerate the constraint net and specify a cheap
+  automated rejector per constraint (`#barrier_check`, must-refute lemmas,
+  Comparator refs). Track the rejector trace as evidence, not the raw
+  generation count.
 
 The done comment must include the gate command + output (see §Claiming step 5).
 
