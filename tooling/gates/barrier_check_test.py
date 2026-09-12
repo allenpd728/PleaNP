@@ -58,7 +58,7 @@ EXPECTED = [
 
 #(The dash in "DEAD - this proof" and "Inconclusive - no Relativizing" is an
 # em dash in the source (U+2014);match with a tolerant pattern so the
-# assertion survives terminal/environment-specific dash re-encoding.）
+# assertion survives terminal/environment-specific dash re-encoding.)
 _EM_DASH = "\u2014"
 
 

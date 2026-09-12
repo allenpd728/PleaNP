@@ -41,6 +41,8 @@ jobs:
         working-directory: lean
       - name: Hygiene scan (Gate 6 Tier 1)
         run: python3 tooling/gates/hygiene_scan.py --prove-stage lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
+      - name: Unicode-hygiene scan (Gate 8 Tier 1 — stray/fullwidth/CJK/invisible chars)
+        run: python3 tooling/gates/unicode_scan.py .
       - name: Vacuity scan (Gate 5 Tier 1)
         run: python3 tooling/gates/vacuity_scan.py lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
       - name: Model-consistency scan (Gate 2 Tier 1)
@@ -91,6 +93,8 @@ jobs:
         run: python3 tooling/reviews/tests/test_review_inbox.py
       - name: Gate 3 multi-rendering unit tests (AI-multi-rendering → human-mine driver)
         run: python3 tooling/gates/tests/test_multi_render.py
+      - name: Gate 8 Unicode-hygiene scanner unit tests (stray-character authoring-hygiene gate)
+        run: python3 tooling/gates/tests/test_unicode_scan.py
       - name: Corpus-campaign collation unit tests (Gate 3; counted-table regression guard, #31)
         run: python3 tooling/gates/tests/test_corpus_campaign.py
       - name: Pass-sizing compliance scanner unit tests (multi-run pass rule; stdlib, no secrets, no Lean)

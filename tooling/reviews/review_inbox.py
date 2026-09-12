@@ -360,7 +360,7 @@ def _import_probe_check():
 
 def _spec_path(spec: str | None) -> Path | None:
     """Resolve a `spec` field to a file path, or None when absent/empty/
-    literal `none` (the filing sentinel for no-spec)。"""
+    literal `none` (the filing sentinel for no-spec)."""
     if not spec:
         return None
     if str(spec).strip().lower() == "none":

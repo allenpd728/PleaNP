@@ -211,7 +211,7 @@ class ReviewInboxTest(unittest.TestCase):
 
     def test_index_renders_spec_checklist(self):
         # A rendering-disagreement review point carries spec=;the INBOX renderer
-        # must inline the probe checklist (batch narrative + probes + hints + expected)。
+        # must inline the probe checklist (batch narrative + probes + hints + expected).
         spec_rel = "tooling/gates/specs/rendering_disagreement.example.json"
         fields = _base_fields() + [f"spec={spec_rel}"]
         self.assertEqual(review_inbox.add(fields), 0)

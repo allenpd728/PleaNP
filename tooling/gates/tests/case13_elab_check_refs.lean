@@ -9,7 +9,7 @@
 --
 -- Expected with the #2-aware split: ZERO findings (the two pseudo-blocks act as
 -- reference sources;and `elab`/`check` pseudo-kinds are never flagged themselves),
--- exit  ​0, even without --allow-unreferenced.
+-- exit  0, even without --allow-unreferenced.
 
 namespace PleaNP.Mock
 
