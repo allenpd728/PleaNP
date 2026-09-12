@@ -20,6 +20,17 @@
 > session, not measured throughput — calibrate them against the repo's own
 > history (61 issue-runs in the 2026-09-06→12 burst, of which a minority were
 > substantive Lean work; the D1 counting lemma took several runs across 4 days).
+>
+> **Multi-run tasks are Pass-decomposed (2026-09-12).** The larger rows
+> (≥2 runs: #62/#63/#69/#70/#71/#72/#73/#74/#76/#77/#78/#79/#80/#81) carry an
+> explicit **`**Passes:**`** block (Pass 1..n, each = one run) in their issue
+> body, per the multi-run sizing rule added to `docs/MULTI_AGENT_WORKFLOW.md`
+> §Task definition. An issue flips to `status:available` when Pass 1 can
+> start; the claim comment says which pass is claimed; the issue stays open
+> until the final pass reports full gate evidence. **Do not sum the passes as
+> separate issues** — the effort ranges below already estimate the *total*
+> runs across all passes; the pass split is about claim-size discipline, not
+> about multiplying the row count.
 
 Rows ≤ the BGS milestone and the substrate-critical path do not require
 upstream P/NP (PleaNP-local classes suffice per `#18`'s precedent). The
@@ -118,6 +129,14 @@ entirely gated on upstream P for the Rung 6 slice. This file is deliberately a
   unknown construction. PleaNP's work is constrained formalization of known
   theorems (BGS/RR/AW) through the 7-gate pipeline — the Euler/formalization
   end of the spectrum, not the NS end (see `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §4, DEC-022 anti-pattern: precision over parallelism).
+- **What IS carried over from the releases** is now protocol-level, not just
+  task-level: the iterative pass-sizing rule and the DEC-022/023 gates
+  (Comparator + paper-theorem files + proof-intuition/load-bearing audit +
+  constraint-net cartography) are codified in `docs/MULTI_AGENT_WORKFLOW.md`
+  §Task definition + §Gates (commit `58af8f9`), and the multi-run issues
+  carry their `Passes:` blocks. The "17h / 640K-line formalization" figure is
+  a *calibration data point* for Rung 7 cost estimates, not a throughput
+  target for PleaNP's single-claim gates.
 - **Run→token conversion (for cost modeling, not for task sizing):** each
   substantive formalization run spends on the order of 5–20M output tokens
   (Lean compile-loops; far below OpenAI's discovery agents). The full
