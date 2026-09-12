@@ -114,6 +114,17 @@ python3 tooling/reviews/review_inbox.py index
 
 ## Rules (so the inbox stays honest)
 
+0. **Semantic forks only — not notation forks.** The mailbox escalates a
+   decision *only* when the two readings would make the claim *differently true*
+   (a real semantic fork: quantifier direction, subset direction, existence
+   bounds) — in which case the question "which reading did you intend" needs
+   you. It does NOT escalate a choice that merely *pins down syntax* (e.g.
+   whether an interface helper is partial vs. total over a
+   definitionally-irrelevant corner, or which spelling of an encoding to commit
+   to): those are notation forks — the agent picks the more general/cleaner one
+   by Occam, and moves on. Muting notation forks for the human (who should
+   spend attention only where the theorem's truth is at stake) is a process
+   requirement, not a kindness.
 1. **One point = one claim = one question.** Agents must not bundle.
 2. **Expected answers come from the Lean, not the wish-list** (see
    HUMAN_REVIEW_LAYERS: bias-guard).
