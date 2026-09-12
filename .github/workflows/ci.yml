@@ -91,6 +91,8 @@ jobs:
         run: python3 tooling/reviews/tests/test_review_inbox.py
       - name: Gate 3 multi-rendering unit tests (AI-multi-rendering → human-mine driver)
         run: python3 tooling/gates/tests/test_multi_render.py
+      - name: Corpus-campaign collation unit tests (Gate 3; counted-table regression guard, #31)
+        run: python3 tooling/gates/tests/test_corpus_campaign.py
       - name: Review-inbox index smoke (INBOX.md stays generated)
         run: |
           python3 tooling/reviews/review_inbox.py index >/dev/null
