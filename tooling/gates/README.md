@@ -86,9 +86,27 @@ and `mine` on the merged set. **Idempotent**: re-running is harmless — re-
 registration overwrites the same `<id>.json`,check rewrites `matrix.json`,and
 `mine` dedupes review points by stable key (`run` + `decl` pair),so no
 duplicate pending points nor GitHub issues are filed (the #7-#16 double-
-filing bug class; see `review-issue.yml`'s inbox-id dedupe). 
+filing bug class; see `review-issue.yml`'s inbox-id dedupe).
 
 Usage: `python3 tooling/gates/multi_render.py merge <slug> [--lean-dir lean]`
+
+## Process compliance — pass-sizing scanner (`pass_scan.py`, 2026-09-12)
+
+`pass_scan.py` enforces the multi-run pass-sizing rule in
+`docs/MULTI_AGENT_WORKFLOW.md` §Task definition: any open issue whose
+`**Effort:**` line claims ≥2 runs must carry an explicit `**Passes:**` block
+(Pass 1..n, each = one run) so long-horizon epics are worked as successive
+claimable passes rather than one oversized claim. Single-run issues and
+design/decomposition tasks (whose deliverable *is* the pass list) are exempt.
+
+- **Violation** (exit 1): multi-run `Effort` without a `Passes` block.
+- **Warning** (exit 0): `Passes` block counts fewer pass lines than the
+  `Effort` max (under-specified), or (with `--warn-no-effort`) legacy issues
+  with no `Effort` line.
+- **Usage:** `python3 pass_scan.py` (live GitHub, needs `GITHUB_TOKEN`; the
+  51 open issues scanned 2026-09-12 give 0 violations) or
+  `python3 pass_scan.py --json-file issues.json` (offline, same shape).
+- **Not a Lean gate** — a queue-health scan, like the stale-claim sweep.
 
 
 ## Rung-5 `#barrier_check` verdict harness (`barrier_check_test.py`; 2026-09-07; #3

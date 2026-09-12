@@ -64,19 +64,19 @@ is an **external** dependency for Rung 6 only.
 | #68 | 3c | Algebrization proof-path decomposition (AZ1–AZ6) | — (design; AZ-impl → #35) | N | 1–2 | available |
 | #69 | 3c | Algebrization impl: render AW09 v1 + first proof sub-task | #68, #35 | H | 2–4 | available |
 | #70 | 4 | complexitylib dependency reconciliation | — | H | 3–6 | available |
-| #71 | 4 | PleaNP.Circuits + P/poly + natural-property definitions | #70 | N | 3–5 | available |
-| #72 | 4 | AC⁰ lower bound: parity ∉ AC⁰ via switching lemma | #71 | N | 3–5 | available |
-| #74 | 4 | Monotone circuit bounds (Razborov CLIQUE) | #71 | N | 3–5 | available |
-| #75 | 4 | ProofComplexity resolution width/size (pigeonhole width) | #71 (soft) | N | 2–4 | available |
+| #71 | 4 | PleaNP.Circuits + P/poly + natural-property definitions | #70 | N | 3 | available |
+| #72 | 4 | AC⁰ lower bound: parity ∉ AC⁰ via switching lemma | #71 | N | 2 | available |
+| #74 | 4 | Monotone circuit bounds (Razborov CLIQUE) | #71 | N | 3 | available |
+| #75 | 4 | ProofComplexity resolution width/size (pigeonhole width) | #71 (soft) | N | 2 | available |
 | #76 | 4 | Williams transfer: NEXP ⊄ ACC⁰ (non-relativizing existence) | #71, #72/#74 idioms | H | 10–15 | available |
-| #73 | 4 | Barrier classifications: techniques are relativizing/natural/algebrizing | #65, #72/#74/#75/#76 | N | 2–4 | available |
+| #73 | 4 | Barrier classifications: techniques are relativizing/natural/algebrizing | #65, #72/#74/#75/#76 | N | 3 | available |
 | #65 | 5 | `#barrier_check` soundness: Relativizing ⇒ BGS-relativizing | — | H | 1–2 (abstract) | available |
-| #82 | 5 | Rung 5 concrete integration: Relativizing seeds on P_A/NP_A | #35, #65 | N | 2–4 | available |
+| #82 | 5 | Rung 5 concrete integration: Relativizing seeds on P_A/NP_A | #35, #65 | N | 2 | available |
 | #41/#29/#42 | 5 | funeq/funne marker semantics review (atom vs pointwise) | #30/#3 tests | N | 1–2 | pending review |
 | #77 | 6 | Search→decision gap lemma (self-reducibility + Hutter) | upstream P | H | 2–4 | b-n-i |
-| #78 | 6 | Levin universal search + `P_eq_NP_iff` #eval-able term | upstream P, #77 | N | 3–5 | b-n-i |
-| #79 | 6 | P/NP model-equivalence anchor across upstream models | ≥2 upstream models | N | 5–8 | b-n-i |
-| #81 | 7 | Graded benchmark: task list + Tier-1 baseline | — (Tier-3 → R4) | N | 3–5 | available |
+| #78 | 6 | Levin universal search + `P_eq_NP_iff` #eval-able term | upstream P, #77 | N | 2 | b-n-i |
+| #79 | 6 | P/NP model-equivalence anchor across upstream models | ≥2 upstream models | N | 2 | b-n-i |
+| #81 | 7 | Graded benchmark: task list + Tier-1 baseline | — (Tier-3 → R4) | N | 2 | available |
 | #80 | 8 | Lower-Bound Compiler: Williams transfer as Lean elaborator | #76 | N | 5–8 | available |
 | #83 | meta | Consolidated task inventory + effort ledger (this file) | — | N | 1 (doc) | available |
 
