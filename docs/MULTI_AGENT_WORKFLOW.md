@@ -251,6 +251,17 @@ confirm: you read the relevant spec/docs and can cite the exact gap; the
 missing information is a *decision*, not a *mechanism*; you state what you
 tried and why it was insufficient.
 
+**Semantic forks vs. notation forks (2026-09-12).** A choice that only *pins
+down syntax* — e.g. whether an interface helper is partial vs. total over a
+definitionally-irrelevant corner, or which spelling of an encoding to commit
+to — is a **notation fork**: the agent picks the more general/cleaner option
+by Occam and moves on; it is neither a blocker nor a review point. A choice
+that would make the claim *differently true* (quantifier direction, subset
+direction, existence bounds) is a **semantic fork** and goes to the human.
+Escalating a notation fork burns the human's attention without changing the
+theorem's truth — treat it as a process violation (see `docs/REVIEW_INBOX.md`
+Rule 0).
+
 **Nested blockers.** Any claimed work item can be blocked, including a `Tests:`
 issue. The exception is blocker-resolution itself: an agent that cannot resolve
 a blocker must **not** file a blocker-on-a-blocker and walk away. Instead:
