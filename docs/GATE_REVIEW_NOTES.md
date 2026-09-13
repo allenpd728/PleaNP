@@ -143,3 +143,31 @@ demonstrated-intentional.** (The two challenge-module binder REVIEWs from
 `PleaNP.Challenges.Relativization` for the DEC-022 comparator references
 are registered in the row above; the challenge module is a statement
 reference consumed by the JSON pin, not dead code.)
+## 3. Rung-5 soundness + P^∅ anchor REVIEWs (issue #65 / #40)
+
+**Sweep lineage:** run=20260913-1012-uJoS (issue #65), and #40 (v5-word-query tests).
+
+### `OracleComplexity.lean` — `UpstreamPolyTime` "unreferenced"
+
+`binder_usage_scan.py` flags `UpstreamPolyTime` (issue #40) as referenced by
+no other scanned declaration. It IS the RHS of the P^∅ = P anchor theorem in
+`OracleUpstreamP.lean` (`P_empty_eq_upstream_P_class = UpstreamPolyTime _`) —
+which is outside the CI scan set (it is the upstream-P-blocked leaf module).
+The oracle-free `TM2ComputableInPolyTime` recharacterization is the
+model-consistency anchor (Trap 3); not dead code.
+
+### `Soundness.lean` — the 13 uniformity lemmas "unreferenced"
+
+`binder_usage_scan.py` flags the library-level uniformity lemmas
+(`relAtom_uniform`, `langAtom_uniform`, `pA_mem_uniform`, `uniform_and`, …
+`uniform_exists`, `funeq_uniform`, `funne_uniform`, `transfer_under_ext`,
+`sound_verdict_abstract_rev`) as referenced by no other scanned declaration.
+They are the **intentional public API** of the Rung-5 `#barrier_check`
+soundness module (`docs/STATEMENTS/Soundness.spec.md`, issue #65): each
+`UniformInOracle` lemma is the semantic counterpart of one `Relativizing.*`
+propagation instance, designed for downstream composition proofs (the class
+transfer / BGS `False` once #18/#63 land). Same demonstrated-intentional
+pattern as the `BarrierCalculus` propagation instances in §1 above.
+
+**Disposition.** No-action. The register (`tooling/gates/gate_review_register_check.py`
+EXPECTED) is updated to include these items so the machine-check agrees.
