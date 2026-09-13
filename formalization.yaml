@@ -182,6 +182,18 @@ alignment:
       lean: "PleaNP.Calculus.thhStatement"
       module: "PleaNP.Calculus.BarrierCalculus"
       status: "proved"
+    - source: "BGS barrier consequence (DEC-022 §3.3 proof-work, issue #66): a uniform collapse is contradicted by the separating oracle"
+      lean: "PleaNP.Barriers.RelativizationProof.uniform_collapse_contradicted_by_separating"
+      module: "PleaNP.Barriers.RelativizationProof"
+      status: "proved"
+    - source: "BGS barrier consequence (DEC-022 §3.3 proof-work, issue #66): a uniform separation is contradicted by the equalizing oracle"
+      lean: "PleaNP.Barriers.RelativizationProof.uniform_separation_contradicted_by_equalizing"
+      module: "PleaNP.Barriers.RelativizationProof"
+      status: "proved"
+    - source: "BGS barrier consequence (DEC-022 §3.3 proof-work, issue #66): neither uniform direction resolves P vs NP"
+      lean: "PleaNP.Barriers.RelativizationProof.no_uniform_resolution_of_p_vs_np"
+      module: "PleaNP.Barriers.RelativizationProof"
+      status: "proved"
 
 acknowledgements: >-
  Mathlib, Lean 4, the integrity-gate tooling, prior-art sources per docs/PRIOR_ART.md,
