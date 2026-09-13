@@ -86,6 +86,43 @@ maintained here as soon as the substrate lands.
   just a compiling statement), (2) a recorded baseline run (runner + run count
   + gate evidence) so the "how long does formalization take" question is
   answered by measurement, not vibes.
+
+### Tier-1 baseline run (issue #81, Pass 2 — 2026-09-13, run=20260913-1930-81b)
+
+**Task:** T1.4 (smallest textbook warm-up) on the existing oracle-free
+polytime class `UpstreamPolyTime` (the `TM2ComputableInPolyTime`
+function-to-language recharacterization — the P^∅ = P anchor's RHS).
+
+**Deliverable:** `lean/PleaNP/Benchmark/Closure.lean` — zero-sorry,
+concrete-machine membership facts:
+
+| # | Fact | Witness |
+|---|---|---|
+| B1 | `∅ : Set Bool ∈ UpstreamPolyTime Bool` | `constFalseInPolyTime` — a 1-step constant-`false` TM2 machine (pops input, pushes `false`) |
+| B2 | `⊤ : Set Bool ∈ UpstreamPolyTime Bool` | `constTrueInPolyTime` — the mirror 1-step constant-`true` machine |
+
+**Honest scope (the measured gap):** the headline T1.4 statements — `P`
+closed under `∩`, `∪`, `¬` — are **not yet theorems**. Machine composition
+for this class is a Mathlib `proof_wanted` (`Turing.TM2ComputableInPolyTime.comp`,
+`Mathlib/Computability/TuringMachine/Computable.lean:284`), and composing a
+constant machine with input-dependent `not`/`and`/`or` machines — the general
+closure argument — needs it (or a PleaNP-local composition). B1/B2 are the
+provable core that does **not** need composition. Closure is the next
+calibration step; blocked-on-upstream is tracked, not hidden.
+
+**Gate evidence (all committed with the change):**
+- `lake build PleaNP.Benchmark.Closure`: green (1206 jobs).
+- hygiene/vacuity/model/unicode scans: 0 violations; binder: 0 violations
+  (2 REVIEW items = public benchmark API, registered as demonstrated-intentional
+  in `docs/GATE_REVIEW_NOTES.md`).
+- `#print axioms` on B1/B2: `[propext, Classical.choice, Quot.sound]` only;
+  `axiom_check.py` clean (no `sorryAx`).
+- 0 sorries.
+
+**Baseline cost prior:** this is the first calibration datapoint — a
+single-claim Tier-1 facts pair on an existing substrate, one agent run.
+It feeds `docs/EFFORT_ESTIMATE.md` as the per-task cost prior.
+
 - **Calibration context:** the OpenAI NavierStokesAndEuler formalization phase
   (≈640K lines / 17h / 2,655 files / 0 sorries) was clustered-parallel and
   gate-free — a deliberate **non**-yardstick for PleaNP's single-claim gates

@@ -197,3 +197,16 @@ targets (`atomEqOrNe` / `pointwiseEqOrNe`) join the register (issue #41);
 `UpstreamPolyTime` is registered above (issue #65/#40, as-swept). Binder
 REVIEW count on the clean set is 8 (5 original + UpstreamPolyTime + the two
 #41 rendering targets).
+
+### `Closure.lean` — the Rung-7 Tier-1 benchmark membership theorems (issue #81)
+
+`binder_usage_scan.py` flags `emptyLang_in_UpstreamPolyTime` /
+`univLang_in_UpstreamPolyTime` as referenced by no other scanned declaration.
+They are the **public API** of the Rung-7 Tier-1 baseline datapoint
+(`lean/PleaNP/Benchmark/Closure.lean`, issue #81 Pass 2): the membership
+facts recorded in `docs/BENCHMARK.md` (the baseline run table B1/B2) and
+consumed by the benchmark/Rung-9 acceptance tracking. The scanner sees only
+Lean declarations, not the benchmark docs.
+
+**Disposition.** No-action. The register EXPECTED set is updated to include
+these items so the machine-check agrees. Binder REVIEW count rises to 10.

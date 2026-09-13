@@ -27,6 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 SCAN_SET = (
     "lean/PleaNP/Calculus lean/PleaNP/Basic.lean "
+    "lean/PleaNP/Benchmark/Closure.lean "
     "lean/PleaNP/Barriers/RelativizationProof.lean "
     "lean/PleaNP/Barriers/Algebrization.lean "
     "lean/PleaNP/Challenges/Relativization.lean "
@@ -92,6 +93,11 @@ EXPECTED = {
     # Lean declarations, not the campaign workspace.
     ("binder", "MarkerFuneqAtom.lean", "atomEqOrNe"),
     ("binder", "MarkerFuneqPointwise.lean", "pointwiseEqOrNe"),
+    # Issue #81 Rung-7 Tier-1 benchmark baseline: the public membership
+    # theorems of lean/PleaNP/Benchmark/Closure.lean, consumed by the
+    # benchmark docs (docs/BENCHMARK.md baseline run), not dead code.
+    ("binder", "Closure.lean", "emptyLang_in_UpstreamPolyTime"),
+    ("binder", "Closure.lean", "univLang_in_UpstreamPolyTime"),
 
 }
 # NOTE (2026-09-13): `emptyOracle` is no longer an EXPECTED item — the
