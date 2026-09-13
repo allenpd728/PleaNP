@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
-"""Gate harness: assert the four `#barrier_check` verdicts appear in a build log.
+"""Gate harness: assert the `#barrier_check` verdicts appear in a build log.
 
 Issue #3 (Tests: test spec for Rung-5 #barrier_check verdicts). The
 `#barrier_check` elaborator in `lean/PleaNP/Calculus/BarrierCalculus.lean`
-logs four verdict lines during compile:
+logs verdict lines during compile — the four abstract unit tests plus the
+two concrete P_A/NP_A seeds (issue #82 Pass 1):
 
   - `thhStatement`          -> "relativizes, not P-vs-NP-shaped -> Inconclusive"
   - `abstractPVsNP`         -> "DEAD - this proof relativizes"
   - `plainRelHeuristic`     -> "relativizes, not P-vs-NP-shaped -> Inconclusive"
-  - `nonRelativizingControl` -> "Inconclusive \u2014no Relativizing instance"
+  - `nonRelativizingControl` -> "Inconclusive —no Relativizing instance"
+  - `concreteClassMembership` -> "DEAD — this proof relativizes"
+  - `bgsMetaStatement`        -> "Inconclusive — no Relativizing instance"
 
 CI builds the clean modules (see `.github/workflows/ci.yml`); the harness
 runs on the captured build log (the build step `tee`s its output to a log
@@ -54,12 +57,19 @@ EXPECTED = [
      "#barrier_check PleaNP.Calculus.plainRelHeuristic: relativizes,"),
     ("PleaNP.Calculus.nonRelativizingControl",
      "#barrier_check PleaNP.Calculus.nonRelativizingControl: Inconclusive"),
+    # Concrete Rung-5 seeds (issue #82 Pass 1): a relativizing P-vs-NP-shaped
+    # claim over the concrete P_A/NP_A classes is DEAD; the BGS meta-statement
+    # over the concrete classes carries no Relativizing instance → Inconclusive.
+    ("PleaNP.Calculus.concreteClassMembership",
+     "#barrier_check PleaNP.Calculus.concreteClassMembership: DEAD"),
+    ("PleaNP.Calculus.bgsMetaStatement",
+     "#barrier_check PleaNP.Calculus.bgsMetaStatement: Inconclusive"),
 ]
 
 #(The dash in "DEAD - this proof" and "Inconclusive - no Relativizing" is an
 # em dash in the source (U+2014);match with a tolerant pattern so the
 # assertion survives terminal/environment-specific dash re-encoding.)
-_EM_DASH = "\u2014"
+_EM_DASH = "—"
 
 
 def verdict_segment(decl: str, template: str) -> str:
@@ -75,7 +85,7 @@ def verdict_segment(decl: str, template: str) -> str:
     return template.format(n=decl)
 
 
-_DASH_FAMILY = ("\u2014", "\u2013", "\u2012", "\u2015", "-")
+_DASH_FAMILY = ("—", "\u2013", "\u2012", "\u2015", "-")
 
 def _normalize_dashes(s: str) -> str:
     """Fold every dash-family char to a sentinel for dash-tolerant verdict match."""
