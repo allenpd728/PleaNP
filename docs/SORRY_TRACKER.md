@@ -116,6 +116,17 @@ and the **monotonicity theorem** (`monotone_eval_preserves_order`) — the
 defining structural property the Razborov CLIQUE bound exploits. Pass 2
 (approximation-reducer lemma) and Pass 3 (CLIQUE bound) are open proof work.
 
+### Williams transfer theorem level (issue #90 Pass 3, 2026-09-13)
+
+`lean/PleaNP/Barriers/WilliamsTransfer.lean` freezes the **transfer
+theorem statement** zero-sorry: `SubExpCircuitSATT → NEXP_not_subset_ACC0`
+(`williams_transfer`), plus the asserted classification record
+(`williams_classification_asserted`, non-relativizing/non-natural/
+non-algebrizing marker classes for #73/#91). The PROOF needs the tracked
+sub-exponential ACC⁰-CircuitSAT bound (#89 gap: `acc0SatSubExpBound`,
+Shah–Shetty Good-SAT) + the NTIME-to-CircuitSAT encoding — a decomposed
+sub-lemma follow-up (no sorry).
+
 ### Williams / Rung-4 statement level (issues #72/#88, 2026-09-13)
 
 `lean/PleaNP/Circuits/AC0.lean` (#72 Pass 1) renders the **parity ∉ AC⁰**

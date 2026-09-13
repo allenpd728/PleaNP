@@ -250,6 +250,10 @@ alignment:
       lean: "PleaNP.Circuits.MonotoneGate.eval"
       module: "PleaNP.Circuits.Monotone"
       status: "proved"
+    - source: "Williams transfer theorem statement (issue #90 Pass 3): sub-exponential ACC0-CircuitSAT implies NEXP not-subset ACC0 + classification record"
+      lean: "PleaNP.Barriers.WilliamsTransfer.williams_transfer"
+      module: "PleaNP.Barriers.WilliamsTransfer"
+      status: "statement-rendered"
 
 acknowledgements: >-
  Mathlib, Lean 4, the integrity-gate tooling, prior-art sources per docs/PRIOR_ART.md,
