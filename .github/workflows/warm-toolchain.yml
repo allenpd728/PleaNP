@@ -49,6 +49,8 @@ jobs:
       # oleans (via the community Azure cache), then those layers are COPIED
       # into the pushed image. Result: pulling the ghcr image gives a warm
       # elan + Lean + Mathlib olean cache with zero network beyond `docker pull`.
+      # GHCR requires lowercase repository names; github.repository can be
+      # mixed-case (e.g. allenpd728/PleaNP), so lowercase it.
       - name: Build warm image
         uses: docker/build-push-action@v6
         with:
@@ -56,9 +58,9 @@ jobs:
           file: .devcontainer/Dockerfile.warm
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:lean-${{ github.sha }}
-            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
-            ghcr.io/${{ github.repository }}:main
+            ghcr.io/${{ lower(github.repository) }}:lean-${{ github.sha }}
+            ghcr.io/${{ lower(github.repository) }}:${{ github.ref_name }}
+            ghcr.io/${{ lower(github.repository) }}:main
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

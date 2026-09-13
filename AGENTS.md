@@ -125,9 +125,9 @@ lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus \
 lake build
 ```
 **Faster cold start for agents (Plan E, 2026-09-13):** the repo pushes a warm
-Lean+Mathlib image to `ghcr.io/allenpd728/pleanp-lean:main` on every `main`
+Lean+Mathlib image to `ghcr.io/allenpd728/pleanp:main` on every `main`
 push (workflow `warm-toolchain.yml`). Prefer pulling it over the curl-bootstrap
-above where Docker is available: `docker pull ghcr.io/allenpd728/pleanp-lean:main`
+above where Docker is available: `docker pull ghcr.io/allenpd728/pleanp:main`
 then mount the repo — elan + Lean + Mathlib oleans already warm. And use
 `python3 ../tooling/leancheck.py <module.lean>` (first-error typechecker) +
 `watch_leancheck.py` (poll-until-clean) for the edit→check loop. Details:
