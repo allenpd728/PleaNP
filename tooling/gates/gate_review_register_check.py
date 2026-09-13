@@ -128,13 +128,13 @@ EXPECTED = {
     # benchmark docs (docs/BENCHMARK.md baseline run), not dead code.
     ("binder", "Closure.lean", "emptyLang_in_UpstreamPolyTime"),
     ("binder", "Closure.lean", "univLang_in_UpstreamPolyTime"),
-    # Issue #72 Pass 1: the AC⁰ milestone's public API (AC0.lean) — the
-    # frozen parity_notin_AC0 statement (consumed by Pass 2 + Gate 4
-    # read-back) and the structural parity facts (parity_zero, parity_
-    # nontrivial) that give the statement content. Demonstrated-intentional.
-    ("binder", "AC0.lean", "parity_notin_AC0"),
+    # Issue #72 Pass 1 + #73 Pass 2: the AC⁰ milestone's public API
+    # (AC0.lean) — the structural parity facts and the #73 Pass 2
+    # classification theorem. parity_notin_AC0 itself is NOT registered
+    # (referenced by parity_notin_AC0_relativizing, so it stops firing).
     ("binder", "AC0.lean", "parity_zero"),
     ("binder", "AC0.lean", "parity_nontrivial"),
+    ("binder", "AC0.lean", "parity_notin_AC0_relativizing"),
     # Issue #75 Pass 1: the resolution substrate API (Resolution.lean) —
     # `eval` is referenced internally by Clause.eval but the scanner resolves
     # only top-level name references; `Clause.empty`, `CNF.width`,

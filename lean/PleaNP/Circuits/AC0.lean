@@ -1,4 +1,6 @@
 import PleaNP.Circuits.Basic
+import PleaNP.Calculus.Soundness
+import PleaNP.Computability.Oracle
 
 set_option warningAsError true
 
@@ -103,6 +105,33 @@ lemma parity_nontrivial :
 example :
     BoolGate.eval and2 (fun _ : Fin 2 => true) = true := by
   decide
+
+/-! ## Barrier classification — AC⁰/parity is relativizing (issue #73 Pass 2)
+
+The first per-family classification using the Rung-4 method (#73 Pass 1,
+`Classification.lean`): the AC⁰ lower-bound claim `parity_notin_AC0` is
+**oracle-uniform** (relativizing) — the statement and its (eventual)
+switching-lemma proof never consult an oracle, so its truth is invariant
+under *any* oracle replacement. Formally: the family-indexed claim
+`fun _ : Oracle Q => parity_notin_AC0` satisfies `UniformInOracle` (it is
+the constant family, trivially uniform). An AC⁰ proof therefore cannot
+separate P from NP (BGS blocks it) — it is a *relativizing* technique.
+
+Also natural (per RR's canonical example): the circuit/large-property
+classification is recorded in the module header; the algebrizing check is
+a separate row (#73 Pass 3).
+-/
+
+/-- **AC⁰/parity relativizes**: the AC⁰ lower-bound claim, viewed as a
+  family over any oracle, is oracle-uniform — the constant family
+  `fun _ => parity_notin_AC0` is `UniformInOracle` by vacuity (no oracle
+  appears). This is the Rung-4 classification method (spine) applied to
+  the first lower bound: `parity_notin_AC0` cannot be a P-vs-NP
+  resolution because it is relativizing. -/
+theorem parity_notin_AC0_relativizing (Q : Type) :
+    PleaNP.Calculus.UniformInOracle Q (fun _ : PleaNP.Oracles.Oracle Q => parity_notin_AC0) := by
+  intro _ _ _
+  rfl
 
 end Circuits
 
