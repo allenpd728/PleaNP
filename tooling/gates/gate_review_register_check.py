@@ -33,6 +33,7 @@ SCAN_SET = (
     "lean/PleaNP/Barriers/Algebrization.lean "
     "lean/PleaNP/Barriers/AlgebrizationProof.lean "
     "lean/PleaNP/Barriers/Williams.lean "
+    "lean/PleaNP/Barriers/WilliamsTransfer.lean "
     "lean/PleaNP/Barriers/WilliamsSat.lean "
     "lean/PleaNP/Circuits/Basic.lean "
     "lean/PleaNP/Circuits/AC0.lean "
@@ -124,9 +125,11 @@ EXPECTED = {
     ("binder", "Monotone.lean", "monAnd2"),
     # Williams transfer statement anchors (issue #88 Pass 1): consumed by
     # #88 Pass 2/3 and #91 assembly — not dead code.
-    ("binder", "Williams.lean", "IsACC0"),
-    ("binder", "Williams.lean", "NEXP_membership"),
     ("binder", "Williams.lean", "circuitSAT_tautology"),
+    # Williams transfer theorem statement (issue #90 Pass 3): consumed by
+    # #91 assembly — not dead code.
+    ("binder", "WilliamsTransfer.lean", "williams_transfer"),
+    ("binder", "WilliamsTransfer.lean", "williams_classification_asserted"),
     # Issue #89 Pass 2: the CircuitSAT-decider milestone public API
     # (WilliamsSat.lean) — correctness + verified runtime-baseline theorems,
     # the sub-exp tracked goal, and the sat smoke.

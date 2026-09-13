@@ -71,7 +71,7 @@ is an **external** dependency for Rung 6 only.
 | #76 | 4 | Williams transfer: NEXP ⊄ ACC⁰ (non-relativizing existence) — umbrella; passes sub-issued as #88–#91 (claimable units) | #71, #72/#74 idioms | H | 10–15 (see #88–#91) | available |
 | #88 | 4 | Williams #76 Pass 1 — statement freeze: NEXP / ACC⁰ / CircuitSAT | #76, #71 (substrate) ; #70 gates the choice | N | 2–3 | Pass 1 done (2026-09-13); Pass 2 available |
 | #89 | 4 | Williams #76 Pass 2 — ACC⁰ CircuitSAT sub-exponential algorithm | #76, #88, #71 | N | 3 | available |
-| #90 | 4 | Williams #76 Pass 3 — transfer theorem (CircuitSAT ⇒ NEXP ⊄ ACC⁰) | #76, #89, #88, #71 | N | 3 | available |
+| #90 | 4 | Williams #76 Pass 3 — transfer theorem (CircuitSAT ⇒ NEXP ⊄ ACC⁰) | #76, #89, #88, #71 | N | 3 | Pass 3 done (2026-09-13); sub-lemma follow-up open |
 | #91 | 4 | Williams #76 Pass 4 — assembly: NEXP ⊄ ACC⁰ theorem + non-relativizing note | #76, #88/#89/#90 | N | 1 | available |
 | #73 | 4 | Barrier classifications: techniques are relativizing/natural/algebrizing | #65, #72/#74/#75/#76 | N | 3 | available |
 | #65 | 5 | `#barrier_check` soundness: Relativizing ⇒ BGS-relativizing | — | H | 1–2 (abstract) | available |
