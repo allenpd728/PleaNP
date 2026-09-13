@@ -3,8 +3,11 @@
 # formalization.yaml (v0.4): repo-root metadata for formalization projects.
 
 # Adopted (DEC-022, 2026-09-10) — see docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md §3.2.
-# Ships as raw text: no yaml/lake tooling in the write sandbox. Validate with a YAML
-# parser when tooling is available before relying on it; align ontology with the mathlib-initiative
+# This file is a checked artifact: it must be parse-valid YAML at commit time.
+# The repo's stdlib mini-YAML parser (tooling/galaxy/miniyaml.py) and the
+# galaxy_data layer read it; CI regenerates galaxy.html from it. Any
+# malformation is tracked (see issue #43) and must be fixed, not shipped.
+# Align ontology with the mathlib-initiative
 # schema (the OpenAI NavierStokesAndEuler release used this exact schema version).
 # The manifest is declarative data — the executable gate scanners remain the source of truth
 # (tooling/gates/*.py). A future CI job may assert the rows(e.g. run `axiom_check.py` per
