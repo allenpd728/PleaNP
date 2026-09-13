@@ -27,6 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 SCAN_SET = (
     "lean/PleaNP/Calculus lean/PleaNP/Basic.lean "
+    "lean/PleaNP/Barriers/RelativizationProof.lean "
     "lean/PleaNP/Challenges/Relativization.lean "
     "lean/PleaNP/Computability/Oracle.lean "
     "lean/PleaNP/Computability/OracleComplexity.lean "
@@ -48,7 +49,7 @@ EXPECTED = {
     ("binder", "BarrierVerdictB.lean", "abstractPVsNP_iff_verdictB"),
     ("binder", "OracleComplexity.lean", "y"),             # weak witness ∃ y
     ("binder", "OracleComplexity.lean", "P_A_subset_NP_A"),
-    ("binder", "OracleComplexity.lean", "UpstreamPolyTime"),  # RHS of P^∅=P anchor
+    ("binder", "OracleComplexity.lean", "UpstreamPolyTime"),  # P^∅ = P anchor RHS
     # Rung-5 soundness lemma API (issue #65): library-level uniformity
     # lemmas, intentional public API for downstream proofs (see
     # docs/GATE_REVIEW_NOTES.md §3).
@@ -70,10 +71,19 @@ EXPECTED = {
     # not dead code.
     ("binder", "Relativization.lean", "equalizing_oracle_statement"),
     ("binder", "Relativization.lean", "separating_oracle_statement"),
+    # DEC-022 §3.3 paper-statement layout (issue #66): RelativizationProof
+    # holds the provable barrier-consequence lemmas, consumed onward by the
+    # #37/#63 assembly work — not dead code.
+    ("binder", "RelativizationProof.lean", "uniform_collapse_contradicted_by_separating"),
+    ("binder", "RelativizationProof.lean", "uniform_separation_contradicted_by_equalizing"),
+    ("binder", "RelativizationProof.lean", "no_uniform_resolution_of_p_vs_np"),
 }
 # NOTE (2026-09-13): `emptyOracle` is no longer an EXPECTED item — the
 # word-query test module (OracleV5Tests.lean, issue #40) references it, so
 # the binder scanner no longer reports it as unreferenced.
+# `UpstreamPolyTime` (OracleComplexity.lean) is the P^∅ = P compatibility
+# RHS (the function→language bridge per OracleTM2Recompose Trap 1); it is
+# the anchor for #4/#40 upstream-P work, not dead code.
 
 
 def _run(cmd: list[str]) -> tuple[int, str]:

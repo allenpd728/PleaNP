@@ -127,7 +127,9 @@ self-check).
 | binder | `abstractPVsNP_iff_verdictB` unreferenced | `BarrierVerdictB.lean:46` | `churn/barrier-verdict/matrix.json` + `lemmas.json`; no-action |
 | binder | weak witness `∃ y` | `OracleComplexity.lean:69` | `AcceptsInTime M (x, y)` next conjunct; no-action |
 | binder | `P_A_subset_NP_A` unreferenced | `OracleComplexity.lean:86` | CI `axiom_check.py` + galaxy tests + `BoundaryProbe.lean`; no-action |
+| binder | `UpstreamPolyTime` unreferenced | `OracleComplexity.lean:40` | `P^∅ = P` compatibility anchor RHS (function→language bridge, OracleTM2Recompose Trap 1; #4/#40 upstream-P work); no-action |
 | binder | `equalizing_oracle_statement` / `separating_oracle_statement` (challenge) unreferenced | `Challenges/Relativization.lean` | statement references consumed by comparator JSON pin `lean/ComparatorChallenges/Relativization.json` (proof-root `theorem_names`); no-action |
+| binder | `uniform_collapse_contradicted_by_separating` / `uniform_separation_contradicted_by_equalizing` / `no_uniform_resolution_of_p_vs_np` unreferenced | `Barriers/RelativizationProof.lean` | DEC-022 §3.3 proof-work lemmas (issue #66): the BGS barrier-consequence corollaries, consumed onward by #37/#63 assembly — not dead code; no-action |
 | hygiene (`--prove-stage`) | `by decide` smell ×3 | `OracleV5Tests.lean:138,155,165` | Same proof-body finiteness discharges as the OracleSmoke items (v5 word-query smoke accept/reject theorems + 2-step bound); no-action |
 
 **Register changes (2026-09-13, #40):** `emptyOracle` is **no longer

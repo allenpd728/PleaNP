@@ -83,6 +83,13 @@ module is expected to fail the build until upstream P lands.
 
 ### Barrier-statement level (Relativization.lean)
 
+> **File layout (2026-09-13, issue #66):** `Relativization.lean` is the
+> claim root (the two theorem sorries #8/#9 live here as honest
+> placeholders). Proof work proceeds in `RelativizationProof.lean`
+> (barrier-consequence lemmas; A1–A5/D1–D6 land there), which the claim
+> root does not import. When #18/#63 close, these rows flip to "Resolved"
+> and the claim root's sorries are replaced by the assembled proofs.
+
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
 | 8 | `Relativization.lean:80` | BGS clause (a) proof — equalizing oracle existence. | #5 (done) + PSPACE/QBF + upstream P. | Low (Rung 3 Step 6) |

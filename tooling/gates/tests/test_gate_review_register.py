@@ -43,9 +43,14 @@ class TestExpectedRegister(unittest.TestCase):
         self.assertIn(("binder", "BarrierVerdictB.lean", "abstractPVsNP_iff_verdictB"), grc.EXPECTED)
         self.assertIn(("binder", "OracleComplexity.lean", "y"), grc.EXPECTED)
         self.assertIn(("binder", "OracleComplexity.lean", "P_A_subset_NP_A"), grc.EXPECTED)
+        self.assertIn(("binder", "OracleComplexity.lean", "UpstreamPolyTime"), grc.EXPECTED)  # P^∅=P anchor RHS
         # DEC-022 comparator statement references (issue #64).
         self.assertIn(("binder", "Relativization.lean", "equalizing_oracle_statement"), grc.EXPECTED)
         self.assertIn(("binder", "Relativization.lean", "separating_oracle_statement"), grc.EXPECTED)
+        # DEC-022 §3.3 proof-work lemmas (issue #66), consumed onward by #37/#63.
+        self.assertIn(("binder", "RelativizationProof.lean", "uniform_collapse_contradicted_by_separating"), grc.EXPECTED)
+        self.assertIn(("binder", "RelativizationProof.lean", "uniform_separation_contradicted_by_equalizing"), grc.EXPECTED)
+        self.assertIn(("binder", "RelativizationProof.lean", "no_uniform_resolution_of_p_vs_np"), grc.EXPECTED)
         # `emptyOracle` no longer flagged (referenced by OracleV5Tests; #40).
         self.assertNotIn(("binder", "Oracle.lean", "emptyOracle"), grc.EXPECTED)
 
