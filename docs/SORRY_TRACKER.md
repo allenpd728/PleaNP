@@ -108,6 +108,15 @@ One tracked sorry:
 |---|---|---|---|---|
 | 12 | `lean/PleaNP/Barriers/DiagonalAssembly.lean:72` | `exists_separating_oracle_assembly` - the assembled "exists B, P_A B != NP_A B" (the BGS clause-(b) target #9). Needs the Machine-to-Code bridge (#23/#97 gap: poly-time oracle machines into Partrec.Code) plus the stage/tournament composition of the Diagonal* modules. | #23/#97 gap (Machine-to-Code bridge) + compose stage_step_exists over M_of-indices. | High when the bridge lands |
 
+### Williams / Rung-4 statement level (issues #72/#88, 2026-09-13)
+
+`lean/PleaNP/Circuits/AC0.lean` (#72 Pass 1) renders the **parity ∉ AC⁰**
+lower-bound statement zero-sorry as a `def` target (`parity_notin_AC0`); the
+switching-lemma proof is #72 Pass 2. `lean/PleaNP/Barriers/Williams.lean`
+(#88 Pass 1) freezes the **Williams-transfer statement anchors** —
+`CircuitSAT`, `IsACC0`, `NEXP_membership` — zero-sorry (`statement-rendered`);
+the CircuitSAT algorithm and the transfer theorem are #89/#90/#91.
+
 ### Algebrization statement level (issue #69 Pass 1, 2026-09-13)
 
 `lean/PleaNP/Barriers/Algebrization.lean` renders the **AW09 v1 statement**
