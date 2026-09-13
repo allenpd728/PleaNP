@@ -194,6 +194,14 @@ alignment:
       lean: "PleaNP.Barriers.RelativizationProof.no_uniform_resolution_of_p_vs_np"
       module: "PleaNP.Barriers.RelativizationProof"
       status: "proved"
+    - source: "BGS clause (a) A2 console oracle (issue #63 Pass 1): empty-word console oracle is total + Computable"
+      lean: "PleaNP.Barriers.RelativizationProof.consoleOracleEmpty_computable"
+      module: "PleaNP.Barriers.RelativizationProof"
+      status: "proved"
+    - source: "BGS clause (a) A2 console oracle (issue #63 Pass 1): leading-bit console oracle is total + Computable"
+      lean: "PleaNP.Barriers.RelativizationProof.consoleOracleHead_computable"
+      module: "PleaNP.Barriers.RelativizationProof"
+      status: "proved"
 
 acknowledgements: >-
  Mathlib, Lean 4, the integrity-gate tooling, prior-art sources per docs/PRIOR_ART.md,
