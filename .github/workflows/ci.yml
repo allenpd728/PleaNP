@@ -105,3 +105,11 @@ jobs:
         run: |
           python3 tooling/reviews/review_inbox.py index >/dev/null
           test -f reviews/INBOX.md && echo "review-inbox index ok"
+      - name: Galaxy data layer unit tests (issue #86; negative-space extraction, stdlib, no network)
+        run: python3 tooling/galaxy/tests/test_galaxy_data.py
+      - name: Galaxy renderer unit tests (issue #87; self-contained galaxy.html invariants, stdlib)
+        run: python3 tooling/galaxy/tests/test_galaxy_render.py
+      - name: Galaxy regen smoke (committed galaxy.html stays up to date with repo artifacts)
+        run: |
+          python3 tooling/galaxy/galaxy.py --repo . --out /tmp/galaxy-ci.html >/dev/null
+          cmp /tmp/galaxy-ci.html tooling/galaxy/galaxy.html && echo "galaxy.html regenerable ok"
