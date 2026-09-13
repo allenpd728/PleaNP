@@ -33,6 +33,7 @@ SCAN_SET = (
     "lean/PleaNP/Barriers/Algebrization.lean "
     "lean/PleaNP/Barriers/AlgebrizationProof.lean "
     "lean/PleaNP/Circuits/Basic.lean "
+    "lean/PleaNP/Circuits/AC0.lean "
     "lean/PleaNP/Challenges/Relativization.lean "
     "lean/PleaNP/Computability/Oracle.lean "
     "lean/PleaNP/Computability/OracleComplexity.lean "
@@ -115,7 +116,6 @@ EXPECTED = {
     ("binder", "Basic.lean", "NaturalProperty"),
     ("binder", "Basic.lean", "univ_largeness"),
     ("binder", "Basic.lean", "CircuitFamily.depthOf"),
-    ("binder", "Basic.lean", "and2"),
 
     # Issue #41 marker-funeq campaign rendering targets: registered in
     # churn/marker-funeq/renderings/*.json (multi_render slots) and machine-
@@ -128,6 +128,13 @@ EXPECTED = {
     # benchmark docs (docs/BENCHMARK.md baseline run), not dead code.
     ("binder", "Closure.lean", "emptyLang_in_UpstreamPolyTime"),
     ("binder", "Closure.lean", "univLang_in_UpstreamPolyTime"),
+    # Issue #72 Pass 1: the AC⁰ milestone's public API (AC0.lean) — the
+    # frozen parity_notin_AC0 statement (consumed by Pass 2 + Gate 4
+    # read-back) and the structural parity facts (parity_zero, parity_
+    # nontrivial) that give the statement content. Demonstrated-intentional.
+    ("binder", "AC0.lean", "parity_notin_AC0"),
+    ("binder", "AC0.lean", "parity_zero"),
+    ("binder", "AC0.lean", "parity_nontrivial"),
     # Issue #75 Pass 1: the resolution substrate API (Resolution.lean) —
     # `eval` is referenced internally by Clause.eval but the scanner resolves
     # only top-level name references; `Clause.empty`, `CNF.width`,

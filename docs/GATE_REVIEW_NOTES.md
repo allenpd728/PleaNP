@@ -134,7 +134,8 @@ self-check).
 | binder | `equalizing_oracle_statement` / `separating_oracle_statement` (challenge) unreferenced | `Challenges/Relativization.lean` | statement references consumed by comparator JSON pin `lean/ComparatorChallenges/Relativization.json` (proof-root `theorem_names`); no-action |
 | binder | `uniform_collapse_contradicted_by_separating` / `uniform_separation_contradicted_by_equalizing` / `no_uniform_resolution_of_p_vs_np` unreferenced | `Barriers/RelativizationProof.lean` | DEC-022 §3.3 proof-work lemmas (issue #66): the BGS barrier-consequence corollaries, consumed onward by #37/#63 assembly — not dead code; no-action |
 | binder | `algebrizing_separation_statement` / `algebrizing_equalization_statement` unreferenced | `Barriers/Algebrization.lean` | AW09 v1 statement references (issue #69 Pass 1): consumed by AZ5's proof assembly — not dead code; no-action |
-| binder | `size_pos` / `depth_size_le` / `CircuitFamily.depthOf` / `and2` / `IsPPoly` / `NaturalProperty` / `univ_largeness` unreferenced | `Circuits/Basic.lean` | Rung-4 circuit substrate API (issues #71 Pass 1-2): the typed circuit-family + P/poly + natural-property foundation consumed by Rung-4 lower bounds — not dead code; no-action |
+| binder | `size_pos` / `depth_size_le` / `CircuitFamily.depthOf` / `IsPPoly` / `NaturalProperty` / `univ_largeness` unreferenced | `Circuits/Basic.lean` | Rung-4 circuit substrate API (issues #71 Pass 1-2): the typed circuit-family + P/poly + natural-property foundation consumed by Rung-4 lower bounds — not dead code; no-action |
+| binder | `and2` **RESOLVED (2026-09-13, #72 Pass 1)** | `Circuits/Basic.lean` | now referenced by `Circuits/AC0.lean`'s eval sanity examples — no longer flagged |
 | hygiene | `by decide` (1) | `Circuits/Basic.lean` | `Nat.one_le_pow` discharge in `univ_largeness` — same proof-body finiteness category as the OracleSmoke smells; no-action |
 | binder | `BoolFunc` / `CircuitFamily.sizeOf` **RESOLVED (2026-09-13, #71 Pass 2)** | `Circuits/Basic.lean` | now referenced by the Pass-2 defs (`Largeness`, `IsPPoly`) — no longer flagged |
 | binder | `consoleOracleHead_computable` unreferenced | `Barriers/RelativizationProof.lean` | Clause-(a) A2 console-oracle leading-bit instance (issue #63 Pass 1, sibling): public proof-work API consumed by A3/A5 — not dead code; no-action |
@@ -263,6 +264,21 @@ as hypothesis types) and the per-direction lemmas (`uniform_collapse_...`,
 `uniform_separation_...` — the joint theorem's components), so the binder
 scanner no longer flags them as unreferenced. Those EXPECTED entries were
 removed accordingly; the remaining register matches the fired set.
+
+### `AC0.lean` — the AC0 milestone public API (issue #72 Pass 1)
+
+`binder_usage_scan.py` flags the Pass-1 milestone's public API:
+- `parity_notin_AC0` — the frozen lower-bound statement (consumed by Pass 2
+  and Gate 4 read-back; a `def`, not a dead declaration).
+- `parity_zero` / `parity_nontrivial` — the structural parity facts giving
+  the statement content (parity is a genuine, non-constant family).
+
+All demonstrated-intentional public API of the Rung-4 AC0 milestone.
+(`Basic.lean`'s `and2` was in the register but self-resolved once AC0.lean's
+eval sanity examples referenced it.)
+
+**Disposition.** No-action. The register EXPECTED set is updated to include
+these items so the machine-check agrees.
 
 ## 4. BGS clause-(a) A2/A3 console-oracle API (issue #63)
 
