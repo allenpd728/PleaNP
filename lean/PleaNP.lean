@@ -1,6 +1,7 @@
 import PleaNP.Basic
 import PleaNP.Calculus.BarrierCalculus
 import PleaNP.Calculus.ConcreteSeed
+import PleaNP.Calculus.Soundness
 import PleaNP.Computability.Oracle
 import PleaNP.Computability.OracleComplexity
 import PleaNP.Computability.OracleSmoke

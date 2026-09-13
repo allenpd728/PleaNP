@@ -48,6 +48,23 @@ EXPECTED = {
     ("binder", "BarrierVerdictB.lean", "abstractPVsNP_iff_verdictB"),
     ("binder", "OracleComplexity.lean", "y"),             # weak witness ∃ y
     ("binder", "OracleComplexity.lean", "P_A_subset_NP_A"),
+    ("binder", "OracleComplexity.lean", "UpstreamPolyTime"),  # RHS of P^∅=P anchor
+    # Rung-5 soundness lemma API (issue #65): library-level uniformity
+    # lemmas, intentional public API for downstream proofs (see
+    # docs/GATE_REVIEW_NOTES.md §3).
+    ("binder", "Soundness.lean", "funeq_uniform"),
+    ("binder", "Soundness.lean", "funne_uniform"),
+    ("binder", "Soundness.lean", "pA_mem_uniform"),
+    ("binder", "Soundness.lean", "relAtom_uniform"),
+    ("binder", "Soundness.lean", "sound_verdict_abstract_rev"),
+    ("binder", "Soundness.lean", "transfer_under_ext"),
+    ("binder", "Soundness.lean", "uniform_and"),
+    ("binder", "Soundness.lean", "uniform_exists"),
+    ("binder", "Soundness.lean", "uniform_forall"),
+    ("binder", "Soundness.lean", "uniform_iff"),
+    ("binder", "Soundness.lean", "uniform_imp"),
+    ("binder", "Soundness.lean", "uniform_not"),
+    ("binder", "Soundness.lean", "uniform_or"),
     # DEC-022 comparator statement references (issue #64): consumed by the
     # comparator JSON pin lean/ComparatorChallenges/Relativization.json,
     # not dead code.
