@@ -109,7 +109,7 @@ CI (`.github/workflows/ci.yml`) runs gates 4–6 on every PR. If your PR is
   - Contribute an independent rendering of a `docs/STATEMENTS/*.md` spec
     (this is literally Gate 3 — statement fidelity — two independent
     formalizations checked for equivalence)
-  - Spot-check the v4 oracle substrate (`Oracle.lean`) against Mathlib
+  - Spot-check the v4 oracle substrate (`lean/PleaNP/Computability/Oracle.lean`) against Mathlib
     conventions
 - If you track upstream P/NP efforts (`docs/UPSTREAM_TRACKING.md`), an issue
   saying "upstream X just landed, here's what changes for PleaNP" is gold.

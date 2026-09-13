@@ -1,4 +1,4 @@
-# Repair spec: `Oracle.lean` / `OracleComplexity.lean` v4 (reachability wiring)
+# Repair spec: `lean/PleaNP/Computability/Oracle.lean` / `lean/PleaNP/Computability/OracleComplexity.lean` v4 (reachability wiring)
 
 **Status:** DRAFT repair spec (authoring track A, 2026-08-19). Not a frozen statement spec — this is a *repair work order* for the local agent, closing the gap between the v3 headers (which claim the flaws are fixed) and the v3 bodies (which are still vacuous). Reconcile with any track-B repair plan before execution.
 
@@ -10,10 +10,10 @@
 
 | Flaw | v3 status | Evidence |
 |---|---|---|
-| **B — oracle inert** | **Fixed.** `step` branches on `queryLabel`, consults `Oracle.query`, routes to `yesLabel`/`noLabel`, pops the query. | `Oracle.lean` `step` body |
+| **B — oracle inert** | **Fixed.** `step` branches on `queryLabel`, consults `Oracle.query`, routes to `yesLabel`/`noLabel`, pops the query. | `lean/PleaNP/Computability/Oracle.lean` `step` body |
 | **A — `DecidesInTime` vacuous** | **NOT fixed, but header claims it is.** Body is still `∀ x, ∃ cfg', cfg'.cfg.l = none ∧ outputEncodesChi …`; no `EvalsToInTime`, no `initCfg`; `ea`/`M`/`t` unused. | lethality scan: 3 `unused_param` violations |
 | **C — `NP_A` vacuous certificate** | **Refactored, still vacuous.** New per-input `AcceptsInTime` is itself vacuous (`ea`/`M`/`xy`/`t` unused), and `NP_A` applies it to `x`, not `(x, y)`. | lethality scan: 4 `unused_param` + wrong input |
-| **Bonus — duplicate binder** | `P_A_subset_NP_A` declares `(A : Oracle Q) (A : Oracle Q)` — does not typecheck. | `OracleComplexity.lean` |
+| **Bonus — duplicate binder** | `P_A_subset_NP_A` declares `(A : Oracle Q) (A : Oracle Q)` — does not typecheck. | `lean/PleaNP/Computability/OracleComplexity.lean` |
 
 **The process failure to prevent:** v3's module headers assert "ea, M, t are all load-bearing" while the bodies leave them unused. The repair is not done until the *body* (not the docstring) makes every parameter load-bearing — verified by the lethality scanner and the validation suite, not by the header text.
 
@@ -49,7 +49,7 @@ For PleaNP, `f := PleaNP.Oracles.step M`, `a := PleaNP.Oracles.initCfg M ea_inpu
 
 ## 4. Required changes
 
-### 4.1 `Oracle.lean` — `DecidesInTime` (Flaw A)
+### 4.1 `lean/PleaNP/Computability/Oracle.lean` — `DecidesInTime` (Flaw A)
 
 Replace the vacuous body with real reachability:
 
@@ -69,7 +69,7 @@ Notes:
 - `initCfg` currently takes an `ea : List … → tm.Cfg` parameter; pass `initList tm` (Mathlib's loader) so the initial config is the standard one. Adjust `initCfg`'s signature if the extra indirection is no longer needed.
 - After this change `ea`, `M`, `t` all occur in the body — the lethality scanner's three `unused_param` violations must clear.
 
-### 4.2 `OracleComplexity.lean` — `AcceptsInTime` (Flaw C, part 1)
+### 4.2 `lean/PleaNP/Computability/OracleComplexity.lean` — `AcceptsInTime` (Flaw C, part 1)
 
 Same reachability wiring, per-input, with a true-output acceptance condition:
 
@@ -86,7 +86,7 @@ def AcceptsInTime {Q : Type} {tm : FinTM2} {alpha : Type}
      | head :: _ => oa head = true)
 ```
 
-### 4.3 `OracleComplexity.lean` — `NP_A` (Flaw C, part 2)
+### 4.3 `lean/PleaNP/Computability/OracleComplexity.lean` — `NP_A` (Flaw C, part 2)
 
 Apply `AcceptsInTime` to the **pair `(x, y)`**, not to `x`:
 
@@ -99,7 +99,7 @@ Apply `AcceptsInTime` to the **pair `(x, y)`**, not to `x`:
 
 The certificate `y` must appear in the *acceptance* conjunct, not only the length bound. (Choose the length-bound convention — `ea (x, [])` vs `ea (x, y)` — and record it; the read-back must say "polynomial in the original input size.")
 
-### 4.4 `OracleComplexity.lean` — duplicate binder (compile fix)
+### 4.4 `lean/PleaNP/Computability/OracleComplexity.lean` — duplicate binder (compile fix)
 
 `P_A_subset_NP_A` has `(A : Oracle Q) (A : Oracle Q)`. Remove the duplicate.
 

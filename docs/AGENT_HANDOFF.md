@@ -34,7 +34,7 @@ conventions; this doc is the "what do I do on day one" summary.
 
 - **Working tree:** clean at `main`/`dev` `8939367` (fast-forwarded).
 - **Lean builds:** clean modules green (BarrierCalculus, Oracle substrate,
-  BgsRenderings); `Relativization.lean` + `OracleUpstreamP.lean` fail ONLY on
+  BgsRenderings); `lean/PleaNP/Barriers/Relativization.lean` + `lean/PleaNP/Computability/OracleUpstreamP.lean` fail ONLY on
   their tracked sorries (expected; see SORRY_TRACKER).
 - **Tools (all tested; pytest tooling/gates/tests/ tooling/reviews/tests/ — 75 passing at this commit):** hygiene/vacuity/model/binder scans,
   `axiom_check.py` (no sorryAx), `lean_readback.py`, `readback.py` (two

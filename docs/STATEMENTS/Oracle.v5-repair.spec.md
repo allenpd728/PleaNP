@@ -1,4 +1,4 @@
-# Repair spec: `Oracle.lean` / `OracleComplexity.lean` v5 (word-query substrate)
+# Repair spec: `lean/PleaNP/Computability/Oracle.lean` / `lean/PleaNP/Computability/OracleComplexity.lean` v5 (word-query substrate)
 
 **Rung:** 2 (local piece). **Status:** Work-order spec (DEC-024, 2026-09-11, run=20260911-0944-qmzn) — the direction chosen by the Option Ω creative-protocol run; implementation is #35. **Supersedes:** the v4 `hΓ : tm'.Γ tm'.k₀ = Q` wiring (the Fintype-Query wall; the v4-repair spec's §4.1–4.4 stays valid except where overridden here). **Read first:** `docs/STATEMENTS/Oracle.lean.spec.md` §2.2 (the "oracle tape" model this restores); `docs/STATEMENTS/OracleTM2Recompose.spec.md` §4 (the three traps); `blockers/open_20260907-0953_bgs26-infinite-query-fintype.md` (the wall this fixes); `docs/decisions/LOG.md` DEC-024 (the decision record).
 
@@ -15,7 +15,7 @@ The repo's own spec (`Oracle.lean.spec.md` §2.2) never asked for this:it says t
 ## 2. The v5 substrate shape (the target after this spec is implemented)
 
 - **`Oracle` stays exactly as-is:** `Oracle Q := Q → Bool` (total, codomain `Bool`). *Do not touch.**
-- **`Q` stays exactly as-is:** for BGS,`Q = Σ n : Nat, Bits n`, `Bits n = Fin n → Bool` — `lean/PleaNP/Barriers/BGSDiagonal.lean:45-49` unchanged. **Do not touch the frozen statement files at all.**
+- **`Q` stays exactly as-is:** for BGS,`Q = Σ n : Nat, Bits n`, `Bits n = Fin n → Bool` — `../../lean/PleaNP/Barriers/BGSDiagonal.lean:45-49` unchanged. **Do not touch the frozen statement files at all.**
 - **The query tape:** FinTM2 is multi-tape (`Γ : Fin → Type` · a function from tape-index to alphabet-typed).v5 introduces a **dedicated query-tape index** `kq : Fin (tm.Γ.length)` (a new peer of `k₀` and `k₁`).During a query transition, the *content of tape `kq`* (a `List (tm.Γ kq)`,finite-length word over the finite alphabet `Γ kq`]) is consumed as the query; not the input-tape head.
 - **The decode function:** the word on the query tape is decoded to a value of the oracle's query type:```lean
 decode : List (tm.Γ (tm.kq) → Q
@@ -59,7 +59,7 @@ def P_A {Q alpha : Type} (A : Oracle Q) : Set (Set alpha) :=
 
 ## 4. Required changes (checklist for #35's implementation
 
-### 4.1 `Oracle.lean` — introduce the query tape and word-query step
+### 4.1 `lean/PleaNP/Computability/Oracle.lean` — introduce the query tape and word-query step
 
 1. Add a constant or index for the query tape:```lean
 def kq := 2  -- or a dedicated Fin index; the local agent pins the multi-tape convention (which index is input/query/output and how FinTM2 numbers them
@@ -77,7 +77,7 @@ structure Machine (Q : Type) (tm : FinTM2) [DecidableEq tm.Λ] where
  (If FinTM2's tape-index type makes referencing `tm.kq` awkward, a local `abbrev QueryTape (tm : FinTM2) := ...` helps; the exact field-bearing shape is the local agent's call** — *the load-bearing invariants are §4.3*).
 4. Keep `initCfg`,`step_none`,`outputEncodesChi`,`DecidesInTime` semantics (the latter's `ea` now builds *both* input and query-tape initial content — or a `writeQ` conjunct, per §2's signature-shape; the local agent picks the composition that compiles).
 
-### 4.2 `OracleComplexity.lean` — re-type `P_A` / `NP_A` data
+### 4.2 `lean/PleaNP/Computability/OracleComplexity.lean` — re-type `P_A` / `NP_A` data
 
 1. Delete the `hΓ : tm'.Γ tm'.k₀ = Q` bindersin `P_A` and `NP_A`;
 2. Add the machine-side witness data for the query channel (decode + word-writer,per §2's shape;
@@ -90,7 +90,7 @@ structure Machine (Q : Type) (tm : FinTM2) [DecidableEq tm.Λ] where
 2. **Query = exactly 1 step:** the query transition appears in `tm.step` as one application,and `EvalsToInTime` counts it as one step (no simulation, no 0-cost, no amortization); an explicit note/example in the module per `OracleTM2Recompose.spec.md` §4 trap 2.
 3. **No `Fintype`-on-query:** no `hΓ`-style equality forcing the query value-space into a `Fintype` slot;the query tape's *alphabet*`Γ kq` stays finite (that's a real physical constraint,unweakened);the query *value-space* `Q` stays arbitrary (infinite for BGS)).
 4. **Frozen statements untouched:** `BGSDiagonal.lean` (`Query`,`Bits`,`U_B`,`IsWitness`,`U_B_iff_witness`),`Relativization.lean` — *zero edits*;the spec/read-back's Gate-4 statements unchanged..
-5. **Surjective-enough decode:** for BGS,the decode maps n-symbol words bijectively onto the n-fiber of Q (so 2^n query-words per length); filed as a comment/proof-obligation note in `OracleComplexity.lean`, not necessarily a separate lemma — the machine construction (#36) will need it.
+5. **Surjective-enough decode:** for BGS,the decode maps n-symbol words bijectively onto the n-fiber of Q (so 2^n query-words per length); filed as a comment/proof-obligation note in `lean/PleaNP/Computability/OracleComplexity.lean`, not necessarily a separate lemma — the machine construction (#36) will need it.
 6. **`P_A ⊆ NP_A` still holds** (re-proved; the structural self-check is the v4 repair's behavioral witness).
 7. **`P^∅ = P` (empty oracle) compatibility re-stated** (per §4.2(4) — statement-level, proof may wait on upstream P, per `OracleUpstreamP.lean`'s existing sorry-tracking; the *statement* must not regress).
 

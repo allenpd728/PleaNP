@@ -8,7 +8,7 @@
 
 ## The three validation requirements
 
-Every definition file (e.g., `Oracle.lean`, `OracleComplexity.lean`) must ship a validation suite with three categories of evidence before it can be frozen:
+Every definition file (e.g., `lean/PleaNP/Computability/Oracle.lean`, `lean/PleaNP/Computability/OracleComplexity.lean`) must ship a validation suite with three categories of evidence before it can be frozen:
 
 ### 1. Must-prove lemmas
 

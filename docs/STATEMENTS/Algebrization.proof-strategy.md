@@ -72,7 +72,7 @@ As with relativization, the barrier statement is a corollary of (a) + (b): an al
 
 | Element | Difficulty | Dependency |
 |---|---|---|
-| Oracle machines, `P^A`, `NP^A` | Shared with 3a | `Oracle.lean` v2 (recompose) |
+| Oracle machines, `P^A`, `NP^A` | Shared with 3a | `lean/PleaNP/Computability/Oracle.lean` v2 (recompose) |
 | **Low-degree extension `Ã` over a finite field** | **Hard** — multiquadratic interpolation, uniqueness | Finite fields (Mathlib has these) + multiquadratic polynomial theory |
 | The hiding lemma (low-degree → `Ã`-access doesn't reveal `A`) | **Very hard** — the crux technical lemma | The extension construction + polynomial degree arguments |
 | Clause (a) separation diagonalization | Hard — diagonalization *against `Ã`-access machines* | The hiding lemma + machine enumeration |

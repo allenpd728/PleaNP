@@ -1,7 +1,7 @@
 # Informal proof strategy: Relativization (Baker–Gill–Solovay)
 
 **Rung:** 3a — informal proof-strategy outline for `docs/STATEMENTS/Relativization.md`.
-**Status:** **Informal strategy — NOT a frozen proof spec.** This is a preparatory doc sourced to the literature, giving the *shape* of the proof work to come. It is explicitly *not* a Gate-1 frozen target. The frozen proof spec is written only *after* the relativization statement is rendered against real `P^A`/`NP^A` types (which wait on the `Oracle.lean` v2 recompose, DEC-010) and Gates 1–5 pass. Writing a binding proof spec before the substrate exists would jump `LOCAL_AGENT_WORKFLOW.md` Step 6 — this doc does not do that; it informs without binding.
+**Status:** **Informal strategy — NOT a frozen proof spec.** This is a preparatory doc sourced to the literature, giving the *shape* of the proof work to come. It is explicitly *not* a Gate-1 frozen target. The frozen proof spec is written only *after* the relativization statement is rendered against real `P^A`/`NP^A` types (which wait on the `lean/PleaNP/Computability/Oracle.lean` v2 recompose, DEC-010) and Gates 1–5 pass. Writing a binding proof spec before the substrate exists would jump `LOCAL_AGENT_WORKFLOW.md` Step 6 — this doc does not do that; it informs without binding.
 
 ---
 

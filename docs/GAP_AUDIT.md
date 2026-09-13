@@ -2,7 +2,7 @@
 
 **Rung 1 deliverable.** This is the spec for Rungs 2–4. It catalogues, domain by domain, what Mathlib currently has for complexity theory and what the barrier theorems (relativization, natural proofs, algebrization) require.
 
-Last reviewed: 2026-08-18 (deepened: verified against Mathlib master via code search; `RecursiveIn.lean` oracle-computability finding recorded; complexitylib tracked; open Q3 resolved). Update when upstream lands (see `docs/UPSTREAM_TRACKING.md`).
+Last reviewed: 2026-08-18 (deepened: verified against Mathlib master via code search; `Mathlib/Computability/RecursiveIn.lean` (upstream) oracle-computability finding recorded; complexitylib tracked; open Q3 resolved). Update when upstream lands (see `docs/UPSTREAM_TRACKING.md`).
 
 ---
 
