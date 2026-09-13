@@ -50,8 +50,9 @@ EXPECTED = {
     ("hygiene", "OracleV5Tests.lean", "by decide"),
     ("binder", "BarrierVerdictB.lean", "abstractPVsNP_iff_verdictB"),
     ("binder", "OracleComplexity.lean", "y"),             # weak witness ∃ y
-    ("binder", "OracleComplexity.lean", "P_A_subset_NP_A"),
     ("binder", "OracleComplexity.lean", "UpstreamPolyTime"),  # P^∅ = P anchor RHS
+    # NOTE: P_A_subset_NP_A is NOT in the register anymore — #63 Pass 3's
+    # P_subset_NP_console references it, so the binder stops flagging it.
     # Rung-5 soundness lemma API (issue #65): library-level uniformity
     # lemmas, intentional public API for downstream proofs (see
     # docs/GATE_REVIEW_NOTES.md §3).
@@ -78,6 +79,7 @@ EXPECTED = {
     # intentional public API for the A3/A5 assembly (GATE_REVIEW_NOTES.md §4).
     ("binder", "RelativizationProof.lean", "consoleOracleHead_computable"),
     ("binder", "RelativizationProof.lean", "consoleLang_mem_P_false"),
+    ("binder", "RelativizationProof.lean", "P_subset_NP_console"),
     # DEC-022 §3.3 paper-statement layout (issue #66): RelativizationProof
     # holds the provable barrier-consequence lemmas, consumed onward by the
     # #37/#63 assembly work — not dead code.

@@ -95,15 +95,18 @@ false positive shape.
 is load-bearing via `AcceptsInTime M (x, y)`; the docstring above
 `NP_A` records this (Flaw C fix carried from the v4 repair).
 
-## 5. Gate 5 (Tier 1b) binder REVIEW — `P_A_subset_NP_A` "unreferenced"
+## 5. Gate 5 (Tier 1b) binder REVIEW — `P_A_subset_NP_A` "unreferenced" (RESOLVED)
 
-`binder_usage_scan.py` flags `OracleComplexity.lean:80`
+`binder_usage_scan.py` previously flagged `OracleComplexity.lean`
 (`theorem P_A_subset_NP_A`) as "referenced by no other scanned
-declaration". The scanner sees only Lean declarations, not CI/tooling
-name references.
+declaration" — the scanner sees only Lean declarations, not CI/tooling
+name references. **Resolved 2026-09-13 (issue #63 Pass 3):** the new
+`RelativizationProof.P_subset_NP_console` theorem *instantiates*
+`P_A_subset_NP_A`, so the binder scanner no longer flags it; it is
+removed from the register EXPECTED set.
 
-**Verification.** The theorem is referenced by name from CI and
-tooling:
+**Historical verification** (why it was noted before resolution). The
+theorem was referenced by name from CI and tooling:
 
 - `.github/workflows/ci.yml` — the Gate 6 Tier 2 `axiom_check.py` step
   checks the clean-module theorems (including `P_A_subset_NP_A`) for
@@ -126,7 +129,7 @@ self-check).
 | hygiene (`--prove-stage`) | `by decide` smell ×3 | `OracleSmoke.lean:92,109,119` | Proof-body finiteness discharges, documented in module header; no-action |
 | binder | `abstractPVsNP_iff_verdictB` unreferenced | `BarrierVerdictB.lean:46` | `churn/barrier-verdict/matrix.json` + `lemmas.json`; no-action |
 | binder | weak witness `∃ y` | `OracleComplexity.lean:69` | `AcceptsInTime M (x, y)` next conjunct; no-action |
-| binder | `P_A_subset_NP_A` unreferenced | `OracleComplexity.lean:86` | CI `axiom_check.py` + galaxy tests + `BoundaryProbe.lean`; no-action |
+| binder | `P_A_subset_NP_A` unreferenced | `OracleComplexity.lean:86` | RESOLVED (#63 Pass 3): referenced by `P_subset_NP_console`; dropped from register |
 | binder | `UpstreamPolyTime` unreferenced | `OracleComplexity.lean:40` | `P^∅ = P` compatibility anchor RHS (function→language bridge, OracleTM2Recompose Trap 1; #4/#40 upstream-P work); no-action |
 | binder | `equalizing_oracle_statement` / `separating_oracle_statement` (challenge) unreferenced | `Challenges/Relativization.lean` | statement references consumed by comparator JSON pin `lean/ComparatorChallenges/Relativization.json` (proof-root `theorem_names`); no-action |
 | binder | `uniform_collapse_contradicted_by_separating` / `uniform_separation_contradicted_by_equalizing` / `no_uniform_resolution_of_p_vs_np` unreferenced | `Barriers/RelativizationProof.lean` | DEC-022 §3.3 proof-work lemmas (issue #66): the BGS barrier-consequence corollaries, consumed onward by #37/#63 assembly — not dead code; no-action |
@@ -227,3 +230,7 @@ demonstrated-intentional pattern as `OracleSmoke`'s smokes and the
 
 **Disposition.** No-action. Registered in
 `tooling/gates/gate_review_register_check.py` EXPECTED.
+`P_subset_NP_console` (the A4 easy direction, `P_A A ⊆ NP_A A`
+instantiated at the console oracle) joins the same register: it is the first
+half of the collapse sandwich, consumed by the A5 assembly (issue #63 Pass 3).
+

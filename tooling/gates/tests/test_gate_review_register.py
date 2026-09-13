@@ -42,7 +42,9 @@ class TestExpectedRegister(unittest.TestCase):
         self.assertIn(("hygiene", "OracleV5Tests.lean", "by decide"), grc.EXPECTED)
         self.assertIn(("binder", "BarrierVerdictB.lean", "abstractPVsNP_iff_verdictB"), grc.EXPECTED)
         self.assertIn(("binder", "OracleComplexity.lean", "y"), grc.EXPECTED)
-        self.assertIn(("binder", "OracleComplexity.lean", "P_A_subset_NP_A"), grc.EXPECTED)
+        # P_A_subset_NP_A is no longer in the register: #63 Pass 3's
+        # P_subset_NP_console references it, so the binder stops flagging it.
+        self.assertNotIn(("binder", "OracleComplexity.lean", "P_A_subset_NP_A"), grc.EXPECTED)
         self.assertIn(("binder", "OracleComplexity.lean", "UpstreamPolyTime"), grc.EXPECTED)  # P^∅=P anchor RHS
         # DEC-022 comparator statement references (issue #64).
         self.assertIn(("binder", "Relativization.lean", "equalizing_oracle_statement"), grc.EXPECTED)
