@@ -66,7 +66,7 @@ Reference: `docs/ARCHITECTURE.md`.
 
 | Gate | What it checks for *this* statement | Failure mode it blocks |
 |---|---|---|
-| **1 — Statement-freeze** | This spec (and the eventual Lean `Relativization.lean`) is version-controlled and read-only to proof search. | Quietly editing the statement until provable. |
+| **1 — Statement-freeze** | This spec (and the eventual Lean `lean/PleaNP/Barriers/Relativization.lean`) is version-controlled and read-only to proof search. | Quietly editing the statement until provable. |
 | **2 — Model-consistency** | The statement references the canonical upstream `P`/`NP` (from whichever model lands, `UPSTREAM_TRACKING.md`), not a local redefinition. The oracle is `PleaNP.Oracles.Oracle`, not a local alias of `NP`. | Redefining `NP` weaker and proving that. |
 | **3 — Statement-fidelity** | A *second*, independently-produced formalization of BGS must be checked for logical equivalence to this one before trust. | One formalization quietly encoding a weaker existence claim. |
 | **4 — Read-back** | An auto-generated informal statement read back from the Lean must match §5 below. | Statement compiles but means something different (e.g. quantifies over partial oracles, or drops the recursiveness hypothesis). |

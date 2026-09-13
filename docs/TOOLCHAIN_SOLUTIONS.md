@@ -9,7 +9,7 @@ Verified facts that shape every option below (all confirmed working from this re
 
 - The Lean toolchain ships as a self-contained binary bundle via **elan** (`~/.elan/toolchains/leanprover--lean4---v4.31.0/`).
 - Mathlib serves **precompiled `.olean` caches** via `lake exe cache get` (Azure-backed, hosted by `leanprover-community/mathlib4`; ~8542 files, a few minutes at ~200KB/s, decompressed in place). Cache variants exist per toolchain and per branch/tag.
-- `lean-toolchain` pins the toolchain; `lakefile.lean` pins mathlib `@ "v4.31.0"`.
+- `lean-toolchain` pins the toolchain; `lean/lakefile.lean` pins mathlib `@ "v4.31.0"`.
 - Mathlib's own CI (GitHub Actions + Bors) uploads `.olean` caches so **PR branches get cache hits**.
 - The "globally shared mathlib installation" pattern exists and is documented by the community (multi-project cache sharing).
 
@@ -45,7 +45,7 @@ For an AI agent that works *inside* PleaNP's repo, **the practical answer is Pla
 
 Per-session from-scratch provisioning is expensive mostly because Mathlib is monolithic (~5k+ source modules / 8.5k cached oleans). Options to pull *only what we need*:
 
-1. **Dependency-closure builds (cheap now).** `lake build PleaNP.Import.Path` builds only PleaNP's import closure, not all of Mathlib — the cache still supplies the prebuilt Mathlib oleans, so only `PleaNP.*` gets rebuilt from source. This is already how we iterate (the `#barrier_check` module builds in ~4 s with the cache warm). **For even smaller slices:** keep `BarrierCalculus.lean` import-light (it only needs core `Mathlib`, not the whole `import Mathlib` — worth a follow-up to trim the import) so a fresh checkout can build JUST that module against the cache.
+1. **Dependency-closure builds (cheap now).** `lake build PleaNP.Import.Path` builds only PleaNP's import closure, not all of Mathlib — the cache still supplies the prebuilt Mathlib oleans, so only `PleaNP.*` gets rebuilt from source. This is already how we iterate (the `#barrier_check` module builds in ~4 s with the cache warm). **For even smaller slices:** keep `lean/PleaNP/Calculus/BarrierCalculus.lean` import-light (it only needs core `Mathlib`, not the whole `import Mathlib` — worth a follow-up to trim the import) so a fresh checkout can build JUST that module against the cache.
 2. **Standalone sub-project for the calculus layer.** The `lean/PleaNP/Calculus/` module has zero dependency on the unvalidated `Oracles` substrate; it could be split into its own tiny lake project with its own `lakefile` (still requiring mathlib from cache). This makes the Rung-5 prototype independently extractable and CI-able in isolation (matches DEC-001's "extractable lean/ tree" spirit, one level deeper).
 3. **Fine-grained olean cache sharing.** Mathlib's `lake exe cache` and the "globally shared mathlib installation" wiki pattern let multiple projects share one installed Mathlib. For a small project like PleaNP this mostly matters where many projects share a single runner (e.g. a shared devcontainer for several repos).
 4. **Offline/local mirrors of the cache** (e.g. a repo-scoped self-hosted Actions runner with a warm `~/.elan` + `.lake`): persistent but even-more-infra; only worth it if the free quotas become binding.
@@ -60,7 +60,7 @@ Per-session from-scratch provisioning is expensive mostly because Mathlib is mon
 1. `.devcontainer/devcontainer.json` + `Dockerfile` (elan + mathlib cache get + prebuild `PleaNP.Calculus.BarrierCalculus`) — gives browser-based persistent editing for humans, and a canonical warm image the repo always refers to.
 2. Extend `.github/workflows/ci.yml` to *also* run `lake build PleaNP.Calculus.BarrierCalculus` (or the full tree) with mathlib cache restored — already partly there; ensure a `cache` step for the Mathlib oleans so PRs don't re-download 8.5k files.
 3. Document in `AGENTS.md` the one-line bootstraps: `elan install` → `lake exe cache get` → `lake build <module>` (this is the entire "persistence" story: the cache is the persistence layer; nothing else needs to be stored).
-4. (Follow-up) trim `import Mathlib` in `BarrierCalculus.lean` to the minimal core imports, and note it in the module header — makes single-module fresh builds even faster.
+4. (Follow-up) trim `import Mathlib` in `lean/PleaNP/Calculus/BarrierCalculus.lean` to the minimal core imports, and note it in the module header — makes single-module fresh builds even faster.
 
 None of this requires the M4 machine; any free public runner + the community cache reproduces the environment.
 

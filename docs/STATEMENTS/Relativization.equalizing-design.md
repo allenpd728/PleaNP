@@ -20,13 +20,13 @@ closes); `docs/decisions/LOG.md` DEC-024.
 
 ## 1. What is already in place (the substrate the proof lands on)
 
-- **`Oracle.lean` (v4, builds green, 0 sorries):** `Oracle Q := Q → Bool`
+- **`lean/PleaNP/Computability/Oracle.lean` (v4, builds green, 0 sorries):** `Oracle Q := Q → Bool`
   (total by construction), `Cfg`/`Machine`, `step` (query branch consults the
   oracle and routes to yes/no labels), `evalsToUniqueResult` (deterministic
   halting endpoints agree), `DecidesInTime` (halts + output encodes χ_L),
   `step_none`, `outputEncodesChi`.
 
-- **`OracleComplexity.lean` (v4, builds green, 0 sorries):** `P_A`/`NP_A` as
+- **`lean/PleaNP/Computability/OracleComplexity.lean` (v4, builds green, 0 sorries):** `P_A`/`NP_A` as
   `Set (Set α)` over `Oracle Q`, with `hΓ : tm'.Γ tm'.k₀ = Q` (v4 wiring),
   `AcceptsInTime (x,y)` (Flaw C fix), and `P_A_subset_NP_A` proved **both
   directions** via `evalsToUniqueResult`. **Note:** the v4 `hΓ` wiring forces
@@ -37,12 +37,12 @@ closes); `docs/decisions/LOG.md` DEC-024.
   against **either** substrate shape where possible; the machine constructions
   below state which shape they assume and what the v5 re-wire changes.
 
-- **`Relativization.lean` (statement rendered, 2 sorries):** `QueryType :=
+- **`lean/PleaNP/Barriers/Relativization.lean` (statement rendered, 2 sorries):** `QueryType :=
   List Bool`, `InputType := List Bool`, clause (a)
   `exists_equalizing_oracle : ∃ A, Computable A ∧ P_A A = NP_A A` (the
   `sorry` this design's A5 closes), clause (b) `exists_separating_oracle`.
 
-- **`BGSDiagonal.lean` (#21):** `U_B` and the witness-core for clause (b)
+- **`lean/PleaNP/Barriers/BGSDiagonal.lean` (#21):** `U_B` and the witness-core for clause (b)
   (zero-sorry). **Not** used by clause (a) — clause (a)'s witness is QBF, not a
   diagonalized B.
 
@@ -91,7 +91,7 @@ Concretely, the pieces (each in the A-table below):
 **Design recommendation (A1 decides, pending the A2 machine construction):**
 the **EXP-complete witness** is the lower-risk first target. It needs only the
 existing oracle-machine step-counting substrate (`step`, `EvalsToInTime`,
-`DecidesInTime` — all present in `Oracle.lean`), no new PSPACE/QBF
+`DecidesInTime` — all present in `lean/PleaNP/Computability/Oracle.lean`), no new PSPACE/QBF
 formalization. The QBF witness is the "textbook" cleaner sandwich but pulls in
 a PSPACE-complete substrate that is not in mathlib (GAP_AUDIT §8) and is a
 separate Rung-3b-sized effort. The design's A1–A5 sub-tasks are written so the
@@ -110,10 +110,10 @@ witness and the QBF version becomes an optional strengthening.
 | # | Sub-task | Lean obligation | Mathlib / substrate hooks | Blocked by |
 |---|---|---|---|---|
 | **A1** | **Collapse-construction choice + statement refinement** | Refine `exists_equalizing_oracle`'s statement if needed (choose witness construction; confirm `Q = QueryType`, `Computable` hypothesis form, oracle totality). No new theorem — a statement-shape decision + doc. | `Relativization.lean.spec.md` §2 traps 1–3 (computability, equality encoding, query type) | none (design; may run parallel to the (b) path) |
-| **A2** | **Console oracle definition + total-computability proof** | Define the witness `A : Oracle QueryType` (the EXP-complete or QBF oracle, per A1); prove `Computable A` (a decidable predicate over the query type). | `Oracle` totality-by-type (`Oracle Q := Q → Bool`); `Turing.Computable` from `Mathlib.Computability.TuringMachine.Computable` (already imported by `OracleComplexity.lean`) | A1 |
-| **A3** | **`NP^A ⊆ P^A` inclusion machinery (the content direction)** | Prove: an `NP^A` verifier run is simulated by a `P^A` decider — a single query to the console oracle decides any *exponential*-bounded computation the verifier guesses. The bounding: certificate `y` bounded by `p.eval n`; the oracle decides the guessed witness check in one query. | `P_A`/`NP_A` definitions (`OracleComplexity.lean`); `DecidesInTime`/`AcceptsInTime` reachability; `P_A_subset_NP_A` as the reverse of the machinery if needed | A2, plus #35 (v5 word-query substrate — the machine construction needs the query-tape wiring; without it, the `Fintype Q` wall blocks the `QueryType = List Bool` machine's alphabet fusion) |
+| **A2** | **Console oracle definition + total-computability proof** | Define the witness `A : Oracle QueryType` (the EXP-complete or QBF oracle, per A1); prove `Computable A` (a decidable predicate over the query type). | `Oracle` totality-by-type (`Oracle Q := Q → Bool`); `Turing.Computable` from `Mathlib.Computability.TuringMachine.Computable` (already imported by `lean/PleaNP/Computability/OracleComplexity.lean`) | A1 |
+| **A3** | **`NP^A ⊆ P^A` inclusion machinery (the content direction)** | Prove: an `NP^A` verifier run is simulated by a `P^A` decider — a single query to the console oracle decides any *exponential*-bounded computation the verifier guesses. The bounding: certificate `y` bounded by `p.eval n`; the oracle decides the guessed witness check in one query. | `P_A`/`NP_A` definitions (`lean/PleaNP/Computability/OracleComplexity.lean`); `DecidesInTime`/`AcceptsInTime` reachability; `P_A_subset_NP_A` as the reverse of the machinery if needed | A2, plus #35 (v5 word-query substrate — the machine construction needs the query-tape wiring; without it, the `Fintype Q` wall blocks the `QueryType = List Bool` machine's alphabet fusion) |
 | **A4** | **`P^A ⊆ NP^A` (easy) + sandwich assembly** | Reuse `P_A_subset_NP_A` (proved on the substrate) for the oracle `A`; then compose `P^A ⊆ NP^A ⊆ P^A`-shaped sandwich (the two candidates differ in the middle: `EXP ⊆ P^A` for the console oracle vs `PSPACE ⊆ P^A` for QBF). | `P_A_subset_NP_A` (already landed both directions); set-extensional equality of `P_A A`/`NP_A A` (`Set (Set α)`) | A3 |
-| **A5** | **Assembly + close the sorry** | `P_A A = NP_A A` by `Subset.antisymm` from A3+A4; then `exists_equalizing_oracle` with the `Computable A` witness; remove the `sorry` at `Relativization.lean:80`. Full gate evidence. | `Set.Subset.antisymm`; `Relativization.lean` statement (unchanged) | A3, A4 |
+| **A5** | **Assembly + close the sorry** | `P_A A = NP_A A` by `Subset.antisymm` from A3+A4; then `exists_equalizing_oracle` with the `Computable A` witness; remove the `sorry` at `Relativization.lean:80`. Full gate evidence. | `Set.Subset.antisymm`; `lean/PleaNP/Barriers/Relativization.lean` statement (unchanged) | A3, A4 |
 
 **Sub-task dependency order:** A1 → A2 → A3 → A4 → A5. A1 is design-only and
 parallel-safe (no Lean). A2 is substrate-light (computability proof, no
@@ -156,11 +156,11 @@ console oracle, not over the empty one.
 
 ## 5. Mathlib hooks (verified present at v4.31.0)
 
-- **`Oracle` totality:** `Oracle Q := Q → Bool` (already in `Oracle.lean`) —
+- **`Oracle` totality:** `Oracle Q := Q → Bool` (already in `lean/PleaNP/Computability/Oracle.lean`) —
   totality is by type, no extra proof.
 - **`Computable`:** `Turing.Computable` from
   `Mathlib.Computability.TuringMachine.Computable` (already imported by
-  `OracleComplexity.lean`); `nat`-level `Computable` for the console-oracle
+  `lean/PleaNP/Computability/OracleComplexity.lean`); `nat`-level `Computable` for the console-oracle
   decider via `Mathlib.Computability.Partrec`/`Partrec.Code` if the witness is
   phrased over ℕ-encodings.
 - **Set-extensional equality:** `Set.Subset.antisymm` /
@@ -168,7 +168,7 @@ console oracle, not over the empty one.
   equality `P_A A = NP_A A` is `Subset.antisymm` of two inclusions (Trap 2
   consistency — both are `Set (Set α)`).
 - **Reachability/determinism:** `EvalsToInTime`, `evalsToUniqueResult`,
-  `step_none` (all in `Oracle.lean`) — used by the A3 simulation's
+  `step_none` (all in `lean/PleaNP/Computability/Oracle.lean`) — used by the A3 simulation's
   determinism arguments and the A4 reuse of `P_A_subset_NP_A`.
 - **Bounded steps (EXP witness):** `2^m`-bounded simulation reuses
   `FinTM2`'s step-counting and `EvalsToInTime` (no new arithmetic substrate).
@@ -206,7 +206,7 @@ console oracle, not over the empty one.
 
 1. **A1 (design decision)** can land immediately: pick the EXP-complete
    console oracle (the QBF variant documented as the drop-in strengthening),
-   confirm the statement shape needs no change (`Relativization.lean` clause (a)
+   confirm the statement shape needs no change (`lean/PleaNP/Barriers/Relativization.lean` clause (a)
    is already rendered with `Computable`, total `Oracle`, set-extensional `=`).
 2. **Do NOT file separate A1–A5 sub-issues** (confirmed during #62, mirroring
    the diagonalization precedent where D1–D6 remained passes of the

@@ -2,7 +2,7 @@
 
 The computational-model substrate (Rung 2) is *not* PleaNP's to build — it's being actively contested by multiple efforts upstreaming into Mathlib. This document tracks them so PleaNP imports the right thing rather than reinventing or picking sides.
 
-Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-computability finding; added complexitylib (Schlesinger) as tracked effort #6; verified no OWF/PRF infrastructure). This is a living document — update when upstream lands.
+Last reviewed: 2026-08-18 (deepened: recorded Mathlib `Mathlib/Computability/RecursiveIn.lean` (upstream) oracle-computability finding; added complexitylib (Schlesinger) as tracked effort #6; verified no OWF/PRF infrastructure). This is a living document — update when upstream lands.
 
 ---
 
@@ -11,8 +11,8 @@ Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-
 ### 1. Mathlib #35366 — `Turing.TM1` with fuel-based step counting
 
 - **Author:** KrystianYCSilva (Feb 2026)
-- **Approach:** Extends Mathlib's existing `Turing.TM1` (from `PostTuringMachine.lean`, Carneiro 2018) with `runN` (fuel-based) step counting, then defines P, NP, and proves `p_sub_np`.
-- **Status:** Working, zero `sorry`, compiles against Mathlib v4.28.0-rc1. Seeking maintainer feedback on PR sequencing. Proposes a 3-PR sequence: `step_none_iff` lemma → `TM1Complexity.lean` with `runN` → complexity classes + `p_sub_np`.
+- **Approach:** Extends Mathlib's existing `Turing.TM1` (from `Mathlib/Computability/PostTuringMachine.lean` (upstream), Carneiro 2018) with `runN` (fuel-based) step counting, then defines P, NP, and proves `p_sub_np`.
+- **Status:** Working, zero `sorry`, compiles against Mathlib v4.28.0-rc1. Seeking maintainer feedback on PR sequencing. Proposes a 3-PR sequence: `step_none_iff` lemma → `Mathlib/Computability/TM1Complexity.lean` (upstream) with `runN` → complexity classes + `p_sub_np`.
 - **Builds on:** existing, merged Mathlib infrastructure (`Turing.TM1`).
 - **PleaNP stance:** Strong candidate to import from. Uses existing infrastructure, lowest-risk path. Pending maintainer feedback on `runN` vs relational approach.
 
@@ -49,7 +49,7 @@ Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-
 - **License:** Apache 2.0 (compatible with PleaNP).
 - **What it has:** `P`, `NP`, `BPP`, `PSPACE` (plus `DTIME`/`NTIME`/`DSPACE`/`NSPACE`, `PPoly`/`PAdvice`, `RP`/`ZPP`/`PP`/`EXP`/`NEXP`/`SC`/`FNP`/`TFNP`); multi-tape-to-single-tape simulation; universal machines; the deterministic time-hierarchy theorem; a full Cook-Levin reduction (`SAT` is NP-complete) via computation tableaux; a typed Boolean-circuit model with size/depth, CNF/DNF, Shannon bounds, gate-elimination lower bounds, Schnorr's XOR lower bound, Valiant depth reduction; a logarithmic-cost RAM model; and a Fourier-analysis-of-Boolean-functions subtheory (O'Donnell ch. 1) — the analytic foundation for small-depth lower bounds and natural proofs.
 - **What it explicitly lacks:** Oracle machines (the roadmap lists "oracle access" as needing common interfaces before headline equivalences can be stated), and **all three barriers** (relativization, natural proofs, algebrization) — code search confirms zero hits for `oracle`/`relativization`/`barrier`/`algebrization`. These are exactly PleaNP's gap.
-- **PleaNP stance:** Strong candidate to import P/NP/reductions/Cook-Levin/circuit-basics from, *if* the toolchain reconciles to v4.31.0 (or PleaNP adjusts). Its circuit lower bounds and Fourier-analysis subtheory are directly reusable for Rung 4. Pending review — **not yet added to `lakefile.lean`**. Proposed dependency entry:
+- **PleaNP stance:** Strong candidate to import P/NP/reductions/Cook-Levin/circuit-basics from, *if* the toolchain reconciles to v4.31.0 (or PleaNP adjusts). Its circuit lower bounds and Fourier-analysis subtheory are directly reusable for Rung 4. Pending review — **not yet added to `lean/lakefile.lean`**. Proposed dependency entry:
   ```lean
   require complexitylib from git
     "https://github.com/SamuelSchlesinger/complexitylib.git" @ "main"

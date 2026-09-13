@@ -12,7 +12,7 @@ The proof root must **not** import the challenge module;the challenge module mus
 
 ## 1. The reference (challenge) module
 
-**File:** `lean/PleaNP/Challenges/<Name>.lean` (e.g. `Relativization.lean`) — a fresh `Challenges/` namespace,physically separated from `Barriers/`.)
+**File:** `lean/PleaNP/Challenges/<Name>.lean` (e.g. `lean/PleaNP/Barriers/Relativization.lean`) — a fresh `Challenges/` namespace,physically separated from `Barriers/`.)
 
 **Content:** the frozen problem *statement*,rendered from the corresponding `docs/STATEMENTS/<Name>.md` spec into Lean,with:
 - definitions + theorem *types* only — no proofs(any `sorry` here is a permitted placeholder only until the spec's validation suite passes?see `docs/VALIDATION_SUITE.md`).

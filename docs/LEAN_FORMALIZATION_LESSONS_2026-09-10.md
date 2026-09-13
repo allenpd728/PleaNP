@@ -69,7 +69,7 @@
 
 
 
-**What PleaNP adopts.** A frozen formal claim lives inits own standalone Lean file(imported bya root module,and covered by CI builds + `#print axioms` checks**before** any proof search attaches toit. This is Gate 1 (statement-freeze)rendered as *file layout*,not discipline — and it matches the existing "statement spec → rendered statement file → proof file" split in `docs/STATEMENTS/LOCAL_AGENT_WORKFLOW.md`.The BGS zero-sorry milestone,#18,should land as`PleaNP/Barriers/Relativization.lean`(statement file,zero-sorry,Comparator-checked)plus a separate proof-only scratch module attached later -- keep them physically separate files from the start.
+**What PleaNP adopts.** A frozen formal claim lives inits own standalone Lean file(imported bya root module,and covered by CI builds + `#print axioms` checks**before** any proof search attaches toit. This is Gate 1 (statement-freeze)rendered as *file layout*,not discipline — and it matches the existing "statement spec → rendered statement file → proof file" split in `docs/STATEMENTS/LOCAL_AGENT_WORKFLOW.md`.The BGS zero-sorry milestone,#18,should land as`lean/PleaNP/Barriers/Relativization.lean`(statement file,zero-sorry,Comparator-checked)plus a separate proof-only scratch module attached later -- keep them physically separate files from the start.
 
 
 ---

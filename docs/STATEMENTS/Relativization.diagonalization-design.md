@@ -17,18 +17,18 @@ witness-core, #21 done).
 
 ## 1. What is already in place
 
-- `BGSDiagonal.lean` (#21): `U_B : Oracle Query -> Set Nat` with
+- `lean/PleaNP/Barriers/BGSDiagonal.lean` (#21): `U_B : Oracle Query -> Set Nat` with
   `Query = Sigma n : Nat, Bits n`, `Bits n = Fin n -> Bool`; `IsWitness`;
   `U_B_iff_witness` (witness-core, zero sorry). Builds green.
 
-- `Oracle.lean` (v4): `Oracle Q := Q -> Bool`, `Machine Q tm` with
+- `lean/PleaNP/Computability/Oracle.lean` (v4): `Oracle Q := Q -> Bool`, `Machine Q tm` with
   `queryLabel`/`yesLabel`/`noLabel`; `step` branches on the query label,
   consults the oracle, routes to yes/no labels; `evalsTo_unique_result`
   (deterministic halting endpoints agree). Builds green.
 
 
 
-- `OracleComplexity.lean` (v4): `P_A`, `NP_A`, `AcceptsInTime`,
+- `lean/PleaNP/Computability/OracleComplexity.lean` (v4): `P_A`, `NP_A`, `AcceptsInTime`,
   `P_A_subset_NP_A` (both directions). Builds green.
 
 
@@ -77,12 +77,12 @@ The BGS clause-(b) strategy (per `Relativization.proof-strategy.md` §2):
 
 | # | Sub-task | Lean obligation | Blocked by |
 |---|---|---|---|
-| D1 | **Counting lemma**: `exists n, p.eval n < 2^n` (per-stage `2^n >` queries) | new lemma in a `Combinatorics`/`Counting.lean` - the unqueried-string existence crux; Mathlib hooks below | None (pure Nat/Polynomial) |
-| D2 | **Finite query family reindex** (per #27 option (a/(c)): `Bits (Fin N)` or per-length `Bits n` with bounded `N` | private bounded `Query`/`Bits` rework in `BGSDiagonal.lean` | #27 decision |
+| D1 | **Counting lemma**: `exists n, p.eval n < 2^n` (per-stage `2^n >` queries) | new lemma in a `Combinatorics`/`lean/PleaNP/Barriers/Counting.lean` (to be created) - the unqueried-string existence crux; Mathlib hooks below | None (pure Nat/Polynomial) |
+| D2 | **Finite query family reindex** (per #27 option (a/(c)): `Bits (Fin N)` or per-length `Bits n` with bounded `N` | private bounded `Query`/`Bits` rework in `lean/PleaNP/Barriers/BGSDiagonal.lean` | #27 decision |
 | D3 | **Machine enumeration**: poly-time oracle machines as Nats (`M_i <-> code`) | encoding of `FinTM2`+`Machine`; or reuse `Partrec.Code` if the tournament weakens to partial-recursive machines | substrate + #27 decision |
 | D4 | **Stage construction**: `B : Nat -> Oracle Query` (monotone stages `B_k subseteq B_{k+1}}`;diagonalization at stage k not undone later | inductive def + monotonicity invariant | D2, D3 |
 | D5 | **Tournament lemma**: forall code i, stage i gives `M_i^B(1^n) != U_B(1^n)` via the unqueried-string choice | combines D1, D4 | D1-D4 |
-| D6 | **Assembly**: `U_B notin P^B`, then `exists B, P_A B != NP_A B` in `Relativization.lean` | composition + #23's job (sub-task 3) | D3-D5, #21 |
+| D6 | **Assembly**: `U_B notin P^B`, then `exists B, P_A B != NP_A B` in `lean/PleaNP/Barriers/Relativization.lean` | composition + #23's job (sub-task 3) | D3-D5, #21 |
 
 ### 3.2 Mathlib hooks (verified present,u v4.31.0)
 
@@ -96,7 +96,7 @@ The BGS clause-(b) strategy (per `Relativization.proof-strategy.md` §2):
 
 - **Polynomial time bound:** `Polynomial ℕ` from
   `Mathlib.Algebra.Polynomial.Basic` (already imported by
-  `OracleComplexity.lean`);`p.eval n` is Nat-valued.
+  `lean/PleaNP/Computability/OracleComplexity.lean`);`p.eval n` is Nat-valued.
 
 
 
@@ -125,7 +125,7 @@ approved)besides D1-D6:
 
 - **`#barrier_check` interplay:** any proof closing this must report the
   elaborator verdict per the gates discipline (expected: `#barrier_check`
-  on the final `exists B, P_A B != NP_A B` in `Relativization.lean`: the
+  on the final `exists B, P_A B != NP_A B` in `lean/PleaNP/Barriers/Relativization.lean`: the
   statement itself carries no `Relativizing` instance -> **Inconclusive** -
   which is correct: BGS is the *meta*-theorem showing relativizing proofs
   can't resolve P vs NP, not itself a relativizing proof.). (Documented

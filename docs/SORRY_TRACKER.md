@@ -21,12 +21,12 @@
 All remaining sorries are honest pending proofs/compositions. The structural
 self-check `P_A ⊆ NP^A` (#5a/#5b) is now proved in BOTH directions — the v4
 repair is behaviorally verified by the oracle-sensitivity smoke test
-(`OracleSmoke.lean`). The four remaining sorries are: upstream-P-blocked
+(`lean/PleaNP/Computability/OracleSmoke.lean`). The four remaining sorries are: upstream-P-blocked
 (#6, #7 — in the isolated anchor module) and the BGS proofs (#8, #9).
 
-`lake build` status: `Oracle.lean`, `OracleComplexity.lean`,
-`OracleSmoke.lean` build green. `OracleUpstreamP.lean` (2 tracked sorries)
-and `Relativization.lean` (2 tracked sorries) fail exactly on their tracked
+`lake build` status: `lean/PleaNP/Computability/Oracle.lean`, `lean/PleaNP/Computability/OracleComplexity.lean`,
+`lean/PleaNP/Computability/OracleSmoke.lean` build green. `lean/PleaNP/Computability/OracleUpstreamP.lean` (2 tracked sorries)
+and `lean/PleaNP/Barriers/Relativization.lean` (2 tracked sorries) fail exactly on their tracked
 sorries — the expected Gate-6-visible state.
 
 Tier-2 axiom check (`#print axioms`) on the new proofs:
@@ -49,8 +49,8 @@ Mathlib-standard set; no `sorryAx`.
 
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 5a | ~~`OracleComplexity.lean`~~ **Resolved** — forward direction proved in the v4-completion pass. | — | — |
-| 5b | ~~`OracleComplexity.lean`~~ **Resolved** — backward direction proved in the v4-completion pass via the new determinism lemma `Oracles.evalsTo_unique_result` (+ `step_none`) in `Oracle.lean`: the accept-run and the decide-run start from the same initial config and both halt, so they share the halted endpoint; the output bit carries over. | — | — |
+| 5a | ~~`lean/PleaNP/Computability/OracleComplexity.lean`~~ **Resolved** — forward direction proved in the v4-completion pass. | — | — |
+| 5b | ~~`lean/PleaNP/Computability/OracleComplexity.lean`~~ **Resolved** — backward direction proved in the v4-completion pass via the new determinism lemma `Oracles.evalsTo_unique_result` (+ `step_none`) in `lean/PleaNP/Computability/Oracle.lean`: the accept-run and the decide-run start from the same initial config and both halt, so they share the halted endpoint; the output bit carries over. | — | — |
 
 ### Upstream-P anchor level (OracleUpstreamP.lean, new module)
 
@@ -103,12 +103,12 @@ module is expected to fail the build until upstream P lands.
   (never compiled).
 - **Relativization.lean arg names.** `P_A (α := …)` → `P_A (alpha := …)`
   (never compiled against the class signature).
-- **Smoke test (v4 acceptance item).** `OracleSmoke.lean`: one machine
+- **Smoke test (v4 acceptance item).** `lean/PleaNP/Computability/OracleSmoke.lean`: one machine
   program, two oracle instantiations — `smoke_accepts_true` (accept, by
   evaluation) and `smoke_rejects_false` (reject, by determinism +
   evaluation). The executable check that Flaw B stays fixed.
 - **Determinism lemma.** `evalsTo_unique_result` + `step_none` in
-  `Oracle.lean` — the lemma #5b needed and the reject-side of the smoke
+  `lean/PleaNP/Computability/Oracle.lean` — the lemma #5b needed and the reject-side of the smoke
   test uses.
 
 ---
