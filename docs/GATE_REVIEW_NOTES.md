@@ -197,7 +197,6 @@ targets (`atomEqOrNe` / `pointwiseEqOrNe`) join the register (issue #41);
 `UpstreamPolyTime` is registered above (issue #65/#40, as-swept). Binder
 REVIEW count on the clean set is 8 (5 original + UpstreamPolyTime + the two
 #41 rendering targets).
-
 ### `Closure.lean` — the Rung-7 Tier-1 benchmark membership theorems (issue #81)
 
 `binder_usage_scan.py` flags `emptyLang_in_UpstreamPolyTime` /
@@ -209,4 +208,22 @@ consumed by the benchmark/Rung-9 acceptance tracking. The scanner sees only
 Lean declarations, not the benchmark docs.
 
 **Disposition.** No-action. The register EXPECTED set is updated to include
-these items so the machine-check agrees. Binder REVIEW count rises to 10.
+these items so the machine-check agrees.
+
+## 4. BGS clause-(a) A2/A3 console-oracle API (issue #63)
+
+**Sweep lineage:** run=20260913-1020-GY2l (issue #63).
+
+`binder_usage_scan.py` flags `consoleOracleHead_computable`,
+`consoleLang_mem_P_false` (and the §3.3 barrier-consequence lemmas, already
+registered) as referenced by no other scanned declaration. They are the
+**intentional public API** of the BGS clause-(a) proof-work module
+(`lean/PleaNP/Barriers/RelativizationProof.lean`, `docs/STATEMENTS/
+Soundness.spec.md`): the total-computability console oracles (A2) and the
+one-query machine's concrete `P^A` memberships (A3) that the full
+`NP^A ⊆ P^A` simulation (A3 assembly) and the sandwich (A5) compose. Same
+demonstrated-intentional pattern as `OracleSmoke`'s smokes and the
+`BarrierCalculus` propagation instances.
+
+**Disposition.** No-action. Registered in
+`tooling/gates/gate_review_register_check.py` EXPECTED.
