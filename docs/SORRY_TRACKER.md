@@ -21,10 +21,10 @@
 All remaining sorries are honest pending proofs/compositions. The structural
 self-check `P_A ⊆ NP^A` (#5a/#5b) is now proved in BOTH directions — the v4
 repair is behaviorally verified by the oracle-sensitivity smoke test
-(`lean/PleaNP/Computability/OracleSmoke.lean`). The six remaining sorries are: upstream-P-blocked
-(#6, #7 — in the isolated anchor module), the BGS proofs (#8, #9), and the
-#36 U_B-machine bridge + assembly (#10, #11 — in the isolated DiagonalUB
-module).
+(`lean/PleaNP/Computability/OracleSmoke.lean`). The three remaining sorries are: upstream-P-blocked
+(#6, #7 — in the isolated anchor module), and the BGS proofs (#8, #9 in
+Relativization.lean). The #36 U_B-machine bridge + assembly (#10/#10b/#11)
+were RESOLVED 2026-09-13 — DiagonalUB.lean is zero-sorry.
 
 `lake build` status: `lean/PleaNP/Computability/Oracle.lean`, `lean/PleaNP/Computability/OracleComplexity.lean`,
 `lean/PleaNP/Computability/OracleSmoke.lean` build green. `lean/PleaNP/Computability/OracleUpstreamP.lean` (2 tracked sorries)
@@ -60,14 +60,13 @@ Isolated module `lean/PleaNP/Barriers/DiagonalUB.lean` (not imported by
 BGSDiagonal) so `warningAsError` does not cascade. Proved zero-sorry:
 certificate encoding roundtrip (`encWord`/`decodeWord_encWord`), the
 guess-query-verify machine (`ubTM`/`ubM`), and its concrete-oracle
-behavior (`accepts_const_true`, `rejects_const_false`). Three remaining
-sorries, all tracked:
+behavior (`accepts_const_true`, `rejects_const_false`). **All three gaps resolved 2026-09-13 — the module is zero-sorry** (see rows #10/#10b/#11 below).
 
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 10 | `lean/PleaNP/Barriers/DiagonalUB.lean:309` | Reject-run identity inside `accepts_true_oracle`: the `evals_in_steps` proof that with oracle-false the machine's run ends in the no-branch (step-1 rewrite `step1false_eq` + the step-2 push are verified seeds; the bind-wise composition of `(flip bind step)^2` remains). | #93 Pass-3 bridge work (filed as follow-up) | High |
-| 10b | `lean/PleaNP/Barriers/DiagonalUB.lean:328` | `accepts_depends_on_answer`: run-identity of `ubM B` vs the constant-oracle machine when the oracle answers the encoded query the same way — step-by-step extensionality over `step`/`ubRun`. | #93 Pass-3 bridge work | High |
-| 11 | `lean/PleaNP/Barriers/DiagonalUB.lean:336` | `U_B_in_NP`: assembles `U_B ∈ NP_A (alpha := Nat) B` from the bridge + `decodeWord_encWord` + `U_B_iff_witness` + time bound (`p = Polynomial.X`, 2-step run). | Rows #10/#10b + `length_ea_empty` | High |
+| 10 | ~~`lean/PleaNP/Barriers/DiagonalUB.lean`~~ **Resolved 2026-09-13 (run=20260911-0944-qmzn)** — reject-run identity inside `accepts_true_oracle` proved (the `evals_in_steps` closes via `simp [ubRun, flip, ...]` + `congr 1`). | — | — |
+| 10b | ~~`lean/PleaNP/Barriers/DiagonalUB.lean`~~ **Resolved 2026-09-13** — `accepts_depends_on_answer` proved (query-step routes to yes-branch via `ubRun_halts_yes`; output head true). | — | — |
+| 11 | ~~`lean/PleaNP/Barriers/DiagonalUB.lean`~~ **Resolved 2026-09-13** — `U_B_in_NP` proved zero-sorry: `erw [encWord_length]` closed the polynomial-X bound; assembly via `decodeWord_encWord` + `certBits_encodeList` + `accepts_time_shift`. | — | — |
 
 ### Upstream-P anchor level (OracleUpstreamP.lean, new module)
 

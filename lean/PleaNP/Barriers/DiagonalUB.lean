@@ -18,12 +18,7 @@ over the v5 word-query substrate (DEC-024, #35):
   oracle answering `true`/`false`, the machine accepts/rejects
   (`accepts_const_true`, `rejects_const_false`).
 
-Deferred (tracked, see SORRY_TRACKER): three run-semantics gaps — the
-reject-run identity inside `accepts_true_oracle`, the `accepts_depends_on_answer`
-bridge (that `ubM B` and the constant-oracle machine have identical runs
-when the oracle answers the encoded query the same way), and the assembled
-`U_B ∈ NP_A B` membership theorem. This module is ISOLATED (not imported
-by BGSDiagonal) so `warningAsError` does not cascade.
+Deferred (tracked, see SORRY_TRACKER): **resolved 2026-09-13 (run=20260911-0944-qmzn)** — `U_B_in_NP` is zero-sorry. The reject-run identity, the machine-run-identity bridge, and the assembly theorem are all proved; this module builds green with the clean tree.
 -/
 
 namespace PleaNP
@@ -288,11 +283,12 @@ lemma ubRun_halts_no (B : Oracle Query) (n : Nat) (y : List Nat)
 
 /-- Acceptance of the U_B machine forces the oracle answer to the encoded
   query to be `true` (else the machine's output would be false). This is
-  the (→) direction of accepts_iff_oracle, via the reject-run argument. -/
+  the (→) direction of accepts_iff_oracle, via the reject-run argument.
+  The time bound is arbitrary (only the 2-step run structure matters). -/
 lemma accepts_true_oracle (B : Oracle Query) (n : Nat) (y : List Nat)
     (hacc : @AcceptsInTime Query ubTM (Nat × List Nat) inferInstance
       (fun nk => ubEa nk.1 nk.2) (fun b => b)
-      (ubM B) (n, y) (fun _ => 2)) :
+      (ubM B) (n, y) (fun n => (Polynomial.C 1 + Polynomial.X).eval n)) :
     B (decodeWord (ubEa n y)) = true := by
   by_contra hn
   have hf : B (decodeWord (ubEa n y)) = false := by
@@ -303,11 +299,11 @@ lemma accepts_true_oracle (B : Oracle Query) (n : Nat) (y : List Nat)
       (some (ubRun B (ubEa n y))) 2 :=
     { steps := 2
       evals_in_steps := by
-        -- The run identity (two steps; the query answer `hf` drives step 1
-        -- to the no-branch, step 2 pushes false-halt). The operational
-        -- reduction is verified as step1false_eq + step2 push; the full
-        -- bind-wise identity remains (tracked: SORRY_TRACKER #10).
-        sorry
+        -- step 1 (the query) routes to the no-branch via the oracle-false
+        -- answer; step 2 (on the no-label config) pushes false and halts.
+        simp [ubRun, flip, Option.bind_eq_bind, step, initCfg, initList,
+          ubM, ubTM, hf]
+        congr 1
       steps_le_m := by omega }
   have hEq : cfg' = ubRun B (ubEa n y) :=
     evalsTo_unique_result
@@ -315,44 +311,124 @@ lemma accepts_true_oracle (B : Oracle Query) (n : Nat) (y : List Nat)
       (step_none _ _ (ubRun_halts_no B n y hf))
       hReach.some.toEvalsTo hRun.toEvalsTo
   subst hEq
-  simp [ubRun,  step, initCfg, initList, ubM, ubTM, hf] at hOut
+  -- the reject-run's output tape head is `false`; hOut claims `true`.
+  have hSmall : (ubRun B (ubEa n y)).cfg.stk ubTM.k₁ = [false] := by
+    unfold ubRun
+    rw [step1false_eq B n y hf]
+    simp [step, step1cfg, initCfg, initList, ubM, ubTM, hf]
+  rw [hSmall] at hOut
+  exact absurd hOut (by decide)
+
+/-- The `ubM B` run on an oracle-true word halts in the yes-branch. -/
+lemma ubRun_halts_yes (B : Oracle Query) (n : Nat) (y : List Nat)
+    (ht : B (decodeWord (ubEa n y)) = true) :
+    (ubRun B (ubEa n y)).cfg.l = Option.none ∧
+    (ubRun B (ubEa n y)).cfg.stk ubTM.k₁ = [true] := by
+  unfold ubRun
+  -- the oracle-true answer routes step 1 to the yes-branch; step 2 pushes true-halt
+  simp [step, initCfg, initList, ubM, ubTM, ht]
 
 /-- The machine's acceptance depends only on the oracle's answer to the
-  encoded query: with answer `true`, `ubM B` accepts exactly as `ubC true`
-  does (uniform runs; the two configs differ only in the oracle field,
-  which never matters after the query step). -/
+  encoded query: with answer `true`, `ubM B` accepts (the query step
+  routes to the yes-branch; the output head is `true`). -/
 lemma accepts_depends_on_answer (B : Oracle Query) (n : Nat) (y : List Nat)
     (hans : B (decodeWord (ubEa n y)) = true) :
     @AcceptsInTime Query ubTM (Nat × List Nat) inferInstance
       (fun nk => ubEa nk.1 nk.2) (fun b => b)
       (ubM B) (n, y) (fun _ => 2) := by
-  sorry
+  refine ⟨ubRun B (ubEa n y), ⟨⟨2, ?_⟩, by simp⟩, ?halt, ?out⟩
+  · simp [ubRun, flip, Option.bind_eq_bind, step, initCfg, initList,
+      ubM, ubTM, hans]
+    congr 1
+  · exact (ubRun_halts_yes B n y hans).1
+  · rw [show (ubRun B (ubEa n y)).cfg.stk ubTM.k₁ = [true] from (ubRun_halts_yes B n y hans).2]
+
+/-- `decode (ea (n, encodeList n x)) = ⟨n, x⟩` — the certificate's word
+  decodes to exactly the length-tagged witness. -/
+lemma decode_ea_encode (n : Nat) (x : Bits n) :
+    decodeWord (ubEa n (encodeList n x)) = ⟨n, x⟩ := by
+  unfold ubEa
+  rw [certBits_encodeList]
+  exact decodeWord_encWord n x
+
+/-- Any encoded word for length n has length 2n+1 (independent of the bits). -/
+lemma encWord_length (n : Nat) (x : Bits n) :
+    (encWord n x).length = 2 * n + 1 := by
+  unfold encWord
+  simp [List.length_append]
+  omega
+
+/-- Certificate bound: |encodeList n x| ≤ (Polynomial.X).eval (|ea(n,[])|). -/
+lemma cert_len_le (n : Nat) (x : Bits n) :
+    (encodeList n x).length ≤ (Polynomial.X).eval (ubEa n []).length := by
+  rw [length_encodeList]
+  rw [Polynomial.eval_X]
+  rw [ubEa, encWord_length]
+  omega
+
+/-- `AcceptsInTime` is monotone in the time bound: a run within `2` steps
+  is within `p.eval (|ea (n,y)|)` steps when `p.eval (|ea (n,y)|) ≥ 2`. -/
+lemma accepts_time_shift (B : Oracle Query) (n : Nat) (y : List Nat)
+    (hacc : @AcceptsInTime Query ubTM (Nat × List Nat) inferInstance
+      (fun nk => ubEa nk.1 nk.2) (fun b => b)
+      (ubM B) (n, y) (fun _ => 2))
+    (hp : 2 ≤ (Polynomial.C 1 + Polynomial.X).eval (ubEa n y).length) :
+    @AcceptsInTime Query ubTM (Nat × List Nat) inferInstance
+      (fun nk => ubEa nk.1 nk.2) (fun b => b)
+      (ubM B) (n, y) (fun n => (Polynomial.C 1 + Polynomial.X).eval n) := by
+  obtain ⟨cfg', hReach, hHalt, hOut⟩ := hacc
+  refine ⟨cfg', ?_, hHalt, hOut⟩
+  rcases hReach with ⟨h⟩
+  exact ⟨h.toEvalsTo, h.steps_le_m.trans hp⟩
 
 /-- U_B ∈ NP^B (the #36 goal). The certificate is the oracle-witness:
-  `y = encodeList n x` and the machine accepts exactly on the yes-answer.
-  Assembled via `accepts_depends_on_answer` + `decodeWord_encWord` +
-  `U_B_iff_witness`; proof deferred (tracked in SORRY_TRACKER). -/
+  `y = encodeList n x` and the machine accepts exactly on the yes-answer
+  (accepts_depends_on_answer) via the decode roundtrip. -/
 theorem U_B_in_NP (B : Oracle Query) :
     U_B B ∈ NP_A (alpha := Nat) B := by
-  sorry
+  unfold NP_A
+  refine ⟨ubTM, inferInstance, fun nk => ubEa nk.1 nk.2, fun b => b,
+    ubM B, Polynomial.C 1 + Polynomial.X, ?_⟩
+  intro n
+  rw [U_B_iff_witness]
+  constructor
+  · intro ⟨x, hx⟩
+    refine ⟨encodeList n x, ?_bound, rfl, ?_acc⟩
+    · rw [length_encodeList]
+      simp [ubEa, Polynomial.eval_add, Polynomial.eval_X]
+      erw [encWord_length]
+      omega
+    · exact accepts_time_shift B n (encodeList n x)
+        (accepts_depends_on_answer B n (encodeList n x) (by
+          rw [decode_ea_encode n x]
+          exact hx))
+        (by
+          simp [ubEa, Polynomial.eval_add, Polynomial.eval_X]
+          erw [encWord_length]
+          omega)
+  · intro ⟨y, _hbound, _horacle, hacc⟩
+    -- from acceptance: B (decodeWord (ubEa n y)) = true (accepts_true_oracle)
+    have hB : B (decodeWord (ubEa n y)) = true := accepts_true_oracle B n y hacc
+    -- the witness is certBits n y
+    refine ⟨certBits n y, ?_⟩
+    unfold IsWitness
+    -- B ⟨n, certBits n y⟩ = true: unfold via decodeWord on (ubEa n y)
+    have hD : decodeWord (ubEa n y) = ⟨n, certBits n y⟩ := by
+      unfold ubEa
+      exact decodeWord_encWord n (certBits n y)
+    rw [← hD]
+    exact hB
 
 end BGSDiagonal
 end Barriers
 end PleaNP
 
-/-! #36 follow-up specification (Pass 3)
+/-! #36 completion summary (Pass 3)
 
-The three sorries above are the ONLY gaps to `U_B ∈ NP_A B` zero-sorry.
-The gaps are: (1) the reject-run identity inside `accepts_true_oracle`
-(the `evals_in_steps` proof that the oracle-false run ends in the no-branch
-— `step1false_eq` + the step-2 push are the verified seed, the bind-wise
-composition remains); (2) the bridge `accepts_depends_on_answer`
-(machine-run identity of `ubM B` vs the constant-oracle machine under
-equal oracle answers — a step-by-step combinatorics of `step`/`ubRun`);
-(3) the assembly theorem `U_B_in_NP`, which then follows from
-`decodeWord_encWord`, `certBits_encodeList`, `length_encodeList`,
-`U_B_iff_witness`, and the time bound `length_ea_empty` (choice
-`p = Polynomial.X`, run in 2 steps). Test spec:
-`docs/STATEMENTS/Oracle.v5-repair.spec.md` §5.3-5.5. This follow-up is
-filed as a GitHub issue (Tests/Bridge: #36 Pass 3).
+`U_B_in_NP` is proved zero-sorry. The assembly used: the certificate
+encoding roundtrip (`decodeWord_encWord`), `certBits_encodeList`,
+`length_encodeList`, the machine-run-identity bridge
+(`accepts_depends_on_answer` + `accepts_true_oracle`), the time-shift
+(`accepts_time_shift`), and the polynomial-X+1 time bound. Test spec:
+`docs/STATEMENTS/Oracle.v5-repair.spec.md` §5.3-5.5.
 -/
