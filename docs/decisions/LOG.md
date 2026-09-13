@@ -397,7 +397,7 @@ agent-pair protocol.
 
 
 
-**Phasing:**(i) this commit: lessons doc + template + manifest + docs updates(no code,no Lean,no CI change);(ii) next practical step when a barrier statement is next touched: create `lean/PleaNP/Challenges/Relativization.lean` + `lean/ComparatorChallenges/Relativization.json` per the template,and add the `Comparator` lake dependency aspirational,as tracked in `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §3.1;(iii) whenthe Comparator dependency lands,the CI job assertthe comparator configs(as aspirational follow-up). **Sandbox note:** no `lake`/`python-yaml` inthe write sandbox, so the `formalization.yaml` ships as raw text and is not build-validatedin this commit; validatewhen tooling is available.(See the note inthe manifest header and the lessons doc §3.2.)
+**Phasing:**(i) this commit: lessons doc + template + manifest + docs updates(no code,no Lean,no CI change);(ii) next practical step when a barrier statement is next touched: create `lean/PleaNP/Challenges/Relativization.lean` + `lean/ComparatorChallenges/Relativization.json` per the template,and add the `Comparator` lake dependency aspirational,as tracked in `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §3.1;(iii) whenthe Comparator dependency lands,the CI job assertthe comparator configs(as aspirational follow-up). **Sandbox note:** no `lake`/`python-yaml` in every write sandbox, so the repo ships its own stdlib mini-YAML parser (`tooling/galaxy/miniyaml.py`) and `formalization.yaml` is a **checked artifact — parse-valid at commit time** (the Galaxy data layer and CI consume it; any malformation is tracked as a defect, see #43). (See the note in the manifest header and the lessons doc §3.2.)
 
 
 ### DEC-023
