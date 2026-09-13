@@ -1,0 +1,12 @@
+agent: multi-rendering
+claim: marker-funeq (Gate 3 disagreement)
+created: "2026-09-13T19:12:00Z"
+decl: atom,pw
+expected: yes
+informal: "Two candidates for the Relativizing funeq/funne marker semantics: (slot 1) the as-implemented unconditional-atom reading - function-level equality p = q relativizes unconditionally, no per-fiber markers; (slot 2) the as-#1-requested pointwise-propagation reading - function-level equality p = q relativizes only when every fiber p x, q x carries a Relativizing marker."
+kind: semantic-review
+machine_summary: "Two renderings not machine-verified equivalent: rendering atom (unconditional-atom reading of funeq/funne) vs rendering pw (pointwise-propagation reading of funeq/funne)"
+module: atom,pw
+question: On the concrete oracle-varied example, the equality L1 = L2 still relativizes without marking the individual fibers L1 x, L2 x. Was the marker intended to be an unconditional oracle-oblivious atom (as implemented), or to require pointwise propagation from the fibers (as originally requested in #1)? Reply confirm for the as-implemented unconditional-atom reading, or flag <reason> if the pointwise reading was intended.
+run: multi-rendering-marker-funeq
+status: pending

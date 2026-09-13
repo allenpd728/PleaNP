@@ -1,0 +1,6 @@
+{
+  "id": "atom",
+  "module": "PleaNP.Calculus.MarkerFuneqAtom",
+  "theorem": "PleaNP.Calculus.MarkerFuneqAtom.atomEqOrNe",
+  "created": "2026-09-13T19:11:26.068514+00:00"
+}

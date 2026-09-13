@@ -68,10 +68,11 @@ def run_check(imports: list[str], theorems: list[str], lean_dir: Path) -> list[s
             violations.append("sorryAx found in axiom report — a sorry was smuggled via a meta-program!")
 
         for t in theorems:
-            marker = f"'{t}' depends on axioms:"
+            base = f"'{t}'"
+            markers = [f"{base} depends on axioms:", f"{base} does not depend on any axioms"]
             found_line = None
             for line in out.splitlines():
-                if marker in line:
+                if any(m in line for m in markers):
                     found_line = line
                     break
             if found_line is None:
@@ -81,6 +82,11 @@ def run_check(imports: list[str], theorems: list[str], lean_dir: Path) -> list[s
                     violations.append(f"{t}: not found (unknown constant — wrong namespace?)")
                 else:
                     violations.append(f"{t}: no axiom report found")
+                continue
+            if "does not depend on any axioms" in found_line:
+                # A theorem with an EMPTY axiom set (strictly cleaner than the
+                # standard set). Lean prints this line instead of a
+                # `depends on axioms: [...]` report; treat it as clean.
                 continue
             start = found_line.index("[")
             end = found_line.index("]", start)
