@@ -30,6 +30,19 @@ namespace Oracles
 
 open Turing
 
+/-- The oracle-free polytime recharacterization that `P^∅` must collapse to
+  (Trap 3 of `OracleTM2Recompose.spec.md` §4): a language `L` is in the
+  oracle-free polytime class iff its characteristic function `χ : alpha → Bool`
+  is computed by a no-oracle `TM2ComputableInPolyTime` machine, with
+  `χ x = true` iff `x ∈ L` (Trap 1: the function→language bridge). Upstream
+  `P` (DEC-003) will be defined on exactly this substrate, so this is the
+  RHS of the `P^∅ = P` compatibility anchor. -/
+def UpstreamPolyTime (alpha : Type) : Set (Set alpha) :=
+  { L | ∃ (alphabet : Type) (ea : alpha → List alphabet)
+      (eb : Bool → List alphabet) (χ : alpha → Bool),
+    (∀ x : alpha, χ x = true ↔ x ∈ L) ∧
+    Nonempty (@TM2ComputableInPolyTime alpha Bool alphabet alphabet ea eb χ) }
+
 /-- P^A: languages decidable by a deterministic oracle machine for A
   in polynomial time. The machine's oracle-query values live in the
   oracle's query type Q (v5: fetched via the machine's `decode` from a

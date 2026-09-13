@@ -14,20 +14,22 @@
 |---|---|---|
 | `lean/PleaNP/Computability/Oracle.lean` | 0 (was 1 — vacuous marker removed, see #2) | Substrate (Rung 2) |
 | `lean/PleaNP/Computability/OracleComplexity.lean` | 0 (was 3) | Complexity classes (Rung 2) |
-| `lean/PleaNP/Computability/OracleUpstreamP.lean` | 2 (moved from OracleComplexity) | Upstream-P anchor (Rung 2) |
+| `lean/PleaNP/Computability/OracleUpstreamP.lean` | 1 (was 2 — statement-level sorry #6 resolved, see below) | Upstream-P anchor (Rung 2) |
 | `lean/PleaNP/Barriers/Relativization.lean` | 2 | Barrier statement (Rung 3a) |
-| **Total** | **4 open** (5 resolved, 1 removed) | |
+| **Total** | **3 open** (6 resolved, 1 removed) | |
 
 All remaining sorries are honest pending proofs/compositions. The structural
 self-check `P_A ⊆ NP^A` (#5a/#5b) is now proved in BOTH directions — the v4
 repair is behaviorally verified by the oracle-sensitivity smoke test
 (`lean/PleaNP/Computability/OracleSmoke.lean`). The three remaining sorries are: upstream-P-blocked
-(#6, #7 — in the isolated anchor module), and the BGS proofs (#8, #9 in
-Relativization.lean). The #36 U_B-machine bridge + assembly (#10/#10b/#11)
-were RESOLVED 2026-09-13 — DiagonalUB.lean is zero-sorry.
+(#7 — in the isolated anchor module; #6's statement-level sorry was resolved
+by `UpstreamPolyTime`) and the BGS proofs (#8, #9). The #36 U_B-machine
+bridge + assembly (#10/#10b/#11) were RESOLVED 2026-09-13 —
+`DiagonalUB.lean` is zero-sorry.
 
 `lake build` status: `lean/PleaNP/Computability/Oracle.lean`, `lean/PleaNP/Computability/OracleComplexity.lean`,
-`lean/PleaNP/Computability/OracleSmoke.lean` build green. `lean/PleaNP/Computability/OracleUpstreamP.lean` (2 tracked sorries)
+`lean/PleaNP/Computability/OracleSmoke.lean` build green. `lean/PleaNP/Computability/OracleUpstreamP.lean` (1 tracked sorry,
+the honest proof #7 — its statement-level sorry #6 was resolved by `UpstreamPolyTime`)
 and `lean/PleaNP/Barriers/Relativization.lean` (2 tracked sorries) fail exactly on their tracked
 sorries — the expected Gate-6-visible state.
 
@@ -76,8 +78,8 @@ module is expected to fail the build until upstream P lands.
 
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 6 | `OracleUpstreamP.lean:25` | `P_empty_eq_upstream_P_class` — RHS set comprehension (upstream P as a set). **Statement-level sorry — Gate-5 concern** (the theorem does not yet fully say what it proves). | Upstream P (DEC-003), or an oracle-free recharacterization of the class. | High when unblocked |
-| 7 | `OracleUpstreamP.lean:26` | `P_empty_eq_upstream_P_class` — proof of P^empty = P equality. | #6 + upstream P. | Medium |
+| 6 | ~~`OracleUpstreamP.lean`~~ **Resolved** (run=20260913-1007-fUj8, issue #40) — the statement-level sorry was filled: the RHS is now the oracle-free `UpstreamPolyTime` recharacterization (`TM2ComputableInPolyTime` membership; `lean/PleaNP/Computability/OracleComplexity.lean`), per Trap 3. The theorem now fully renders P^∅ = P; no Gate-5 concern remains. | — | — |
+| 7 | `OracleUpstreamP.lean:31` | `P_empty_eq_upstream_P_class` — proof of P^∅ = P equality (now between fully-rendered sides). | Upstream P (DEC-003), or an oracle-free recharacterization of the class + the no-query-machine equivalence. | Medium |
 
 ### Barrier-statement level (Relativization.lean)
 
@@ -97,6 +99,7 @@ module is expected to fail the build until upstream P lands.
 | 4 | `NP_A` verifier condition | `bc344ab` then v4 `a223b12` | Now composes `@AcceptsInTime` on pair (x, y) with reachability. |
 | 5a, 5b | `P_A_subset_NP_A` — both directions | v4-completion pass (on dev) | Forward: same machine/endpoint, empty certificate, output bit from outputEncodesChi. Backward: determinism via `evalsTo_unique_result`. |
 | 10 | Certificate bound equivalence (Gate 4) | `4584d90` | Bound changed to direct `p.eval(ea(x,[])).length` (polynomial in input size). |
+| 6 | P^∅ = P statement-level sorry (RHS was `{ L | sorry }`) | issue #40 (v5-word-query tests) | RHS filled by the oracle-free `UpstreamPolyTime` recharacterization (`TM2ComputableInPolyTime` membership) in `OracleComplexity.lean`; the theorem now fully renders P^∅ = P (Trap 3). Proof (#7) still tracks upstream P. |
 
 ## Removed (not resolved)
 
@@ -131,11 +134,11 @@ module is expected to fail the build until upstream P lands.
 
 ## Remaining tasks
 
-1. **#6: fill the statement-level sorry** in `P_empty_eq_upstream_P_class`
-   with the upstream-P set — needs Mathlib's P (DEC-003) or an
-   oracle-free recharacterization (machine-transformation formalization).
-   **Gate-5 concern, first in line when unblocked.**
-2. **#7: prove the equality** — pending #6.
+1. **#6 (resolved):** the statement-level sorry in `P_empty_eq_upstream_P_class`
+   was filled by the `UpstreamPolyTime` recharacterization (issue #40); no
+   Gate-5 concern remains.
+2. **#7: prove the equality** — between fully-rendered sides now; still
+   pending upstream P / an oracle-free no-query-machine equivalence.
 3. **#8, #9: BGS proofs** — blocked on PSPACE/QBF + machine enumeration +
    upstream P (Rung 3 Step 6).
 
@@ -147,7 +150,7 @@ The BGS statement (`∃ A, Computable A ∧ P^A = NP^A` / `∃ B, Computable B �
 
 
 ```
-#6 (statement) → #7 (proof)            [upstream P, DEC-003]
+#6 (DONE, statement rendered via UpstreamPolyTime) → #7 (proof)  [upstream P, DEC-003]
 #8/#9 (BGS)    ← needs {PSPACE/QBF, machine enumeration}  + upstream P
 ```
 
