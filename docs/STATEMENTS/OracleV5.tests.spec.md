@@ -1,16 +1,16 @@
 # Test spec: v5 word-query oracle substrate (issue #40)
 
-**Status:** Executable coverage landed 2026-09-13 (module
-`lean/PleaNP/Computability/OracleV5Tests.lean`; follow-up to #33/#35, the
-v5 word-query substrate repair).
+**Status:** Executable coverage landed 2026-09-13 (modules
+`lean/PleaNP/Computability/OracleV5Tests.lean` — the CI-built `PleaNP.*`
+library module — and `lean/tests/OracleV5.lean` — the `tests`-lib suite
+wired into the `test` exe; follow-up to #33/#35, the v5 word-query
+substrate repair).
 
 **Purpose.** A regression contract for the v5 accept-only items the repair
-must not lose. The executable checks live in
-`lean/PleaNP/Computability/OracleV5Tests.lean` (a `PleaNP.*` library module,
-built by CI as part of the clean module set); this document is the
-coverage narrative / spec the tests implement. Since Lean's `example`s and
-theorems *must* typecheck, any substrate regression that violates these
-contracts fails the build.
+must not lose. The executable checks live in the two modules above; this
+document is the coverage narrative / spec the tests implement. Since
+Lean's `example`s and theorems *must* typecheck, any substrate regression
+that violates these contracts fails the build.
 
 Reference: `docs/STATEMENTS/Oracle.v5-repair.spec.md` §4.3 (invariants) and
 §5 (acceptance criteria).
@@ -28,9 +28,9 @@ routes to `yesLabel` iff the oracle answers `true`, `noLabel` iff `false`.
 
 ```
 example : (step (v5M v5OracleTrue) (initCfg (v5M v5OracleTrue) v5QueryWord))
-              .map (·.cfg.l) = some (some V5Label.yes) := by rfl
+              .map (.cfg.l) = some (some V5Label.yes) := by rfl
 example : (step (v5M v5OracleFalse) (initCfg (v5M v5OracleFalse) v5QueryWord))
-              .map (·.cfg.l) = some (some V5Label.no) := by rfl
+              .map (.cfg.l) = some (some V5Label.no) := by rfl
 ```
 
 Both are definitional: the consultation is exactly one `step`, and the
@@ -82,3 +82,47 @@ witness equality that makes the P^∅ → P statement read off a stable base.
 theorem proofs stop closing), the v5 substrate §5 acceptance items have
 regressed and the module's build fails — the intended "build is the test
 harness" pattern (same as `OracleSmoke.lean` / `BarrierCalculusFuneq.lean`).
+
+
+---
+
+## 4. P^∅ = P statement fully rendered (Trap 3 regression-contract bonus)
+
+The v5-repair acceptance §4.2(4)/§5(5) wants the P^∅ = P anchor at
+the *statement* level. This was sharpened in the same pass (issue #40,
+run=20260913-1007-fUj8): the RHS of the anchor's theorem is no longer a
+statement-level `sorry` hiding as `{ L | sorry }`.
+`OracleComplexity.lean` gained `UpstreamPolyTime` — the oracle-free
+`TM2ComputableInPolyTime` recharacterization (characteristic function
+`χ : alpha → Bool` computed in polytime, `χ x = true ↔ x ∈ L`; the
+function→language bridge, Trap 1) — and `OracleUpstreamP.lean` now renders:
+
+```lean
+theorem P_empty_eq_upstream_P_class {Q : Type} (alpha : Type) :
+    P_A (alpha := alpha) (emptyOracle Q) = UpstreamPolyTime alpha := by sorry
+```
+
+resolving **SORRY_TRACKER #6** (statement-level sorry filled); the honest
+proof `sorry` (#7) still tracks upstream P (DEC-003 / #4). `tests.OracleV5`
+sanity-checks `UpstreamPolyTime` is non-vacuous (a concrete Bool language is
+a member, witnessed by Mathlib `idComputableInPolyTime`).
+
+## Build & run
+
+```bash
+cd lean
+lake build PleaNP.Computability.Oracle PleaNP.Computability.OracleComplexity PleaNP.Computability.OracleSmoke PleaNP.Calculus.BarrierCalculus
+lake build tests        # the tests lib: tests.OracleV5 + tests.BarrierCalculusFuneq
+lake build test         # links the runnable test exe (root tests.Basic)
+./.lake/build/bin/test  # exit 0
+```
+
+## Gate evidence expected at done
+
+- `lake build tests` / `lake build test` green (both the `PleaNP.*`
+  `OracleV5Tests` module and the `tests.*` `OracleV5` suite).
+- hygiene/vacuity/model/binder scans clean on the touched modules (the
+  `by decide` review items in `OracleSmoke.lean` are pre-existing and
+  documented in `docs/GATE_REVIEW_NOTES.md`).
+- `OracleUpstreamP.lean` reports **one** `sorry` (the honest proof #7),
+  down from two — SORRY_TRACKER #6 marked Resolved in the same commit.
