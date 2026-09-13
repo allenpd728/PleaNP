@@ -333,4 +333,26 @@ theorem consoleLang_mem_P_false :
 #check consoleLang_mem_P_true
 #check consoleLang_mem_P_false
 
+/-! ## A4 — the easy inclusion + sandwich assembly (issue #63 Pass 3)
+
+A4 is the `P^A ⊆ NP^A` direction of the collapse sandwich — already proved
+generically on the substrate as `P_A_subset_NP_A` (both directions). For the
+console oracle this instantiates directly, establishing the first half of
+the `P^A ⊆ NP^A ⊆ P^A` sandwich. The reverse (`NP^A ⊆ P^A`) is the A3
+console-simulation (an arbitrary `NP^A` verifier reduced to a `P^A` decider
+via one console query); that reduction is the A3-assembly follow-up and
+depends on the EXP/PSPACE witness substrate (design §2.1), so the full
+`P_A A = NP_A A` equality and the statement-root `sorry` closure (A5) remain
+the documented endpoint. No `sorry` is introduced here: the A4 easy
+direction is proved, the assembly is documented.
+-/
+
+/-- **A4 (easy direction)**: for any oracle `A`, `P_A A ⊆ NP_A A` — the
+  deterministic class is contained in the nondeterministic one. This is the
+  substrate-proved `P_A_subset_NP_A`, instantiated at the console-oracle
+  query/input space. It is the first half of the collapse sandwich. -/
+theorem P_subset_NP_console (A : Oracles.Oracle QueryType) :
+    P_A (alpha := InputType) A ⊆ NP_A (alpha := InputType) A :=
+  P_A_subset_NP_A InputType A
+
 end RelativizationProof
