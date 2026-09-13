@@ -123,12 +123,16 @@ long-tactic-chains proof work (e.g. the U_B machine construction in
 
 ## 3. Adoption checklist
 
-- [ ] CI builds+pushes `ghcr.io/...:main` on `main` (workflow lands in repo).
-- [ ] `tooling/leancheck.py` + `watch_leancheck.py` committed + tested
-      (parser unit-verified; live `lake` run needs a warm sandbox).
-- [ ] AGENTS.md "Build and test" section points agents at the warm image as
-      the preferred cold-start path.
-- [ ] An agent session adopts `leancheck.py` for its proof work (trial).
+- [x] CI builds+pushes `ghcr.io/...:main` and `:dev` on dev (workflow live:
+      consecutive runs `success`; both tags pullable).
+- [x] `tooling/leancheck.py` + `watch_leancheck.py` committed + tested
+      (parser unit-verified AND live-validated against Lean v4.31.0).
+- [x] AGENTS.md "Build and test" section points agents at the warm image.
+- [x] An agent session adopts `leancheck.py` for proof work (#37 Pass 1,
+      D5 unqueried-string existence — leancheck loop fixed deprecation +
+      redundancy live).
+- [x] `tooling/elantool.sh` launcher committed + live-verified (daemon
+      detection, bootstrap fallback, exit codes).
 
 ---
 
