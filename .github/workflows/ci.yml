@@ -19,6 +19,9 @@ jobs:
         run: lean --version
         working-directory: lean
       - name: Restore Mathlib olean cache (community Azure cache; DEC-013)
+        # The install-elan step appended $HOME/.elan/bin to GITHUB_PATH and
+        # `lean --version` ran in this same job already; steps share the runner
+        # sequentially, so there is no fresh-runner race here (issue #51).
         run: lake exe cache get
         working-directory: lean
       # NOTE (DEC-013 / B): the full-tree `lake build` is intentionally NOT the
