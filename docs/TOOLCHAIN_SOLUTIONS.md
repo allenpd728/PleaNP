@@ -75,3 +75,43 @@ None of this requires the M4 machine; any free public runner + the community cac
 - Lake docs on `cache` and `post_update` hooks (pinning toolchain + cache-get after `lake update`) — lean-lang.org/doc/reference/latest/Build-Tools-and-Distribution/Lake
 
 **Status for the decision log:** this is a *recommendation*, recorded here for a future DEC once the `.devcontainer` + CI-cache landing is scheduled. Not yet a decision — the repo continues to build via the community cache from any environment.
+
+
+---
+
+## Plan E (implemented 2026-09-13) — warm ghcr image + leancheck iteration tool
+
+The two follow-ups from "what to implement" are now in the repo:
+
+### E1. Warm toolchain image (the 'toolchain that persists' for agents, free)
+
+- **.github/workflows/warm-toolchain.yml** — on every push to main,
+  builds the multi-stage warm image and pushes two tags to ghcr.io:
+  ghcr.io/allenpd728/pleanp-lean:main and :lean-<sha>. The image bakes
+  in elan + the pinned Lean toolchain and a warm lean/.lake (Mathlib
+  oleans fetched once at image build). Also adds an actions/cache step for
+  ~/.elan so CI runners restore the toolchain in seconds.
+- **.devcontainer/Dockerfile.warm** — the multi-stage build (builder
+  installs elan + Lean + lake exe cache get; runtime stage copies the warm
+  ~/.elan and lean/.lake).
+- **For agents:** docker pull ghcr.io/allenpd728/pleanp-lean:main then
+  mount the repo — no elan install, no toolchain download, no olean fetch.
+- **Cost:** free for public repos (GHCR + Actions public minutes).
+- **Practical how-to:** docs/TOOLCHAIN_AGENTS.md sec 1.
+
+### E2. Lean iteration tool (leancheck), to speed proof authoring
+
+The edit→typecheck loop was the practical gating cost during the U_B
+machine work. Two stdlib-only tools now compress it:
+
+- **tooling/leancheck.py** — runs lake env lean <file> and prints only
+  the FIRST error (file:line:col + message + compact goal context + a fix
+  hint). --all / --no-context / --json flags; exits 0/1/2.
+- **tooling/watch_leancheck.py** — polls a file until clean, then stops
+  (prints iterations + elapsed); Ctrl-C re-checks for a final picture.
+- Tests: tooling/gates/tests/test_leancheck.py (6 tests, stdlib-only).
+- Practical how-to: docs/TOOLCHAIN_AGENTS.md sec 2.
+
+**Status:** implemented + committed on dev; CI activation (pushing the
+ghcr image) happens on the next main merge / manual workflow dispatch. The
+actions/cache step activates automatically on the next Actions run.
