@@ -5,9 +5,9 @@ name: warm-toolchain-image
 # new agent sandbox (and any human container) skip the elan install + toolchain
 # download + Mathlib olean fetch entirely:
 #
-#   docker pull ghcr.io/allenpd728/pleanp-lean:main
+#   docker pull ghcr.io/allenpd728/pleanp:main
 #   # inside: elan + Lean v4.31.0 + Mathlib oleans pre-fetched into
-#   # /home/openhands/.elan AND /workspace/lean/.lake (warm)
+#   # /root/.elan AND /workspace/lean/.lake (warm)
 #
 # Persistence model (DEC-013 + this workflow): the repo's authoritative state
 # is the *tools* (lean-toolchain pin) + *deps* (lakefile.lean pin) + the
@@ -50,21 +50,19 @@ jobs:
       # into the pushed image. Result: pulling the ghcr image gives a warm
       # elan + Lean + Mathlib olean cache with zero network beyond `docker pull`.
       # GHCR requires lowercase repository names; github.repository can be
-      # mixed-case (e.g. allenpd728/PleaNP). Compute the lowercased name in
-      # env and use it in the tags (expressions do not reliably evaluate in
-      # multiline `tags:` blocks).
+      # mixed-case (e.g. allenpd728/PleaNP). Use the lowercase owner + a fixed
+      # image slug (pleanp) instead of github.repository, avoiding expressions
+      # in the tags block entirely (expressions there are unreliable).
       - name: Build warm image
-        env:
-          LOWER_REPO: ${{ lower(github.repository) }}
         uses: docker/build-push-action@v6
         with:
           context: .
           file: .devcontainer/Dockerfile.warm
           push: true
           tags: |
-            ghcr.io/${{ env.LOWER_REPO }}:lean-${{ github.sha }}
-            ghcr.io/${{ env.LOWER_REPO }}:${{ github.ref_name }}
-            ghcr.io/${{ env.LOWER_REPO }}:main
+            ghcr.io/${{ github.repository_owner }}/pleanp:lean-${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/pleanp:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/pleanp:main
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
