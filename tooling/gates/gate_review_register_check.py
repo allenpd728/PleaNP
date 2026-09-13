@@ -28,6 +28,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 SCAN_SET = (
     "lean/PleaNP/Calculus lean/PleaNP/Basic.lean "
     "lean/PleaNP/Benchmark/Closure.lean "
+    "lean/PleaNP/ProofComplexity/Resolution.lean "
     "lean/PleaNP/Barriers/RelativizationProof.lean "
     "lean/PleaNP/Barriers/Algebrization.lean "
     "lean/PleaNP/Circuits/Basic.lean "
@@ -115,6 +116,21 @@ EXPECTED = {
     # benchmark docs (docs/BENCHMARK.md baseline run), not dead code.
     ("binder", "Closure.lean", "emptyLang_in_UpstreamPolyTime"),
     ("binder", "Closure.lean", "univLang_in_UpstreamPolyTime"),
+    # Issue #75 Pass 1: the resolution substrate API (Resolution.lean) —
+    # `eval` is referenced internally by Clause.eval but the scanner resolves
+    # only top-level name references; `Clause.empty`, `CNF.width`,
+    # `ResDerivation.size/.width` are the public substrate measures;
+    # `ResDerivation.sound` is the headline soundness theorem; `simp` is a
+    # `@[simp]`-attribute misread (binder). All demonstrated-intentional,
+    # consumed by Pass 2 (pigeonhole width bound). (`var` is no longer an
+    # EXPECTED item — the rewritten Clause.eval exposes the reference, so the
+    # scanner resolves it.)
+    ("binder", "Resolution.lean", "simp"),
+    ("binder", "Resolution.lean", "eval"),
+    ("binder", "Resolution.lean", "Clause.empty"),
+    ("binder", "Resolution.lean", "CNF.width"),
+    ("binder", "Resolution.lean", "ResDerivation.width"),
+    ("binder", "Resolution.lean", "ResDerivation.sound"),
 
 }
 # NOTE (2026-09-13): `emptyOracle` is no longer an EXPECTED item — the
