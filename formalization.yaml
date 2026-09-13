@@ -83,7 +83,7 @@ status:
    sorry_count: 1
    axioms:
      - "sorryAx"
-   comparator_config: "NOT_YET_CREATED"
+   comparator_config: "lean/ComparatorChallenges/Relativization.json"
    status: "rendered-not-frozen"
  - description: >-
      (BGS clause b) Existence of an oracle B with P^B ≠ NP^B.(Statement rendered,sorry.)
@@ -92,7 +92,7 @@ status:
    sorry_count: 1
    axioms:
      - "sorryAx"
-   comparator_config: "NOT_YET_CREATED"
+   comparator_config: "lean/ComparatorChallenges/Relativization.json"
    status: "rendered-not-frozen"
  - description: >-
      Oracle-machine substrate: decidability in polynomial time over a machine+oracle. Clean
@@ -150,6 +150,7 @@ alignment:
  namespaces:
  - "PleaNP.Barriers"
  - "PleaNP.Calculus"
+ - "PleaNP.Challenges"
  - "PleaNP.Computability"
  - "PleaNP.Oracles"
  statements:
@@ -157,10 +158,18 @@ alignment:
       lean: "PleaNP.Barriers.Relativization.exists_equalizing_oracle"
       module: "PleaNP.Barriers.Relativization"
       status: "rendered-not-frozen"
+    - source: "BGS 1975 Theorem (a) — DEC-022 comparator reference (independent channel)"
+      lean: "PleaNP.Challenges.Relativization.equalizing_oracle_statement"
+      module: "PleaNP.Challenges.Relativization"
+      status: "statement-reference"
     - source: "BGS 1975 Theorem (b), per docs/STATEMENTS/Relativization.md"
       lean: "PleaNP.Barriers.Relativization.exists_separating_oracle"
       module: "PleaNP.Barriers.Relativization"
       status: "rendered-not-frozen"
+    - source: "BGS 1975 Theorem (b) — DEC-022 comparator reference (independent channel)"
+      lean: "PleaNP.Challenges.Relativization.separating_oracle_statement"
+      module: "PleaNP.Challenges.Relativization"
+      status: "statement-reference"
     - source: "P^A ⊆ NP^A inclusion (VALIDATION_SUITE must-prove)"
       lean: "PleaNP.Oracles.P_A_subset_NP_A"
       module: "PleaNP.Computability.OracleComplexity"

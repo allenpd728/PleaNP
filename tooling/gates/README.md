@@ -47,12 +47,16 @@ Run: `python3 tooling/gates/unicode_scan.py .` — exit 0 clean, 1 violations, 2
 
 A scan that exits 0 can still print `REVIEW` items (non-fatal findings).
 The known REVIEW items on the clean modules — the three
-`OracleSmoke.lean` `by decide` smells and the four binder-usage REVIEWs
+`OracleSmoke.lean` `by decide` smells, the four binder-usage REVIEWs
 (`abstractPVsNP_iff_verdictB`, `emptyOracle`, the `NP_A` weak witness,
-`P_A_subset_NP_A`) — are all **demonstrated-intentional**; their
-verification and disposition register live in
-`docs/GATE_REVIEW_NOTES.md`. When an audit sweep or a future scan run
-hits one of these, check that register before re-flagging it.
+`P_A_subset_NP_A`), and the two challenge-module REVIEWs on
+`PleaNP.Challenges.Relativization` (`equalizing_oracle_statement` /
+`separating_oracle_statement`, consumed by the comparator JSON pin
+`lean/ComparatorChallenges/Relativization.json`) — are all
+**demonstrated-intentional**; their verification and disposition
+register live in `docs/GATE_REVIEW_NOTES.md`. When an audit sweep or a
+future scan run hits one of these, check that register before
+re-flagging it.
 
 ## Two tiers (different agents, different trust boundaries)
 

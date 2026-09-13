@@ -27,6 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 SCAN_SET = (
     "lean/PleaNP/Calculus lean/PleaNP/Basic.lean "
+    "lean/PleaNP/Challenges/Relativization.lean "
     "lean/PleaNP/Computability/Oracle.lean "
     "lean/PleaNP/Computability/OracleComplexity.lean "
     "lean/PleaNP/Computability/OracleSmoke.lean"
@@ -45,6 +46,11 @@ EXPECTED = {
     ("binder", "Oracle.lean", "emptyOracle"),
     ("binder", "OracleComplexity.lean", "y"),             # weak witness ∃ y
     ("binder", "OracleComplexity.lean", "P_A_subset_NP_A"),
+    # DEC-022 comparator statement references (issue #64): consumed by the
+    # comparator JSON pin lean/ComparatorChallenges/Relativization.json,
+    # not dead code.
+    ("binder", "Relativization.lean", "equalizing_oracle_statement"),
+    ("binder", "Relativization.lean", "separating_oracle_statement"),
 }
 
 

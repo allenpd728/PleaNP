@@ -43,6 +43,9 @@ class TestExpectedRegister(unittest.TestCase):
         self.assertIn(("binder", "Oracle.lean", "emptyOracle"), grc.EXPECTED)
         self.assertIn(("binder", "OracleComplexity.lean", "y"), grc.EXPECTED)
         self.assertIn(("binder", "OracleComplexity.lean", "P_A_subset_NP_A"), grc.EXPECTED)
+        # DEC-022 comparator statement references (issue #64).
+        self.assertIn(("binder", "Relativization.lean", "equalizing_oracle_statement"), grc.EXPECTED)
+        self.assertIn(("binder", "Relativization.lean", "separating_oracle_statement"), grc.EXPECTED)
 
 
 class TestRejectUnexpected(unittest.TestCase):
