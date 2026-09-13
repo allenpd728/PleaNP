@@ -134,7 +134,8 @@ self-check).
 | binder | `equalizing_oracle_statement` / `separating_oracle_statement` (challenge) unreferenced | `Challenges/Relativization.lean` | statement references consumed by comparator JSON pin `lean/ComparatorChallenges/Relativization.json` (proof-root `theorem_names`); no-action |
 | binder | `uniform_collapse_contradicted_by_separating` / `uniform_separation_contradicted_by_equalizing` / `no_uniform_resolution_of_p_vs_np` unreferenced | `Barriers/RelativizationProof.lean` | DEC-022 §3.3 proof-work lemmas (issue #66): the BGS barrier-consequence corollaries, consumed onward by #37/#63 assembly — not dead code; no-action |
 | binder | `algebrizing_separation_statement` / `algebrizing_equalization_statement` unreferenced | `Barriers/Algebrization.lean` | AW09 v1 statement references (issue #69 Pass 1): consumed by AZ5's proof assembly — not dead code; no-action |
-| binder | `size_pos` / `depth_size_le` / `CircuitFamily.depthOf` / `IsPPoly` / `NaturalProperty` / `univ_largeness` unreferenced | `Circuits/Basic.lean` | Rung-4 circuit substrate API (issues #71 Pass 1-2): the typed circuit-family + P/poly + natural-property foundation consumed by Rung-4 lower bounds — not dead code; no-action |
+| binder | `size_pos` / `depth_size_le` / `CircuitFamily.depthOf` / `IsPPoly` / `univ_largeness` unreferenced | `Circuits/Basic.lean` | Rung-4 circuit substrate API (issues #71 Pass 1-2): the typed circuit-family + P/poly + natural-property foundation consumed by Rung-4 lower bounds — not dead code; no-action |
+| binder | `NaturalProperty` **RESOLVED (2026-09-13, #71 Pass 3)** | `Circuits/Basic.lean` | now referenced by `Circuits/MustRefute.lean`'s `empty_not_natural` — no longer flagged |
 | binder | `and2` **RESOLVED (2026-09-13, #72 Pass 1)** | `Circuits/Basic.lean` | now referenced by `Circuits/AC0.lean`'s eval sanity examples — no longer flagged |
 | hygiene | `by decide` (1) | `Circuits/Basic.lean` | `Nat.one_le_pow` discharge in `univ_largeness` — same proof-body finiteness category as the OracleSmoke smells; no-action |
 | binder | `BoolFunc` / `CircuitFamily.sizeOf` **RESOLVED (2026-09-13, #71 Pass 2)** | `Circuits/Basic.lean` | now referenced by the Pass-2 defs (`Largeness`, `IsPPoly`) — no longer flagged |
@@ -277,6 +278,21 @@ removed accordingly; the remaining register matches the fired set.
 
 **Disposition.** No-action. The register EXPECTED set reflects the current
 set (structural facts + the classification theorem).
+
+### `MustRefute.lean` — the must-refute suite (issue #71 Pass 3)
+
+`binder_usage_scan.py` flags the validation-suite public API:
+- `univ_property_constructive` — the universal property is constructive
+  (companion to `univ_largeness`; `Constructive` is inhabited).
+- `empty_not_natural` — the empty property family is not a natural property.
+- `boolfunc_card` — `|F_n| = 2^n`, the counting baseline.
+
+All demonstrated-intentional, consumed by `docs/VALIDATION_SUITE.md` and the
+Rung-4 lower-bound arguments. (`empty_not_largeness` is referenced by
+`empty_not_natural`; the suite's unifying fact.)
+
+**Disposition.** No-action. The register EXPECTED set is updated to include
+these items so the machine-check agrees.
 
 ## 4. BGS clause-(a) A2/A3 console-oracle API (issue #63)
 

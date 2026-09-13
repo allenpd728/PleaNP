@@ -95,3 +95,11 @@ Never reuse a whole-language predicate where a per-input predicate is needed. Th
 - **Prove-stage scanning**: on freeze PRs (when a definition moves to "frozen" status), `sorry`s are violations — `--prove-stage` is used, and the build must be green.
 
 This prevents the self-defeating pattern where `warningAsError` + `sorry` = CI always red.
+
+---
+
+## Status-ladder tracking (module rows)
+
+| Module | Status | Must-prove | Must-refute / smoke | Notes |
+|---|---|---|---|---|
+| PleaNP.Circuits (Basic + AC0 + MustRefute) | **Validated** (#71 Pass 3, 2026-09-13) | BoolGate.size_pos / depth_size_le (structural); AC0 parity_zero / parity_nontrivial (statement content) | MustRefute.empty_not_largeness / empty_not_natural (empty property is NOT a natural property — largeness is a real constraint); univ_property_constructive (constructivity inhabited); boolfunc_card (|F_n| = 2^n baseline) | The three circuits modules build green, binder scan clean (register-ok REVIEWs), 0 sorries. Largeness / NaturalProperty / IsPPoly are not vacuous (empty/universal boundary cases decide them). Freeze still needs Gates 2/4/5/6 + human review. |

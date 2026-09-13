@@ -34,6 +34,7 @@ SCAN_SET = (
     "lean/PleaNP/Barriers/AlgebrizationProof.lean "
     "lean/PleaNP/Circuits/Basic.lean "
     "lean/PleaNP/Circuits/AC0.lean "
+    "lean/PleaNP/Circuits/MustRefute.lean "
     "lean/PleaNP/Challenges/Relativization.lean "
     "lean/PleaNP/Computability/Oracle.lean "
     "lean/PleaNP/Computability/OracleComplexity.lean "
@@ -113,7 +114,6 @@ EXPECTED = {
     ("binder", "Basic.lean", "size_pos"),
     ("binder", "Basic.lean", "depth_size_le"),
     ("binder", "Basic.lean", "IsPPoly"),
-    ("binder", "Basic.lean", "NaturalProperty"),
     ("binder", "Basic.lean", "univ_largeness"),
     ("binder", "Basic.lean", "CircuitFamily.depthOf"),
 
@@ -135,6 +135,13 @@ EXPECTED = {
     ("binder", "AC0.lean", "parity_zero"),
     ("binder", "AC0.lean", "parity_nontrivial"),
     ("binder", "AC0.lean", "parity_notin_AC0_relativizing"),
+    # Issue #71 Pass 3: the must-refute suite's public API (MustRefute.lean)
+    # — the validation-suite facts (constructive-universal, empty-not-large,
+    # counting baseline) consumed by VALIDATION_SUITE.md and Rung-4 lower
+    # bounds. Demonstrated-intentional.
+    ("binder", "MustRefute.lean", "univ_property_constructive"),
+    ("binder", "MustRefute.lean", "empty_not_natural"),
+    ("binder", "MustRefute.lean", "boolfunc_card"),
     # Issue #75 Pass 1: the resolution substrate API (Resolution.lean) —
     # `eval` is referenced internally by Clause.eval but the scanner resolves
     # only top-level name references; `Clause.empty`, `CNF.width`,
