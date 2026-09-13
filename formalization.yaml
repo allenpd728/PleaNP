@@ -234,6 +234,10 @@ alignment:
       lean: "PleaNP.Circuits.BoolGate.size"
       module: "PleaNP.Circuits.Basic"
       status: "proved"
+    - source: "Rung-4 circuit substrate (issue #71 Pass 2): P/poly shape (IsPPoly) + natural property (Largeness/Constructive/NaturalProperty) + univ_largeness sanity"
+      lean: "PleaNP.Circuits.NaturalProperty"
+      module: "PleaNP.Circuits.Basic"
+      status: "proved"
 
 acknowledgements: >-
  Mathlib, Lean 4, the integrity-gate tooling, prior-art sources per docs/PRIOR_ART.md,

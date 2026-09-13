@@ -106,6 +106,45 @@ def CircuitFamily.sizeOf (C : CircuitFamily) (n : Nat) : Nat :=
 def CircuitFamily.depthOf (C : CircuitFamily) (n : Nat) : Nat :=
   BoolGate.depth (C n)
 
+/-! ## P/poly shape + natural property (issue #71 Pass 2) -/
+
+/-- **P/poly membership (shape):** a circuit family whose size is polynomially
+  bounded. `p : Polynomial ℕ` bounds the family size at every length — the
+  standard non-uniform class reading (NaturalProofs.md §2: "superpolynomial
+  lower bounds against general polynomial-size circuits"). -/
+def IsPPoly (C : CircuitFamily) : Prop :=
+  ∃ p : Polynomial ℕ, ∀ n : Nat, CircuitFamily.sizeOf C n ≤ p.eval n
+
+/-- A **property family** `C = {C_n}`: a sequence of subsets of the `F_n`
+  of n-ary Boolean functions — the carrier of the natural-property
+  definition (NaturalProofs.md §2). -/
+abbrev PropertyFamily := ∀ n : Nat, Set (BoolFunc n)
+
+/-- **Largeness:** for all large enough `n`, `C_n` contains at least the
+  `2^-n` fraction of all n-ary Boolean functions. Since `Fintype.card (F_n)
+  = 2^n`, the fraction condition `|C_n| ≥ |F_n|/2^n` is equivalent to the
+  cardinality inequality `2^n * |C_n| ≥ |F_n|` (avoiding division). This is
+  the "a random function is in C_n with non-negligible probability" reading
+  (NaturalProofs.md §2(3)). -/
+def Largeness (C : PropertyFamily) : Prop :=
+  ∃ n₀ : Nat, ∀ n ≥ n₀,
+    2 ^ n * Nat.card {f : BoolFunc n // f ∈ C n} ≥ Fintype.card (BoolFunc n)
+
+/-- **Constructivity (v1 substrate):** membership in `C_n` is decided by
+  some boolean characteristic `χ_n : F_n → Bool`, witnessing `f ∈ C_n`.
+  The `P`-natural / `NP`-natural polynomial-time bound in the truth-table
+  size is the machine-substrate refinement (the constructivity-class
+  decision); the v1 form records the decision-function shape the barrier's
+  constructivity condition requires (NaturalProofs.md §2(2)). -/
+def Constructive (C : PropertyFamily) : Prop :=
+  ∀ n : Nat, ∃ χ : BoolFunc n → Bool, ∀ f : BoolFunc n, (χ f = true ↔ f ∈ C n)
+
+/-- **Natural property:** a property family satisfying constructivity and
+  largeness — the two conditions of NaturalProofs.md §2 (usefulness is the
+  third, a predicate on the target class added where the barrier is stated). -/
+def NaturalProperty (C : PropertyFamily) : Prop :=
+  Constructive C ∧ Largeness C
+
 /-! ## Concrete sanity (substrate self-exercise; the must-refute suite is Pass 3) -/
 
 /-- A concrete 2-input circuit computing `x0 ∧ x1` (one AND gate over two
@@ -118,6 +157,17 @@ example : BoolGate.size and2 = 3 := by
 
 example : BoolGate.depth and2 = 1 := by
   simp [and2, BoolGate.depth]
+
+/-- The universal property `C_n = F_n` is Large: every n-ary function is a
+  member, so `|C_n| = |F_n|` and the fraction inequality is trivially
+  satisfied. This is the substrate's non-vacuity sanity — `Largeness` is
+  inhabited. -/
+theorem univ_largeness : Largeness (fun _ : Nat => Set.univ) := by
+  unfold Largeness
+  refine ⟨0, ?_⟩
+  intro n _hn
+  simp
+  exact Nat.one_le_pow n 2 (by decide)
 
 end Circuits
 

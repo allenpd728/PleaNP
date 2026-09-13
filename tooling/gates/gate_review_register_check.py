@@ -51,6 +51,7 @@ BINDER_ALLOW = (
 EXPECTED = {
     ("hygiene", "OracleSmoke.lean", "by decide"),
     ("hygiene", "OracleV5Tests.lean", "by decide"),
+    ("hygiene", "Basic.lean", "by decide"),  # Nat.one_le_pow discharge in univ_largeness
     ("binder", "BarrierVerdictB.lean", "abstractPVsNP_iff_verdictB"),
     ("binder", "OracleComplexity.lean", "y"),             # weak witness ∃ y
     ("binder", "OracleComplexity.lean", "UpstreamPolyTime"),  # P^∅ = P anchor RHS
@@ -110,8 +111,9 @@ EXPECTED = {
     # lower bounds — not dead code.
     ("binder", "Basic.lean", "size_pos"),
     ("binder", "Basic.lean", "depth_size_le"),
-    ("binder", "Basic.lean", "BoolFunc"),
-    ("binder", "Basic.lean", "CircuitFamily.sizeOf"),
+    ("binder", "Basic.lean", "IsPPoly"),
+    ("binder", "Basic.lean", "NaturalProperty"),
+    ("binder", "Basic.lean", "univ_largeness"),
     ("binder", "Basic.lean", "CircuitFamily.depthOf"),
     ("binder", "Basic.lean", "and2"),
 
