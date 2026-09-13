@@ -1,6 +1,6 @@
 # Persistent & cloud toolchain options for Lean 4 + Mathlib
 
-**Status:** 2026-09-06 — Plans A (devcontainer) and B (CI oracle) implemented (see .devcontainer/ and .github/workflows/ci.yml; DEC-013 Active). Activation is blocked on an account-level GitHub billing lock — owner checklist: docs/ACTIVATION_CHECKLIST.md. Plans C and D remain reference options.
+**Status:** 2026-09-13 — Plans A (devcontainer) and B (CI oracle) implemented; Plan E (warm ghcr image + leancheck/elantool tooling) also implemented and VERIFIED live (see §Plan E). The earlier GitHub `ACTIVATION_CHECKLIST.md` billing-lock note is superseded: Actions runs are executing normally (warm-toolchain + review-issue + CI workflows all run on pushes). Plans C and D remain reference options.
 **Audience:** anyone who needs a Lean 4 + Mathlib environment for PleaNP without re-provisioning a toolchain from scratch each session (the pain this solves: `elan install` + Mathlib cache download + full build every new workspace).
 
 The problem statement: *"What could be a free and more persistent way to have access to the Lean toolchain and mathlib corpus without having to connect to the local M4 system or build in the temporary sandbox from scratch every time work is done on the repo?"*
@@ -112,6 +112,12 @@ machine work. Two stdlib-only tools now compress it:
 - Tests: tooling/gates/tests/test_leancheck.py (6 tests, stdlib-only).
 - Practical how-to: docs/TOOLCHAIN_AGENTS.md sec 2.
 
-**Status:** implemented + committed on dev; CI activation (pushing the
-ghcr image) happens on the next main merge / manual workflow dispatch. The
-actions/cache step activates automatically on the next Actions run.
+**Status (2026-09-13, confirmed live):** Plan E implemented and VERIFIED.
+The warm-toolchain workflow runs on [main, dev] pushes — consecutive runs
+completed `success` (26500ba/329cad7/c3916e5/116aaa6) — and
+`ghcr.io/allenpd728/pleanp:dev` + `:main` are both pullable (docker
+manifest inspect returns the OCI index). The `ci-toolchain-cache` job
+caches `~/.elan` for CI runners. `tooling/elantool.sh` is live-verified
+(working-docker-daemon detection + AGENTS.md bootstrap fallback);
+`tooling/leancheck.py`/`watch_leancheck.py` are live-validated against
+Lean v4.31.0 and adopted on real proof work (#37 Pass 1).
