@@ -95,6 +95,19 @@ module is expected to fail the build until upstream P lands.
 | 8 | `Relativization.lean:80` | BGS clause (a) proof — equalizing oracle existence. | #5 (done) + PSPACE/QBF + upstream P. | Low (Rung 3 Step 6) |
 | 9 | `Relativization.lean:101` | BGS clause (b) proof — separating oracle existence (diagonalization). | #5 (done) + machine enumeration + diagonalization. | Low (Rung 3 Step 6) |
 
+
+### DiagonalAssembly level (DiagonalAssembly.lean, new isolated module - #37 assembly scaffold)
+
+Isolated leaf module (not imported by clean modules) so `warningAsError`
+does not cascade. Proved zero-sorry: `Simulate`, `simulate_returns`
+(bounded enumeration simulation connects to unbounded eval), `PuntsSlow`
+(the punting strategy), `stage_step_exists` (the tournament flip handle).
+One tracked sorry:
+
+| # | File:Line | What it is | Pending on | Priority |
+|---|---|---|---|---|
+| 12 | `lean/PleaNP/Barriers/DiagonalAssembly.lean:72` | `exists_separating_oracle_assembly` - the assembled "exists B, P_A B != NP_A B" (the BGS clause-(b) target #9). Needs the Machine-to-Code bridge (#23/#97 gap: poly-time oracle machines into Partrec.Code) plus the stage/tournament composition of the Diagonal* modules. | #23/#97 gap (Machine-to-Code bridge) + compose stage_step_exists over M_of-indices. | High when the bridge lands |
+
 ### Algebrization statement level (issue #69 Pass 1, 2026-09-13)
 
 `lean/PleaNP/Barriers/Algebrization.lean` renders the **AW09 v1 statement**
