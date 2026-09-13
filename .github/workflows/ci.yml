@@ -34,7 +34,8 @@ jobs:
       # actually clean, so the "build oracle" stays green; widen to the full tree
       # when the pending sorries are resolved.
       - name: Build clean modules (Basic + v4 substrate + Barrier Calculus + Challenges; sorry-as-error)
-        run: lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus PleaNP.Calculus.ConcreteSeed PleaNP.Calculus.Soundness PleaNP.Barriers.RelativizationProof PleaNP.Barriers.Algebrization PleaNP.Benchmark.Closure PleaNP.ProofComplexity.Resolution PleaNP.Circuits.Basic PleaNP.Computability.Oracle PleaNP.Computability.OracleComplexity PleaNP.Computability.OracleSmoke PleaNP.Computability.OracleV5Tests PleaNP.Challenges.Relativization 2>&1 | tee /tmp/barcheck.log        working-directory: lean
+        run: lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus PleaNP.Calculus.ConcreteSeed PleaNP.Calculus.Soundness PleaNP.Calculus.Classification PleaNP.Barriers.RelativizationProof PleaNP.Barriers.Algebrization PleaNP.Benchmark.Closure PleaNP.ProofComplexity.Resolution PleaNP.Circuits.Basic PleaNP.Computability.Oracle PleaNP.Computability.OracleComplexity PleaNP.Computability.OracleSmoke PleaNP.Computability.OracleV5Tests PleaNP.Challenges.Relativization 2>&1 | tee /tmp/barcheck.log
+        working-directory: lean
       - name: Barrier-check verdict harness (Rung-5,#3; asserts the four #barrier_check verdict lines)
         run: python3 ../tooling/gates/barrier_check_test.py /tmp/barcheck.log
         working-directory: lean

@@ -60,8 +60,9 @@ EXPECTED = {
     # docs/GATE_REVIEW_NOTES.md §3).
     ("binder", "Soundness.lean", "funeq_uniform"),
     ("binder", "Soundness.lean", "funne_uniform"),
-    ("binder", "Soundness.lean", "pA_mem_uniform"),
     ("binder", "Soundness.lean", "relAtom_uniform"),
+    # NOTE: Soundness.pA_mem_uniform is NOT in the register anymore — #73
+    # Pass 1's Classification.classification_uniform references it.
     ("binder", "Soundness.lean", "sound_verdict_abstract_rev"),
     ("binder", "Soundness.lean", "transfer_under_ext"),
     ("binder", "Soundness.lean", "uniform_and"),
@@ -76,6 +77,11 @@ EXPECTED = {
     # not dead code.
     ("binder", "Relativization.lean", "equalizing_oracle_statement"),
     ("binder", "Relativization.lean", "separating_oracle_statement"),
+    # Rung-4 barrier-classification method (issue #73 Pass 1): the
+    # classification spine + A3 method demo — intentional public API for the
+    # per-family classification instances (#72/#74/#75/#76).
+    ("binder", "Classification.lean", "classification_uniform"),
+    ("binder", "Classification.lean", "oneQuery_classification_uniform"),
     # BGS clause-(a) proof-work API (issues #63/#62): the console-oracle +
     # one-query-machine lemmas beyond the §3.3 barrier-consequence set above,
     # intentional public API for the A3/A5 assembly (GATE_REVIEW_NOTES.md §4).
