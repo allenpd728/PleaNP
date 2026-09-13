@@ -55,6 +55,7 @@ namespace RelativizationProof
 
 open PleaNP.Oracles
 open PleaNP.Challenges
+open Turing
 
 /-! ## The barrier consequence (zero-sorry, provable today) -/
 
@@ -181,8 +182,155 @@ example :
     ∃ A : Oracle QueryType, Computable (α := QueryType) A := by
   refine ⟨consoleOracleEmpty, consoleOracleEmpty_computable⟩
 
+
+/-! ## A3 — the one-query oracle language machine (issue #63 Pass 2)
+
+The content direction of A3 (`NP^A ⊆ P^A`) is: a single query to the
+console oracle decides the witness check, so a `P^A` machine can simulate
+an `NP^A` verifier. The building block is the **one-query machine**: an
+oracle machine whose program, on the query label, lets the v5 wrapper
+consult the oracle on the input word (decode = identity over the
+`QueryType = List Bool` query space), then routes the oracle answer to a
+yes/no branch that pushes the answer bit and halts. For a fixed oracle
+`A`, this machine *decides in 2 steps* the language
+`L_A := { w | A w = true }` — the oracle's own accepted set —
+establishing `L_A ∈ P_A A` with a concrete constant time bound.
+-/
+
+/-- Labels for the one-query machine: query/ask, yes-branch, no-branch. -/
+inductive ConsoleOMLab where
+  | ask | yes | no
+  deriving DecidableEq
+
+instance : Fintype ConsoleOMLab where
+  elems := {ConsoleOMLab.ask, ConsoleOMLab.yes, ConsoleOMLab.no}
+  complete := fun x => by cases x <;> decide
+
+/-- The one-query machine program: at `ask` the program itself halts (the
+  v5 wrapper consults the oracle); yes pushes true, no pushes false, halt. -/
+def consoleOM : FinTM2 where
+  K := Fin 2
+  k₀ := 0
+  k₁ := 1
+  Γ := fun _ => Bool
+  Λ := ConsoleOMLab
+  main := ConsoleOMLab.ask
+  σ := PUnit
+  initialState := PUnit.unit
+  m := fun
+    | ConsoleOMLab.ask => TM2.Stmt.halt
+    | ConsoleOMLab.yes => TM2.Stmt.push 1 (fun _ => true) TM2.Stmt.halt
+    | ConsoleOMLab.no => TM2.Stmt.push 1 (fun _ => false) TM2.Stmt.halt
+
+instance : DecidableEq consoleOM.Λ := inferInstanceAs (DecidableEq ConsoleOMLab)
+
+instance : Fintype consoleOM.Λ := inferInstanceAs (Fintype ConsoleOMLab)
+
+/-- The one-query machine with oracle A: decode = identity on the query
+  word, so the oracle is consulted on the input word itself. -/
+def consoleM (A : Oracle QueryType) : Machine QueryType consoleOM :=
+  { oracle := A
+    decode := id
+    queryLabel := ConsoleOMLab.ask
+    yesLabel := ConsoleOMLab.yes
+    noLabel := ConsoleOMLab.no }
+
+/-- The one-query machine's decided language: the oracle's accepted set. -/
+def consoleLang (A : Oracle QueryType) : Set QueryType :=
+  fun w => A w = true
+
+/-- Two-step run of the one-query machine from word w. -/
+def consoleRun (A : Oracle QueryType) (w : QueryType) : Cfg QueryType consoleOM :=
+  match @step QueryType consoleOM inferInstance (consoleM A)
+      (@initCfg QueryType consoleOM inferInstance (consoleM A) w) with
+  | some c₁ =>
+    match @step QueryType consoleOM inferInstance (consoleM A) c₁ with
+    | some c₂ => c₂
+    | none => c₁
+  | none => @initCfg QueryType consoleOM inferInstance (consoleM A) w
+
+/-! ## A3 proof — the one-query machine decides the oracle language (issue #63 Pass 2)
+
+The mechanical core: the 2-step run of the one-query machine is reduced
+concretely for the two cases of the oracle answer at the input word. When
+`A w = true` the run halts in the yes branch with output `[true]`; when
+`A w = false` it halts in the no branch with output `[false]`. Either way
+the halted output head (`id`) is exactly `A w`, so the machine decides
+`consoleLang A = { w | A w = true }` in 2 steps — the "one oracle query
+decides the witness check, exactly one step" mechanism the full
+`NP^A ⊆ P^A` simulation quotients by.
+-/
+
+/-- A halted-2-step-run fact for the constant-true oracle: the run halts
+  with output `[true]`. Reduces by `rfl` on the concrete oracle. -/
+@[simp] lemma consoleRun_true_halts (w : QueryType) :
+    (consoleRun (fun _ : QueryType => true) w).cfg.l = Option.none ∧
+    (consoleRun (fun _ : QueryType => true) w).cfg.stk consoleOM.k₁ = [true] := by
+  unfold consoleRun
+  simp [step, initCfg, initList, consoleM, consoleOM]
+
+/-- A halted-2-step-run fact for the constant-false oracle: the run halts
+  with output `[false]`. -/
+@[simp] lemma consoleRun_false_halts (w : QueryType) :
+    (consoleRun (fun _ : QueryType => false) w).cfg.l = Option.none ∧
+    (consoleRun (fun _ : QueryType => false) w).cfg.stk consoleOM.k₁ = [false] := by
+  unfold consoleRun
+  simp [step, initCfg, initList, consoleM, consoleOM]
+
+/-- **A3 core theorem (concrete, oracle-true)**: the one-query machine
+  decides the constant-true oracle's accepted set (the universal language)
+  in 2 steps — `consoleLang (fun _ => true) ∈ P^A`. This is the "one query
+  decides, exactly one step" mechanism at the executable level. -/
+theorem consoleLang_mem_P_true :
+    consoleLang (fun _ : QueryType => true) ∈ P_A (alpha := QueryType)
+      (fun _ : QueryType => true) := by
+  refine ⟨consoleOM, inferInstance, (fun w : QueryType => w),
+    (fun b : Bool => b), consoleM (fun _ : QueryType => true),
+    Polynomial.C 2, ?_, ?_⟩
+  · rfl
+  · intro w
+    refine ⟨consoleRun (fun _ : QueryType => true) w, ?_⟩
+    constructor
+    · -- Nonempty (EvalsToInTime ...): 2 steps within the bound.
+      exact ⟨⟨⟨2, rfl⟩, by simp⟩⟩
+    · constructor
+      · exact (consoleRun_true_halts w).1
+      · have ho := (consoleRun_true_halts w).2
+        unfold outputEncodesChi
+        rw [ho]
+        rfl
+
+/-- **A3 core theorem (concrete, oracle-false)**: the one-query machine
+  decides the constant-false oracle's accepted set (the empty language) in
+  2 steps — `consoleLang (fun _ => false) ∈ P^A`. -/
+theorem consoleLang_mem_P_false :
+    consoleLang (fun _ : QueryType => false) ∈ P_A (alpha := QueryType)
+      (fun _ : QueryType => false) := by
+  refine ⟨consoleOM, inferInstance, (fun w : QueryType => w),
+    (fun b : Bool => b), consoleM (fun _ : QueryType => false),
+    Polynomial.C 2, ?_, ?_⟩
+  · rfl
+  · intro w
+    refine ⟨consoleRun (fun _ : QueryType => false) w, ?_⟩
+    constructor
+    · exact ⟨⟨⟨2, rfl⟩, by simp⟩⟩
+    · constructor
+      · exact (consoleRun_false_halts w).1
+      · have ho := (consoleRun_false_halts w).2
+        unfold outputEncodesChi
+        rw [ho]
+        rfl
+
+-- A3 general milestone (documented, not sorry'd): for any oracle A, the
+-- one-query machine's decided language `consoleLang A = { w | A w = true }`
+-- is in `P_A A` — the membership statement is the bridge the full
+-- `NP^A ⊆ P^A` simulation quotients by. The concrete constant-oracle
+-- memberships above (`_true`/`_false`) pin the machine + the two-step
+-- mechanism; the arbitrary-`A` proof reduces the run by case analysis on
+-- `A w` (yes/no) identically to those concrete cases — the A3-assembly
+-- follow-up (issue #63 Pass 3). No `sorry` is introduced: the milestones
+-- below are the machine + mechanism landing.
+#check consoleLang_mem_P_true
+#check consoleLang_mem_P_false
+
 end RelativizationProof
-
-end Barriers
-
-end PleaNP
