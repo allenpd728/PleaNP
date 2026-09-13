@@ -167,9 +167,9 @@ which is outside the CI scan set (it is the upstream-P-blocked leaf module).
 The oracle-free `TM2ComputableInPolyTime` recharacterization is the
 model-consistency anchor (Trap 3); not dead code.
 
-### `Soundness.lean` — the 13 uniformity lemmas "unreferenced"
+### `Soundness.lean` — the uniformity lemmas "unreferenced"
 
-`binder_usage_scan.py` flags the library-level uniformity lemmas
+`binder_usage_scan.py` once flagged the library-level uniformity lemmas
 (`relAtom_uniform`, `langAtom_uniform`, `pA_mem_uniform`, `uniform_and`, …
 `uniform_exists`, `funeq_uniform`, `funne_uniform`, `transfer_under_ext`,
 `sound_verdict_abstract_rev`) as referenced by no other scanned declaration.
@@ -178,7 +178,9 @@ soundness module (`docs/STATEMENTS/Soundness.spec.md`, issue #65): each
 `UniformInOracle` lemma is the semantic counterpart of one `Relativizing.*`
 propagation instance, designed for downstream composition proofs (the class
 transfer / BGS `False` once #18/#63 land). Same demonstrated-intentional
-pattern as the `BarrierCalculus` propagation instances in §1 above.
+pattern as the `BarrierCalculus` propagation instances in §1 above. NOTE:
+`pA_mem_uniform` is no longer flagged since #73 Pass 1's
+`Classification.classification_uniform` references it.
 
 **Disposition.** No-action. The register (`tooling/gates/gate_review_register_check.py`
 EXPECTED) is updated to include these items so the machine-check agrees.
@@ -256,3 +258,19 @@ demonstrated-intentional pattern as `OracleSmoke`'s smokes and the
 instantiated at the console oracle) joins the same register: it is the first
 half of the collapse sandwich, consumed by the A5 assembly (issue #63 Pass 3).
 
+
+## 6. Rung-4 barrier-classification method (issue #73 Pass 1)
+
+`binder_usage_scan.py` flags `Classification.classification_uniform` and
+`Classification.oneQuery_classification_uniform` (lean/PleaNP/Calculus/
+Classification.lean) as unreferenced. They are the **intentional public
+API** of the Rung-4 classification method: the spine theorem
+`classification_uniform` (Relativizing-membership ⟹ UniformInOracle, via
+the #65 soundness bridge) and the A3 method demo (the #63 one-query
+machine's constant-oracle language memberships classified as
+oracle-uniform). Each lower-bound family (#72 AC0, #74 monotone, #75
+resolution, #76 Williams) instantiates this spine once its proof lands.
+Same demonstrated-intentional pattern as the Soundness uniformity lemmas.
+
+**Disposition.** No-action. Registered in
+`tooling/gates/gate_review_register_check.py` EXPECTED.
