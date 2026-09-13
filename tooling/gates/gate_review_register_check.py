@@ -32,6 +32,7 @@ SCAN_SET = (
     "lean/PleaNP/Barriers/RelativizationProof.lean "
     "lean/PleaNP/Barriers/Algebrization.lean "
     "lean/PleaNP/Barriers/AlgebrizationProof.lean "
+    "lean/PleaNP/Barriers/Williams.lean "
     "lean/PleaNP/Circuits/Basic.lean "
     "lean/PleaNP/Circuits/AC0.lean "
     "lean/PleaNP/Circuits/MustRefute.lean "
@@ -113,8 +114,12 @@ EXPECTED = {
     # lower bounds — not dead code.
     ("binder", "Basic.lean", "size_pos"),
     ("binder", "Basic.lean", "depth_size_le"),
-    ("binder", "Basic.lean", "IsPPoly"),
     ("binder", "Basic.lean", "univ_largeness"),
+    # Williams transfer statement anchors (issue #88 Pass 1): consumed by
+    # #88 Pass 2/3 and #91 assembly — not dead code.
+    ("binder", "Williams.lean", "IsACC0"),
+    ("binder", "Williams.lean", "NEXP_membership"),
+    ("binder", "Williams.lean", "circuitSAT_tautology"),
     ("binder", "Basic.lean", "CircuitFamily.depthOf"),
 
     # Issue #41 marker-funeq campaign rendering targets: registered in

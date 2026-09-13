@@ -63,12 +63,15 @@ class TestExpectedRegister(unittest.TestCase):
         # Rung-4 circuit substrate API (issues #71 Pass 1-2); module-leaf is Basic.lean.
         # (`CircuitFamily.sizeOf` self-resolved in Pass 2; depthOf remains.)
         self.assertIn(("binder", "Basic.lean", "CircuitFamily.depthOf"), grc.EXPECTED)
-        self.assertIn(("binder", "Basic.lean", "IsPPoly"), grc.EXPECTED)
+        self.assertIn(("binder", "Basic.lean", "size_pos"), grc.EXPECTED)
         self.assertIn(("hygiene", "Basic.lean", "by decide"), grc.EXPECTED)  # univ_largeness discharge
         # Rung-4 AC0 milestone (issue #72 Pass 1 + #73 Pass 2).
         # parity_notin_AC0 not in register: referenced by the #73 Pass 2
         # classification theorem parity_notin_AC0_relativizing.
         self.assertNotIn(("binder", "AC0.lean", "parity_notin_AC0"), grc.EXPECTED)
+        # Williams-transfer statement anchors (issue #88 Pass 1).
+        self.assertIn(("binder", "Williams.lean", "NEXP_membership"), grc.EXPECTED)
+        # Rung-4 AC0 milestone (issue #72 Pass 1).
         self.assertIn(("binder", "AC0.lean", "parity_zero"), grc.EXPECTED)
         self.assertIn(("binder", "AC0.lean", "parity_nontrivial"), grc.EXPECTED)
         self.assertIn(("binder", "AC0.lean", "parity_notin_AC0_relativizing"), grc.EXPECTED)

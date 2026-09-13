@@ -242,6 +242,10 @@ alignment:
       lean: "PleaNP.Circuits.NaturalProperty"
       module: "PleaNP.Circuits.Basic"
       status: "proved"
+    - source: "Williams transfer statement anchors (issue #88 Pass 1): CircuitSAT decision problem + ACC0 shape + NEXP statement"
+      lean: "PleaNP.Barriers.Williams.CircuitSAT"
+      module: "PleaNP.Barriers.Williams"
+      status: "statement-rendered"
 
 acknowledgements: >-
  Mathlib, Lean 4, the integrity-gate tooling, prior-art sources per docs/PRIOR_ART.md,
