@@ -124,6 +124,14 @@ lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus \
 # OracleUpstreamP = upstream-P anchor; Relativization = BGS statement)
 lake build
 ```
+**Faster cold start for agents (Plan E, 2026-09-13):** the repo pushes a warm
+Lean+Mathlib image to `ghcr.io/allenpd728/pleanp-lean:main` on every `main`
+push (workflow `warm-toolchain.yml`). Prefer pulling it over the curl-bootstrap
+above where Docker is available: `docker pull ghcr.io/allenpd728/pleanp-lean:main`
+then mount the repo — elan + Lean + Mathlib oleans already warm. And use
+`python3 ../tooling/leancheck.py <module.lean>` (first-error typechecker) +
+`watch_leancheck.py` (poll-until-clean) for the edit→check loop. Details:
+`docs/TOOLCHAIN_AGENTS.md`, `docs/TOOLCHAIN_SOLUTIONS.md` §Plan E.
 CI (`.github/workflows/ci.yml`) runs the same recipe on every push/PR; a sandbox
 that reproduces the CI steps is a reliable local oracle. On a long-lived
 workstation you can install the toolchain once (`AGENTS_LOCAL.md`, gitignored)

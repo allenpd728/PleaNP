@@ -1,0 +1,68 @@
+# Warm toolchain image (multi-stage).
+#
+# Stage 1 (builder) — clone the repo pins, install elan + the pinned Lean,
+# fetch the Mathlib olean cache from the community Azure CDN, and prepare a
+# warm `~/.elan` and a warm `lean/.lake`.
+#
+# Stage 2 (runtime) — the small runtime image into which the warm
+# `~/.elan` and `lean/.lake` from stage 1 are COPIED. Pulling this image
+# therefore gives elan + Lean + Mathlib oleans with zero network re-fetch.
+#
+# Built + pushed to ghcr.io by `.github/workflows/warm-toolchain.yml` on every
+# push to main, so it tracks lean/lean-toolchain + lean/lakefile.lean pins.
+# Usage (in an agent sandbox or human container):
+#   docker pull ghcr.io/<owner>/<repo>:main
+#   # mount the repo at /workspace and run lake build with the warm cache.
+
+FROM ubuntu:24.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl git python3 && \
+    rm -rf /var/lib/apt/lists/*
+
+# elan (Lean version manager) — same as repo CI.
+RUN curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+ENV PATH="/root/.elan/bin:${PATH}"
+
+# The repo (for lean-toolchain + lakefile pins). Build context is repo root.
+WORKDIR /warm
+COPY lean/lean-toolchain lean/lean-toolchain
+COPY lean/lakefile.lean lean/lakefile.lean
+COPY lean/lake-manifest.json lean/lake-manifest.json
+
+# Install the pinned Lean toolchain (read the pinned version from the file).
+RUN cd /warm/lean && \
+    PIN="$(cat lean-toolchain)" && \
+    elan toolchain install "$PIN"
+
+# Fetch the Mathlib olean cache (community Azure CDN) into /warm/lean/.lake.
+RUN cd /warm/lean && \
+    PIN="$(cat lean-toolchain)" && \
+    elan default "$PIN"
+# lake requires the manifest to be present; if cache fetch fails (e.g. new
+# toolchain not yet in the CDN), the image still carries a warm elan+Lean and
+# the runtime postCreateCommand just does the (normally no-op) cache get.
+RUN cd /warm/lean && lake exe cache get || true
+
+# ---- runtime stage ----
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl git python3 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the warm toolchain (elan + Lean) and the warm Mathlib olean cache.
+COPY --from=builder /root/.elan /root/.elan
+COPY --from=builder /warm/lean/.lake /workspaces/PleaNP/lean/.lake
+
+ENV PATH="/root/.elan/bin:${PATH}"
+
+# The repo mounts here; with a warm .lake, `lake build` needs no cache fetch.
+WORKDIR /workspaces/PleaNP/lean
+CMD ["/bin/bash"]

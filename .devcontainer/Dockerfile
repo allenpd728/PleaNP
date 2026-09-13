@@ -23,6 +23,15 @@ RUN curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init
 
 ENV PATH="/root/.elan/bin:${PATH}"
 
-# Vanilla image: the repo is mounted at /workspaces/PleaNP by the devcontainer
-# framework; `lake exe cache get` + `lake build` run in postCreateCommand (see
-# devcontainer.json) so this image stays small and cache/distro-agnostic.
+# A warm toolchain image is produced by the `warm-toolchain` workflow: it runs
+# `lake exe cache get` (fetching the Mathlib oleans from the community Azure
+# CDN) inside this image and pushes to ghcr.io. Agents/humans then pull the
+# image and already have elan + Lean + the olean cache — no re-download.
+#
+# This base Dockerfile deliberately stays minimal (elan + Lean only);
+# warming happens in the workflow so the build context never needs the
+# (gitignored, GB-scale) .lake directory.
+
+# The repo is mounted at /workspaces/PleaNP by the devcontainer / agent; the
+# postCreateCommand in devcontainer.json runs `lake exe cache get` on a cold
+# cache, which the warm image makes a no-op.
