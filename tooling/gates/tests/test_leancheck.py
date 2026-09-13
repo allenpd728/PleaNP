@@ -44,6 +44,15 @@ class TestLineDetect(unittest.TestCase):
         self.assertTrue(leancheck._line_is_error("Foo.lean:1:1: error: boom"))
         self.assertFalse(leancheck._line_is_error("Foo.lean:1:1: warning: meh"))
 
+    def test_real_lean_format(self):
+        # Format observed live from Lean v4.31.0 (see docs/TOOLCHAIN_AGENTS.md).
+        line = "PleaNP/Barriers/Probe-leancheck.lean:11:2: error: omega could not prove the goal:"
+        r = leancheck._parse_loc(line, ".")
+        self.assertEqual(r["path"], "PleaNP/Barriers/Probe-leancheck.lean")
+        self.assertEqual(r["line"], 11)
+        self.assertEqual(r["col"], "2")
+        self.assertTrue(r["message"].startswith("omega could not prove"))
+
 
 if __name__ == "__main__":
     unittest.main()
