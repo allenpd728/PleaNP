@@ -31,6 +31,7 @@ SCAN_SET = (
     "lean/PleaNP/ProofComplexity/Resolution.lean "
     "lean/PleaNP/Barriers/RelativizationProof.lean "
     "lean/PleaNP/Barriers/Algebrization.lean "
+    "lean/PleaNP/Barriers/AlgebrizationProof.lean "
     "lean/PleaNP/Circuits/Basic.lean "
     "lean/PleaNP/Challenges/Relativization.lean "
     "lean/PleaNP/Computability/Oracle.lean "
@@ -91,16 +92,19 @@ EXPECTED = {
     # DEC-022 §3.3 paper-statement layout (issue #66): RelativizationProof
     # holds the provable barrier-consequence lemmas, consumed onward by the
     # #37/#63 assembly work — not dead code.
-    ("binder", "RelativizationProof.lean", "uniform_collapse_contradicted_by_separating"),
-    ("binder", "RelativizationProof.lean", "uniform_separation_contradicted_by_equalizing"),
     ("binder", "RelativizationProof.lean", "no_uniform_resolution_of_p_vs_np"),
     # Sibling #63 A2 console-oracle instances (issue #63 Pass 1): public
     # proof-work API, consumed onward by A3/A5 — not dead code.
     ("binder", "RelativizationProof.lean", "consoleOracleHead_computable"),
-    # AW09 v1 statement references (issue #69 Pass 1): consumed by AZ5's
-    # proof assembly — not dead code.
-    ("binder", "Algebrization.lean", "algebrizing_separation_statement"),
-    ("binder", "Algebrization.lean", "algebrizing_equalization_statement"),
+    # AW09 AZ3 barrier-consequence lemmas (issue #69 Pass 2): the
+    # algebrizing-uniformity incompatibility theorems of
+    # lean/PleaNP/Barriers/AlgebrizationProof.lean. The joint
+    # `no_algebrizing_uniform_resolution` is the module's public API
+    # (the asymmetric-access counterpart of the RelativizationProof
+    # barrier-consequence set). The per-direction lemmas are the joint
+    # theorem's components (the binder stops flagging them once the
+    # module is in the scan set).
+    ("binder", "AlgebrizationProof.lean", "no_algebrizing_uniform_resolution"),
     # Rung-4 circuit substrate API (issue #71 Pass 1): the typed
     # circuit-family foundation consumed by Pass 2/3 and all Rung-4
     # lower bounds — not dead code.

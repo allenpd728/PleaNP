@@ -237,6 +237,31 @@ substrate, consumed by #75 Pass 2 (the pigeonhole width lower bound) and
 **Disposition.** No-action. The register EXPECTED set is updated to include
 these items so the machine-check agrees.
 
+## 3.5 AW09 AZ3 barrier-consequence lemmas (issue #69 Pass 2)
+
+**Sweep lineage:** run=20260913-2040-6c3d (issue #69 Pass 2).
+
+`binder_usage_scan.py` flags `no_algebrizing_uniform_resolution`
+(`lean/PleaNP/Barriers/AlgebrizationProof.lean`) as referenced by no
+other scanned declaration. It is the **intentional public API** of the
+Algebrization proof-work module — the asymmetric-access counterpart of
+`RelativizationProof.no_uniform_resolution_of_p_vs_np`: given the AW09
+separating pair (NP^A ⊄ P^E) and equalizing pair (P^B = NP^E), neither
+uniform direction of a P-vs-NP resolution survives the low-degree-
+extension access model. Same demonstrated-intentional pattern as the
+RelativizationProof barrier-consequence set.
+
+**Disposition.** No-action. Registered in
+`tooling/gates/gate_review_register_check.py` EXPECTED.
+
+**Register-side effect.** Adding `AlgebrizationProof.lean` to the scan
+set changed the cross-reference graph: the module genuinely references
+the `Algebrization.lean` statement refs (`algebrizing_*_statement` — used
+as hypothesis types) and the per-direction lemmas (`uniform_collapse_...`,
+`uniform_separation_...` — the joint theorem's components), so the binder
+scanner no longer flags them as unreferenced. Those EXPECTED entries were
+removed accordingly; the remaining register matches the fired set.
+
 ## 4. BGS clause-(a) A2/A3 console-oracle API (issue #63)
 
 **Sweep lineage:** run=20260913-1020-GY2l (issue #63).
