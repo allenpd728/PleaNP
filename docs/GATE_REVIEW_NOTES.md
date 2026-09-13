@@ -131,6 +131,9 @@ self-check).
 | binder | `equalizing_oracle_statement` / `separating_oracle_statement` (challenge) unreferenced | `Challenges/Relativization.lean` | statement references consumed by comparator JSON pin `lean/ComparatorChallenges/Relativization.json` (proof-root `theorem_names`); no-action |
 | binder | `uniform_collapse_contradicted_by_separating` / `uniform_separation_contradicted_by_equalizing` / `no_uniform_resolution_of_p_vs_np` unreferenced | `Barriers/RelativizationProof.lean` | DEC-022 §3.3 proof-work lemmas (issue #66): the BGS barrier-consequence corollaries, consumed onward by #37/#63 assembly — not dead code; no-action |
 | hygiene (`--prove-stage`) | `by decide` smell ×3 | `OracleV5Tests.lean:138,155,165` | Same proof-body finiteness discharges as the OracleSmoke items (v5 word-query smoke accept/reject theorems + 2-step bound); no-action |
+| binder | `UpstreamPolyTime` unreferenced | `OracleComplexity.lean:40` | Consumed by `OracleUpstreamP.lean` (the P^∅ = P anchor, outside the clean scan set); no-action |
+| binder | `atomEqOrNe` unreferenced | `MarkerFuneqAtom.lean:117` | Campaign rendering target — registered in `churn/marker-funeq/renderings/atom.json` (multi_render slot 1) and checked by `dual_render`/`multi_render check`; the scanner sees only Lean declarations, not the campaign workspace; no-action (issue #41) |
+| binder | `pointwiseEqOrNe` unreferenced | `MarkerFuneqPointwise.lean:126` | Campaign rendering target — registered in `churn/marker-funeq/renderings/pw.json` (multi_render slot 2) and checked by `dual_render`/`multi_render check`; the scanner sees only Lean declarations, not the campaign workspace; no-action (issue #41) |
 
 **Register changes (2026-09-13, #40):** `emptyOracle` is **no longer
 flagged** — the word-query test module (`OracleV5Tests.lean`)
@@ -139,7 +142,7 @@ references it (`v5M (emptyOracle V5Query)`), so the binder scanner's
 3 new hygiene REVIEWs (registered above). The `y`/`P_A_subset_NP_A`
 line numbers shifted (v5 substrate #35 rewired `OracleComplexity.lean`).
 
-Expected scan result on the clean set: **0 violations, 5 binder REVIEW
+Expected scan result on the clean set: **0 violations, 8 binder REVIEW
 items, 6 hygiene REVIEW items — all register entries above, all
 demonstrated-intentional.** (The two challenge-module binder REVIEWs from
 `PleaNP.Challenges.Relativization` for the DEC-022 comparator references
@@ -173,3 +176,22 @@ pattern as the `BarrierCalculus` propagation instances in §1 above.
 
 **Disposition.** No-action. The register (`tooling/gates/gate_review_register_check.py`
 EXPECTED) is updated to include these items so the machine-check agrees.
+
+### `MarkerFuneqAtom.lean` / `MarkerFuneqPointwise.lean` — the campaign rendering targets (issue #41)
+
+`binder_usage_scan.py` flags `atomEqOrNe` / `pointwiseEqOrNe` as referenced
+by no other scanned declaration. They are the two-candidate **rendering
+targets** of the marker-funeq campaign (issue #41): each is registered in
+`churn/marker-funeq/renderings/*.json` (multi_render slots) and machine
+checked by `dual_render`/`multi_render check` (the campaign reported the two
+readings DISAGREE — the intended semantic divergence). The scanner sees only
+Lean declarations, not the campaign workspace. Not dead code.
+
+**Disposition.** No-action. The register EXPECTED set is updated to include
+these items so the machine-check agrees.
+
+**Register changes (2026-09-13):** the two marker-funeq campaign rendering
+targets (`atomEqOrNe` / `pointwiseEqOrNe`) join the register (issue #41);
+`UpstreamPolyTime` is registered above (issue #65/#40, as-swept). Binder
+REVIEW count on the clean set is 8 (5 original + UpstreamPolyTime + the two
+#41 rendering targets).

@@ -1,0 +1,6 @@
+{
+  "id": "pw",
+  "module": "PleaNP.Calculus.MarkerFuneqPointwise",
+  "theorem": "PleaNP.Calculus.MarkerFuneqPointwise.pointwiseEqOrNe",
+  "created": "2026-09-13T19:11:26.110460+00:00"
+}

@@ -77,6 +77,14 @@ EXPECTED = {
     ("binder", "RelativizationProof.lean", "uniform_collapse_contradicted_by_separating"),
     ("binder", "RelativizationProof.lean", "uniform_separation_contradicted_by_equalizing"),
     ("binder", "RelativizationProof.lean", "no_uniform_resolution_of_p_vs_np"),
+    
+    # Issue #41 marker-funeq campaign rendering targets: registered in
+    # churn/marker-funeq/renderings/*.json (multi_render slots) and machine-
+    # checked by dual_render/multi_render check; the binder scanner sees only
+    # Lean declarations, not the campaign workspace.
+    ("binder", "MarkerFuneqAtom.lean", "atomEqOrNe"),
+    ("binder", "MarkerFuneqPointwise.lean", "pointwiseEqOrNe"),
+
 }
 # NOTE (2026-09-13): `emptyOracle` is no longer an EXPECTED item — the
 # word-query test module (OracleV5Tests.lean, issue #40) references it, so
