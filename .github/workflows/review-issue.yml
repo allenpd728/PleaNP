@@ -9,6 +9,13 @@ name: review-issue
 #     it starts with "flag", apply review:flagged, add the reason as a label
 #     hint in the issue body, and leave it open (the claim reopens).
 #
+# Stale-status rule (audit sweep #49): the respond job swaps review:pending
+# for review:confirmed/flagged but never touches status:* labels. Review
+# issues therefore carry no status label by design; any status:* present on
+# a closed review issue is stale (e.g. from a claim race) and the start-of-
+# session sweep reclaims it (MULTI_AGENT_WORKFLOW.md §1a), restoring the
+# review-only label set.
+#
 # Loop guard: issue_comment can't fire on issues created by workflow_dispatch
 # of THIS workflow (dispatch-created issues don't emit issue_comment events),
 # so there's no self-trigger loop.
