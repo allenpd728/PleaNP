@@ -63,6 +63,32 @@ class TestAxiomReportParsing(unittest.TestCase):
         self.assertEqual(_lines(["T"], "'Other' depends on axioms: [propext]\n"),
                          {"T": None})
 
+    def test_soundness_style_zero_axiom_batch_clean(self):
+        # The Soundness module (issue #65/#94) prints one zero-axiom line per
+        # theorem; run_check must report NO violations for the whole batch
+        # (pre-#41: each was a false "no axiom report found").
+        thms = ["PleaNP.Calculus.relAtom_uniform", "PleaNP.Calculus.langAtom_uniform",
+                "PleaNP.Calculus.transfer_under_ext", "PleaNP.Calculus.uniform_and"]
+        printer = "\n".join(f"'{t}' does not depend on any axioms" for t in thms)
+        # run_check invokes lake env lean; we can't run that here, so exercise
+        # the same parsing the tool uses via _lines for the full batch.
+        parsed = _lines(thms, printer)
+        for t in thms:
+            self.assertEqual(parsed[t], [], f"{t} should parse as a clean zero-axiom report")
+
+    def test_mixed_batch_all_clean(self):
+        # A real CI run mixes standard-axiom theorems (propext/Quot.sound) with
+        # zero-axiom ones; both must be clean.
+        thms = ["T.With", "T.Zero"]
+        out = ("'T.With' depends on axioms: [propext, Quot.sound]\n"
+               "'T.Zero' does not depend on any axioms\n")
+        parsed = _lines(thms, out)
+        self.assertEqual(parsed["T.With"], ["propext", "Quot.sound"])
+        self.assertEqual(parsed["T.Zero"], [])
+        violations = [t for t, axs in parsed.items()
+                      if axs is None or any(a not in KNOWN_STANDARD for a in axs)]
+        self.assertEqual(violations, [])
+
 
 if __name__ == "__main__":
     unittest.main()
