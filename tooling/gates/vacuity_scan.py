@@ -50,9 +50,21 @@ class Finding:
 
 
 def _strip_comments(src: str) -> str:
-    """Remove block comments /- ... -/ and line comments --."""
-    src = re.sub(r"/-.*? -/", "", src, flags=re.DOTALL)
-    src = re.sub(r"--.*?$", "", src, flags=re.MULTILINE)
+    """Blank (not delete) block comments /- ... -/ and line comments --.
+
+    Shares the binder_usage_scan approach (issue #60, the shared regex bug):
+    comments are replaced by equal-length whitespace so reported line numbers
+    stay true file coordinates, and the closing delimiter is `-/` WITHOUT a
+    required leading space — so Mathlib-convention docstrings that close with
+    ``\\n-/`` are stripped correctly (the old `/-.*? -/` missed those and
+    could over-strip from the first `/-` to a later ` -/`, deleting real
+    code).
+    """
+    def _blank(m: re.Match) -> str:
+        return "".join("\n" if c == "\n" else " " for c in m.group(0))
+
+    src = re.sub(r"/-.*?-/", _blank, src, flags=re.DOTALL)
+    src = re.sub(r"--.*?$", _blank, src, flags=re.MULTILINE)
     return src
 
 

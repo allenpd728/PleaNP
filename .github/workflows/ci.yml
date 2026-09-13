@@ -48,6 +48,8 @@ jobs:
         run: python3 tooling/gates/unicode_scan.py .
       - name: Vacuity scan (Gate 5 Tier 1)
         run: python3 tooling/gates/vacuity_scan.py lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
+      - name: Vacuity scanner unit tests (Gate 5 comment-strip regression, #60)
+        run: python3 tooling/gates/tests/test_vacuity_scan.py
       - name: Model-consistency scan (Gate 2 Tier 1)
         run: python3 tooling/gates/model_consistency_scan.py lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
       - name: Binder-usage scan (Gate 5 Tier 1b)
