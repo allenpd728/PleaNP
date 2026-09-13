@@ -297,6 +297,23 @@ Rung-4 lower-bound arguments. (`empty_not_largeness` is referenced by
 **Disposition.** No-action. The register EXPECTED set is updated to include
 these items so the machine-check agrees.
 
+### WilliamsSat.lean — the CircuitSAT-decider milestone (issue #89 Pass 2)
+
+`binder_usage_scan.py` flags the milestone's public API:
+- `acc0SatBrute_correct` / `acc0SatSteps_eq` — the correctness and the
+  verified `2^n` runtime baseline (the mechanism Pass 3 attaches).
+- `acc0SatSubExpBound` — the tracked sub-exponential goal (a `def`, not a
+  `sorry`; the ACC0-structure packing is the documented research gap).
+- `sat_existing` — the satisfiable-`and2` smoke.
+- hygiene `by decide` (1) — the `sat_existing` discharge, same proof-body
+  finiteness category as the registered OracleSmoke smells.
+
+All demonstrated-intentional, consumed by the Pass-3 transfer and the
+Williams umbrella (#76/#90/#91).
+
+**Disposition.** No-action. The register EXPECTED set is updated to include
+these items so the machine-check agrees.
+
 ## 4. BGS clause-(a) A2/A3 console-oracle API (issue #63)
 
 **Sweep lineage:** run=20260913-1020-GY2l (issue #63).

@@ -117,6 +117,16 @@ switching-lemma proof is #72 Pass 2. `lean/PleaNP/Barriers/Williams.lean`
 `CircuitSAT`, `IsACC0`, `NEXP_membership` — zero-sorry (`statement-rendered`);
 the CircuitSAT algorithm and the transfer theorem are #89/#90/#91.
 
+### Williams Pass 2 tracked gap (issue #89, 2026-09-13)
+
+`lean/PleaNP/Barriers/WilliamsSat.lean` delivers the **verified CircuitSAT
+decider** + runtime baseline zero-sorry (`acc0SatBrute_correct`,
+`acc0SatSteps_eq` = `2^n`). The **sub-exponential** bound the transfer needs
+(`acc0SatSubExpBound`, `∃ c, steps ≤ 2^(n^c)`) is rendered as a tracked goal
+(a `def`, NOT a `sorry`): it needs the ACC⁰-structure packing argument
+(Shah–Shetty-style Good-SAT) — the actual research content, tracked so the
+Pass-3 transfer contract is pinned without pretending the improvement landed.
+
 ### Algebrization statement level (issue #69 Pass 1, 2026-09-13)
 
 `lean/PleaNP/Barriers/Algebrization.lean` renders the **AW09 v1 statement**

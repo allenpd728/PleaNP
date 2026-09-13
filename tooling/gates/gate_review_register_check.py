@@ -33,6 +33,7 @@ SCAN_SET = (
     "lean/PleaNP/Barriers/Algebrization.lean "
     "lean/PleaNP/Barriers/AlgebrizationProof.lean "
     "lean/PleaNP/Barriers/Williams.lean "
+    "lean/PleaNP/Barriers/WilliamsSat.lean "
     "lean/PleaNP/Circuits/Basic.lean "
     "lean/PleaNP/Circuits/AC0.lean "
     "lean/PleaNP/Circuits/MustRefute.lean "
@@ -120,6 +121,14 @@ EXPECTED = {
     ("binder", "Williams.lean", "IsACC0"),
     ("binder", "Williams.lean", "NEXP_membership"),
     ("binder", "Williams.lean", "circuitSAT_tautology"),
+    # Issue #89 Pass 2: the CircuitSAT-decider milestone public API
+    # (WilliamsSat.lean) — correctness + verified runtime-baseline theorems,
+    # the sub-exp tracked goal, and the sat smoke.
+    ("binder", "WilliamsSat.lean", "acc0SatBrute_correct"),
+    ("binder", "WilliamsSat.lean", "acc0SatSteps_eq"),
+    ("binder", "WilliamsSat.lean", "acc0SatSubExpBound"),
+    ("binder", "WilliamsSat.lean", "sat_existing"),
+    ("hygiene", "WilliamsSat.lean", "by decide"),
     ("binder", "Basic.lean", "CircuitFamily.depthOf"),
 
     # Issue #41 marker-funeq campaign rendering targets: registered in
