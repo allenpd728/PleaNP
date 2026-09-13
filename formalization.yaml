@@ -202,6 +202,14 @@ alignment:
       lean: "PleaNP.Barriers.RelativizationProof.consoleOracleHead_computable"
       module: "PleaNP.Barriers.RelativizationProof"
       status: "proved"
+    - source: "Algebrization AW09 v1 clause (a) statement (issue #69 Pass 1): exists recursive oracle + low-degree extension separating NP^A from P^Ã (asymmetric access)"
+      lean: "PleaNP.Barriers.Algebrization.algebrizing_separation_statement"
+      module: "PleaNP.Barriers.Algebrization"
+      status: "statement-rendered"
+    - source: "Algebrization AW09 v1 clause (b) statement (issue #69 Pass 1): exists recursive oracle + low-degree extension with P^B = NP^B̃ (asymmetric access)"
+      lean: "PleaNP.Barriers.Algebrization.algebrizing_equalization_statement"
+      module: "PleaNP.Barriers.Algebrization"
+      status: "statement-rendered"
 
 acknowledgements: >-
  Mathlib, Lean 4, the integrity-gate tooling, prior-art sources per docs/PRIOR_ART.md,
