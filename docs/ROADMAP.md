@@ -131,7 +131,13 @@ PleaNP imports whichever lands upstream, rather than picking a side. Our only lo
 
 
 
-**Status:** Not started (placeholder note only). Lower priority than #1 — it's the widest force-multiplier eventually,but isn't blocking. Depends on Rung 4(circuit library)+ a verified CircuitSAT algorithm (harvested from Rung 7 benchmark work).
+**Status:** Design note written (issue #80 Pass 1, 2026-09-13) —
+`docs/STATEMENTS/LowerBoundCompiler.design.md` pins the elaborator's
+input contract (a verified CircuitSAT algorithm + *verified* runtime
+bound, per #76's pass chain) and emission contract. Elaborator skeleton
+(#80 Pass 2) waits on the #76 transfer theorem (#90). Not blocking;
+depends on Rung 4 (circuit library) + a verified CircuitSAT algorithm
+(harvested from Rung 7 benchmark work).
 
 ---
 
