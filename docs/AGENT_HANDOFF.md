@@ -9,7 +9,7 @@ conventions; this doc is the "what do I do on day one" summary.
 
 ## How to pick up work (the protocol in one paragraph)
 
-1. **Read this file + `docs/MULTI_AGENT_WORKFLOW.md` + `docs/AGENTS.md`.**
+1. **Read this file + `docs/MULTI_AGENT_WORKFLOW.md` + the repo-root `AGENTS.md`.**
 2. **List the open issues** (GitHub API or `gh issue list`). Tasks labeled
    `status:available` are claimable. **One claim per agent at a time.**
 3. **Sweep first** (per the protocol): check `status:claimed` issues older

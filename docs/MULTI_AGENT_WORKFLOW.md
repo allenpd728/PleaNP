@@ -2,7 +2,7 @@
 
 How OpenHands agents (and external contributors) find, claim, and complete work
 on PleaNP. One task = one GitHub issue. This protocol is adapted from the
-**muse** repo's `TASK_WORKFLOW.md` (2026-09-06), which has been battle-tested
+**muse** repo's `muse/TASK_WORKFLOW.md` (2026-09-06), which has been battle-tested
 for multi-agent coordination under a shared GitHub identity. PleaNP keeps
 muse's core mechanics (run-ids, atomic label claims, blockers, sweeps) and
 adds PleaNP-specific rules: the **integrity gates** are mandatory for any
