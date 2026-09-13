@@ -4,14 +4,17 @@ import Mathlib.Algebra.Polynomial.Basic
 set_option warningAsError true
 
 /-!
-# Oracle complexity classes (P^A / NP^A) v4
+# Oracle complexity classes (P^A / NP^A) v5
 
+v5 (DEC-024, word-query substrate): `P_A`/`NP_A` no longer tie the
+query space to the machine's input alphabet (`hΓ : tm'.Γ tm'.k₀ = Q`
+is gone). The machine carries a `decode : List (tm.Γ tm.k₀) → Q`, so
+the query value-space `Q` can be arbitrary — including the infinite
+`Q = Σ n, Bits n` of the BGS construction. This resolves the
+Fintype-Query wall that blocked #26/#22/#27.
 v4 repair (refined in the v4-completion pass): the class parameter
-A : Oracle Q must be tied to each machine's query alphabet. Machines
-quantify with hΓ : tm'.Γ tm'.k₀ = Q, and the constraint is
-M.oracle = hΓ.symm ▸ A. (The v4 headers' bare `M.oracle = A` did not
-even typecheck — the build was never green past the substrate sorry,
-so the mismatch was unobservable.)
+A : Oracle Q must be tied to each machine's query alphabet — in v5,
+by `M.oracle = A` (no transport needed since Q is a free parameter).
 
 Closes Flaw C with reachability-wired AcceptsInTime applied to (x, y).
 
@@ -28,23 +31,25 @@ namespace Oracles
 open Turing
 
 /-- P^A: languages decidable by a deterministic oracle machine for A
-  in polynomial time. `hΓ` ties the machine's query alphabet to Q;
-  `M.oracle = hΓ.symm ▸ A` makes the class relative to A. -/
+  in polynomial time. The machine's oracle-query values live in the
+  oracle's query type Q (v5: fetched via the machine's `decode` from a
+  word over its finite input alphabet — no `hΓ` alphabet-equality
+  constraint, so Q can be infinite (e.g. `Q = Σ n, Bits n`)). -/
 def P_A {Q alpha : Type} (A : Oracle Q) : Set (Set alpha) :=
-  { L | ∃ (tm' : FinTM2) (hΓ : tm'.Γ tm'.k₀ = Q) (h : DecidableEq tm'.Λ)
+  { L | ∃ (tm' : FinTM2) (h : DecidableEq tm'.Λ)
         (ea : alpha → List (tm'.Γ tm'.k₀))
         (oa : tm'.Γ tm'.k₁ → Bool)
-        (M : @Machine (tm'.Γ tm'.k₀) tm' h) (p : Polynomial ℕ),
-      M.oracle = hΓ.symm ▸ A ∧ @DecidesInTime tm' alpha h ea oa M L (fun n => p.eval n) }
+        (M : @Machine Q tm' h) (p : Polynomial ℕ),
+      M.oracle = A ∧ @DecidesInTime Q tm' alpha h ea oa M L (fun n => p.eval n) }
 
 /-- Per-input acceptance: M started on ea xy reaches a halted config
   within t(|ea xy|) steps AND outputs true (accept).
   v4 fix: ea, M, xy, t are ALL load-bearing via EvalsToInTime. -/
-def AcceptsInTime {tm : FinTM2} {alpha : Type}
+def AcceptsInTime {Q : Type} {tm : FinTM2} {alpha : Type}
     [DecidableEq tm.Λ] (ea : alpha → List (tm.Γ tm.k₀))
     (oa : tm.Γ tm.k₁ → Bool)
-    (M : Machine (tm.Γ tm.k₀) tm) (xy : alpha) (t : Nat → Nat) : Prop :=
-  ∃ cfg' : Cfg (tm.Γ tm.k₀) tm,
+    (M : Machine Q tm) (xy : alpha) (t : Nat → Nat) : Prop :=
+  ∃ cfg' : Cfg Q tm,
     Nonempty (StateTransition.EvalsToInTime (step M) (initCfg M (ea xy)) (some cfg') (t (ea xy).length))
     ∧ cfg'.cfg.l = Option.none
     ∧ (match cfg'.cfg.stk tm.k₁ with
@@ -53,17 +58,18 @@ def AcceptsInTime {tm : FinTM2} {alpha : Type}
 
 /-- NP^A: languages with a polynomial-time verifier relative to A.
   Certificate y appears in the acceptance conjunct via AcceptsInTime
-  on the pair (x, y) -- not x alone. Same hΓ oracle constraint as P_A. -/
+  on the pair (x, y) -- not x alone. v5: no hΓ alphabet-equality
+  constraint (the machine's `decode` bridges words to Q). -/
 def NP_A {Q alpha : Type} (A : Oracle Q) : Set (Set alpha) :=
-  { L | ∃ (tm' : FinTM2) (hΓ : tm'.Γ tm'.k₀ = Q) (h : DecidableEq tm'.Λ)
+  { L | ∃ (tm' : FinTM2) (h : DecidableEq tm'.Λ)
         (ea : alpha × List alpha → List (tm'.Γ tm'.k₀))
         (oa : tm'.Γ tm'.k₁ → Bool)
-        (M : @Machine (tm'.Γ tm'.k₀) tm' h) (p : Polynomial ℕ),
+        (M : @Machine Q tm' h) (p : Polynomial ℕ),
       ∀ x : alpha,
         x ∈ L ↔ ∃ y : List alpha,
           y.length ≤ p.eval (ea (x, [])).length
-          ∧ M.oracle = hΓ.symm ▸ A
-          ∧ @AcceptsInTime tm' (alpha × List alpha) h ea oa M (x, y) (fun n => p.eval n) }
+          ∧ M.oracle = A
+          ∧ @AcceptsInTime Q tm' (alpha × List alpha) h ea oa M (x, y) (fun n => p.eval n) }
 
 /-- P^A ⊆ NP^A: a decider is a verifier with empty certificate.
   Structural self-check, proved in both directions.
@@ -79,8 +85,8 @@ def NP_A {Q alpha : Type} (A : Oracle Q) : Set (Set alpha) :=
   which yields x ∈ L. -/
 theorem P_A_subset_NP_A {Q : Type} (alpha : Type) (A : Oracle Q) :
     P_A (alpha := alpha) A ⊆ NP_A (alpha := alpha) A := by
-  rintro L ⟨tm', hΓ, h, ea, oa, M, p, hM, hDecides⟩
-  refine ⟨tm', hΓ, h, fun xy => ea xy.1, oa, M, p, ?_⟩
+  rintro L ⟨tm', h, ea, oa, M, p, hM, hDecides⟩
+  refine ⟨tm', h, fun xy => ea xy.1, oa, M, p, ?_⟩
   intro x
   constructor
   · -- (→): x ∈ L → ∃ y, bounded certificate, M accepts (x, y)
