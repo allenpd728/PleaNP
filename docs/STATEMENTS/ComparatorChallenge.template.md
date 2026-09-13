@@ -91,4 +91,4 @@ The command must pass for the claim to be Gate-1/3/4 sufficient:it machine-verif
 5. The `formalization.yaml` row for that declaration is added/updated in the same commit(same rule as `docs/SORRY_TRACKER.md`).
 6. The claim passes Gates 2/4/5/6(as now scanned in CI)and human read-back before any proof search attaches(Gate 7).
 
-**Status of this template:** Adopted (DEC-022). Not yet applied to any statement(no `Challenges/` dir, no comparator JSON yet;and the `Comparator` lake dependency is not yet in `lakefile.toml`;see `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §3.1 for the phased intent).
+**Status of this template:** Adopted (DEC-022). First application (issue #64, 2026-09-13): `lean/PleaNP/Challenges/Relativization.lean` (statement references for the two BGS clauses) + `lean/ComparatorChallenges/Relativization.json` (JSON pin), with `formalization.yaml` `comparator_config` updated. The `Comparator` lake dependency is NOT yet in `lakefile.toml`; until it is, the `lake exe comparator` check is aspirational (placeholder) and Gate 3/4 continues via `dual_render.py` / `readback.py` (see §4).

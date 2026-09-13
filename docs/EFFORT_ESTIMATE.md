@@ -52,7 +52,7 @@ is an **external** dependency for Rung 6 only.
 | #40 | 2 | Tests: v5 word-query substrate repair | #35 | N | 1 | b-n-i → avail |
 | #62 | 3a | BGS (a) design decomposition (A1–A5) | — | H | 1 | available |
 | #63 | 3a | BGS (a) impl: close `exists_equalizing_oracle` sorry (A5) | #62, #35 | H | 2–4 | available |
-| #64 | 3a | Comparator challenges: BGS (a)+(b) modules + JSON pins | — (root-adapt at #18/#63) | H | 1 | available |
+| #64 | 3a | Comparator challenges: BGS (a)+(b) modules + JSON pins | — (root-adapt at #18/#63) | H | 1 | done (2026-09-13) |
 | #66 | 3a | PaperResults file layout: statement vs proof modules | — | N | 1 | available |
 | #18 | 3a | BGS separating-oracle proof path (clause (b), zero-sorry) | #22/#23 chain | H | (see #22/#23) | available |
 | #22 | 3a | BGS (b) sub-task 2: diagonalization (D3–D5) | #35 | H | 4–6 | b-n-i |

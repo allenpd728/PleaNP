@@ -128,7 +128,11 @@ self-check).
 | binder | `emptyOracle` unreferenced | `Oracle.lean:172` | `OracleUpstreamP.lean:28` (outside clean scan set); no-action |
 | binder | weak witness `∃ y` | `OracleComplexity.lean:63` | `AcceptsInTime M (x, y)` next conjunct; no-action |
 | binder | `P_A_subset_NP_A` unreferenced | `OracleComplexity.lean:80` | CI `axiom_check.py` + galaxy tests + `BoundaryProbe.lean`; no-action |
+| binder | `equalizing_oracle_statement` / `separating_oracle_statement` (challenge) unreferenced | `Challenges/Relativization.lean` | statement references consumed by comparator JSON pin `lean/ComparatorChallenges/Relativization.json` (proof-root `theorem_names`); no-action |
 
 Expected scan result on the clean set: **0 violations, 4 binder REVIEW
 items, 3 hygiene REVIEW items — all register entries above, all
-demonstrated-intentional.**
+demonstrated-intentional.** (The two challenge-module binder REVIEWs from
+`PleaNP.Challenges.Relativization` for the DEC-022 comparator references
+are registered in the row above; the challenge module is a statement
+reference consumed by the JSON pin, not dead code.)

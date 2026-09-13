@@ -1,0 +1,14 @@
+{
+  "challenge_module": "PleaNP.Challenges.Relativization",
+  "solution_module": "PleaNP.Barriers.Relativization",
+  "enable_nanoda": true,
+  "theorem_names": [
+    "PleaNP.Barriers.Relativization.exists_equalizing_oracle",
+    "PleaNP.Barriers.Relativization.exists_separating_oracle"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ]
+}
