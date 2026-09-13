@@ -210,6 +210,10 @@ alignment:
       lean: "PleaNP.Barriers.Algebrization.algebrizing_equalization_statement"
       module: "PleaNP.Barriers.Algebrization"
       status: "statement-rendered"
+    - source: "Rung-4 circuit substrate (issue #71 Pass 1): typed Boolean gate terms + structural size/depth + BoolFunc + circuit-family shape"
+      lean: "PleaNP.Circuits.BoolGate.size"
+      module: "PleaNP.Circuits.Basic"
+      status: "proved"
 
 acknowledgements: >-
  Mathlib, Lean 4, the integrity-gate tooling, prior-art sources per docs/PRIOR_ART.md,

@@ -1,17 +1,124 @@
+import Mathlib
+
 set_option warningAsError true
+
 /-
 Circuit complexity infrastructure needed to state and apply the barriers.
 
-Planned coverage (Rung 4, see `docs/ROADMAP.md`):
+Planned coverage (Rung 4, see `docs/ROADMAP.md` and DEC-025, which chose the
+LOCAL build over the complexitylib import):
 
-  - Boolean circuits (uniform families)
-  - AC⁰ (constant-depth, {AND, OR, NOT})
-  - TC⁰ (AC⁰ + threshold gates)
+  - Boolean circuits (uniform families)          <- this module, issue #71 Pass 1
+  - AC^0 (constant-depth, {AND, OR, NOT})
+  - TC^0 (AC^0 + threshold gates)
   - NC hierarchy
-  - Switching lemma (Håstad)
-  - Parity ∉ AC⁰
+  - Switching lemma (Hastad)
+  - Parity notin AC^0
   - Monotone circuit lower bounds (Razborov)
-  - Williams (2011): NEXP ⊄ ACC⁰
+  - Williams (2011): NEXP not-subset ACC^0
 
-Stub pending Rung 4.
+Issue #71 Pass 1 (2026-09-13): the typed Boolean circuit-family substrate —
+the gate term, its structural `size`/`depth` (the two quantities every
+Rung-4 bound quantifies), the circuit *family* (P/poly shape: one circuit
+per input length), and the natural-property vocabulary (Boolean function
+`Fin n -> Bool`, the `F_n` carrier). Pass 2 adds P/poly membership + the
+largeness/constructivity predicates; Pass 3 the must-refute suite.
 -/
+
+namespace PleaNP
+
+namespace Circuits
+
+/-- A Boolean gate term over `n` input variables: an input bit, or an
+  AND/OR/NOT gate over sub-terms. This is the *tree* model of a Boolean
+  circuit (each gate has fan-out sharing elided — the size/depth functions
+  below are structural, and the family shape carries the size/depth
+  quantities every Rung-4 bound quantifies). -/
+inductive BoolGate (n : Nat) where
+  | input (i : Fin n)      -- reads the i-th input bit
+  | and (a b : BoolGate n) -- AND gate over two sub-circuits
+  | or (a b : BoolGate n)  -- OR gate over two sub-circuits
+  | not (a : BoolGate n)   -- NOT gate over one sub-circuit
+  deriving DecidableEq
+
+namespace BoolGate
+
+/-- **Circuit size:** the number of gates (nodes) in the circuit, by
+  structural recursion. This is the `size` of circuit-size lower bounds
+  (parity ∉ AC⁰, monotone CLIQUE, resolution width → NEXP ⊄ ACC⁰ counting).
+  Load-bearing: `BoolGate.size` increases strictly through every gate. -/
+def size : {n : Nat} → BoolGate n → Nat
+  | _, input _ => 1
+  | _, and a b => 1 + size a + size b
+  | _, or a b => 1 + size a + size b
+  | _, not a => 1 + size a
+
+/-- **Circuit depth:** the longest root-to-leaf path, by structural
+  recursion. Constant-depth classes (AC⁰/ACC⁰) are captured by bounding
+  this quantity. -/
+def depth : {n : Nat} → BoolGate n → Nat
+  | _, input _ => 0
+  | _, and a b => 1 + max (depth a) (depth b)
+  | _, or a b => 1 + max (depth a) (depth b)
+  | _, not a => 1 + depth a
+
+lemma size_pos {n : Nat} (c : BoolGate n) : 0 < size c := by
+  cases c <;> simp [size]
+
+lemma depth_size_le {n : Nat} (c : BoolGate n) : depth c < size c := by
+  induction c with
+  | input i => simp [size, depth]
+  | and a b iha ihb =>
+      simp [size, depth]
+      have ha : depth a < size a + size b :=
+        Nat.lt_of_lt_of_le iha (Nat.le_add_right (size a) (size b))
+      have hb : depth b < size a + size b :=
+        Nat.lt_of_lt_of_le ihb (Nat.le_add_left (size b) (size a))
+      omega
+  | or a b iha ihb =>
+      simp [size, depth]
+      have ha : depth a < size a + size b :=
+        Nat.lt_of_lt_of_le iha (Nat.le_add_right (size a) (size b))
+      have hb : depth b < size a + size b :=
+        Nat.lt_of_lt_of_le ihb (Nat.le_add_left (size b) (size a))
+      omega
+  | not a ih =>
+      simp [size, depth]
+      omega
+
+end BoolGate
+
+/-- A Boolean function on `n` inputs: the `F_n` carrier of the natural-property
+  vocabulary (`Fin n → Bool`). `f ∈ C_n` is membership in a property's n-th
+  slice (NaturalProofs.md §2). -/
+abbrev BoolFunc (n : Nat) : Type := Fin n → Bool
+
+/-- A **circuit family**: one circuit per input length — the P/poly shape.
+  (Membership in `P/poly` is a family whose size is polynomially bounded:
+  the polynomial-bound predicate is the Pass-2 `IsPPoly`.) -/
+abbrev CircuitFamily := ∀ n : Nat, BoolGate n
+
+/-- The family size at length n. -/
+def CircuitFamily.sizeOf (C : CircuitFamily) (n : Nat) : Nat :=
+  BoolGate.size (C n)
+
+/-- The family depth at length n. -/
+def CircuitFamily.depthOf (C : CircuitFamily) (n : Nat) : Nat :=
+  BoolGate.depth (C n)
+
+/-! ## Concrete sanity (substrate self-exercise; the must-refute suite is Pass 3) -/
+
+/-- A concrete 2-input circuit computing `x0 ∧ x1` (one AND gate over two
+  inputs): size 3 (AND + 2 inputs), depth 1. -/
+def and2 : BoolGate 2 :=
+  BoolGate.and (BoolGate.input 0) (BoolGate.input 1)
+
+example : BoolGate.size and2 = 3 := by
+  simp [and2, BoolGate.size]
+
+example : BoolGate.depth and2 = 1 := by
+  simp [and2, BoolGate.depth]
+
+end Circuits
+
+end PleaNP
