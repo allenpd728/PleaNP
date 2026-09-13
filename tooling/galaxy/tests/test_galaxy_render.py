@@ -82,6 +82,33 @@ class TestRenderOutput(unittest.TestCase):
         # JS that draws the scene.
         self.assertIn("requestAnimationFrame(draw)", self.html)
 
+    def test_zoom_interactions_wired(self):
+        # Wheel zoom + pinch zoom + reset, with a clamp range.
+        self.assertIn("canvas.addEventListener(\"wheel\"", self.html)
+        self.assertIn("zoomBy(", self.html)
+        self.assertIn("view.targetZoom = clamp(", self.html)
+        self.assertIn("dblclick", self.html)
+        self.assertIn("pinch", self.html)
+
+    def test_responsive_fit_and_mobile_css(self):
+        # Auto-fit scale from a projected bounding box (fixes mobile clipping).
+        self.assertIn("function fitScale()", self.html)
+        self.assertIn("Math.min(W * pad / spanX, Hpx * pad / spanY)", self.html)
+        # Mobile media query exists.
+        self.assertIn("@media (max-width: 700px)", self.html)
+
+    def test_legend_collapsible(self):
+        # Legend is hidden by default and toggled by the legend button.
+        self.assertIn("id=\"legendToggle\"", self.html)
+        self.assertIn("legend.classList.toggle(\"open\")", self.html)
+        self.assertIn("#legend.open", self.html)
+
+    def test_watermark_depth_cues_present(self):
+        # Honest early-prototype watermark + baseline grid (depth cue).
+        self.assertIn("early prototype", self.html)
+        self.assertIn("rungs 1", self.html)
+        self.assertIn("function drawGrid(", self.html)
+
     def test_title_injected(self):
         self.assertIn("<title>PleaNP — Barrier Galaxy</title>", self.html)
 
