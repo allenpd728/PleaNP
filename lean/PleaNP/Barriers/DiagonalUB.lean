@@ -18,9 +18,10 @@ over the v5 word-query substrate (DEC-024, #35):
   oracle answering `true`/`false`, the machine accepts/rejects
   (`accepts_const_true`, `rejects_const_false`).
 
-Deferred (tracked, see SORRY_TRACKER): the bridge `accepts_depends_on_answer`
-— that `ubM B` and the constant-oracle machine have identical runs when
-the oracle answers the encoded query the same way — and the assembled
+Deferred (tracked, see SORRY_TRACKER): three run-semantics gaps — the
+reject-run identity inside `accepts_true_oracle`, the `accepts_depends_on_answer`
+bridge (that `ubM B` and the constant-oracle machine have identical runs
+when the oracle answers the encoded query the same way), and the assembled
 `U_B ∈ NP_A B` membership theorem. This module is ISOLATED (not imported
 by BGSDiagonal) so `warningAsError` does not cascade.
 -/
@@ -248,13 +249,78 @@ lemma rejects_const_false (n : Nat) (y : List Nat) :
   subst hEq
   simp [ubCRun, step, initCfg, initList, ubTM, ubC] at hOut
 
-/-- The machine's acceptance depends only on the oracle's answer to the
-  encoded query: with answer `ans`, `ubM B` behaves like `ubC ans` on the
-  relevant input (the runs are step-for-step identical).
+/-- Step-1 projections of the U_B machine on the initial config: the
+  label routes to yes/no per the oracle answer (which is `ans` under `h`),
+  the query tape k₀ is cleared, and the output tape k₁ is untouched.
+  (Only these projections drive acceptance; config equality is too strong
+  because the oracle field differs between `ubM B` and `ubC ans`.) -/
+private def step1cfg (B : Oracle Query) (w : List Bool) : Cfg Query ubTM :=
+  (@step Query ubTM inferInstance (ubM B)
+    (@initCfg Query ubTM inferInstance (ubM B) w)).getD
+    (@initCfg Query ubTM inferInstance (ubM B) w)
 
-  Deferred: the run-identity between `ubM B` and `ubC ans` under
-  `B (decodeWord (ubEa n y)) = ans` requires a step-by-step
-  extensionality proof; tracked in SORRY_TRACKER / the #36 follow-up. -/
+lemma step1_label (B : Oracle Query) (ans : Bool) (w : List Bool)
+    (h : B (decodeWord w) = ans) :
+    (step1cfg B w).cfg.l = (if ans = true then some UBLab.yes else some UBLab.no) ∧
+    (step1cfg B w).cfg.stk ubTM.k₀ = [] ∧
+    (step1cfg B w).cfg.stk ubTM.k₁ = (@initCfg Query ubTM inferInstance (ubM B) w).cfg.stk ubTM.k₁ := by
+  unfold step1cfg step initCfg initList ubM ubTM Oracle.query
+  simp [h]
+
+/-- Direct step-1 rewrite: with oracle-false the query step returns the
+  no-branch config (used to reduce `ubRun`'s match scrutinee). -/
+lemma step1false_eq (B : Oracle Query) (n : Nat) (y : List Nat)
+    (hf : B (decodeWord (ubEa n y)) = false) :
+    @step Query ubTM inferInstance (ubM B)
+      (@initCfg Query ubTM inferInstance (ubM B) (ubEa n y))
+    = some (step1cfg B (ubEa n y)) := by
+  unfold step1cfg step initCfg initList ubM ubTM Oracle.query
+  simp [hf]
+
+/-- The `ubM B` run on an oracle-false word halts in the no-branch. -/
+lemma ubRun_halts_no (B : Oracle Query) (n : Nat) (y : List Nat)
+    (hf : B (decodeWord (ubEa n y)) = false) :
+    (ubRun B (ubEa n y)).cfg.l = Option.none := by
+  unfold ubRun
+  rw [step1false_eq B n y hf]
+  -- step 2 on the no-label config pushes false and halts
+  simp [step, step1cfg, initCfg, initList, ubM, ubTM, hf]
+
+/-- Acceptance of the U_B machine forces the oracle answer to the encoded
+  query to be `true` (else the machine's output would be false). This is
+  the (→) direction of accepts_iff_oracle, via the reject-run argument. -/
+lemma accepts_true_oracle (B : Oracle Query) (n : Nat) (y : List Nat)
+    (hacc : @AcceptsInTime Query ubTM (Nat × List Nat) inferInstance
+      (fun nk => ubEa nk.1 nk.2) (fun b => b)
+      (ubM B) (n, y) (fun _ => 2)) :
+    B (decodeWord (ubEa n y)) = true := by
+  by_contra hn
+  have hf : B (decodeWord (ubEa n y)) = false := by
+    by_cases hb : B (decodeWord (ubEa n y)) = true <;> simp_all
+  obtain ⟨cfg', hReach, hHalt, hOut⟩ := hacc
+  have hRun : StateTransition.EvalsToInTime (@step Query ubTM inferInstance (ubM B))
+      (@initCfg Query ubTM inferInstance (ubM B) (ubEa n y))
+      (some (ubRun B (ubEa n y))) 2 :=
+    { steps := 2
+      evals_in_steps := by
+        -- The run identity (two steps; the query answer `hf` drives step 1
+        -- to the no-branch, step 2 pushes false-halt). The operational
+        -- reduction is verified as step1false_eq + step2 push; the full
+        -- bind-wise identity remains (tracked: SORRY_TRACKER #10).
+        sorry
+      steps_le_m := by omega }
+  have hEq : cfg' = ubRun B (ubEa n y) :=
+    evalsTo_unique_result
+      (step_none _ _ hHalt)
+      (step_none _ _ (ubRun_halts_no B n y hf))
+      hReach.some.toEvalsTo hRun.toEvalsTo
+  subst hEq
+  simp [ubRun,  step, initCfg, initList, ubM, ubTM, hf] at hOut
+
+/-- The machine's acceptance depends only on the oracle's answer to the
+  encoded query: with answer `true`, `ubM B` accepts exactly as `ubC true`
+  does (uniform runs; the two configs differ only in the oracle field,
+  which never matters after the query step). -/
 lemma accepts_depends_on_answer (B : Oracle Query) (n : Nat) (y : List Nat)
     (hans : B (decodeWord (ubEa n y)) = true) :
     @AcceptsInTime Query ubTM (Nat × List Nat) inferInstance
@@ -276,12 +342,17 @@ end PleaNP
 
 /-! #36 follow-up specification (Pass 3)
 
-The two sorries above are the ONLY gaps to `U_B ∈ NP_A B` zero-sorry.
-The bridge lemma `accepts_depends_on_answer` (machine-run identity under
-equal oracle answers) is a step-by-step combinatorics of `step`/`ubRun`/
-`ubCRun`; the assembly theorem then follows from `decodeWord_encWord`,
-`certBits_encodeList`, `length_encodeList`, `U_B_iff_witness`, and the
-time bound `length_ea_empty` (choice `p = Polynomial.X`, run in 2 steps).
-Test spec: `docs/STATEMENTS/Oracle.v5-repair.spec.md` §5.3-5.5. This
-follow-up is filed as a GitHub issue (Tests/Bridge: #36 Pass 3).
+The three sorries above are the ONLY gaps to `U_B ∈ NP_A B` zero-sorry.
+The gaps are: (1) the reject-run identity inside `accepts_true_oracle`
+(the `evals_in_steps` proof that the oracle-false run ends in the no-branch
+— `step1false_eq` + the step-2 push are the verified seed, the bind-wise
+composition remains); (2) the bridge `accepts_depends_on_answer`
+(machine-run identity of `ubM B` vs the constant-oracle machine under
+equal oracle answers — a step-by-step combinatorics of `step`/`ubRun`);
+(3) the assembly theorem `U_B_in_NP`, which then follows from
+`decodeWord_encWord`, `certBits_encodeList`, `length_encodeList`,
+`U_B_iff_witness`, and the time bound `length_ea_empty` (choice
+`p = Polynomial.X`, run in 2 steps). Test spec:
+`docs/STATEMENTS/Oracle.v5-repair.spec.md` §5.3-5.5. This follow-up is
+filed as a GitHub issue (Tests/Bridge: #36 Pass 3).
 -/
