@@ -39,13 +39,15 @@ class TestExpectedRegister(unittest.TestCase):
     def test_expected_register_shape(self):
         # Register must cover the doc's expected-set columns.
         self.assertIn(("hygiene", "OracleSmoke.lean", "by decide"), grc.EXPECTED)
+        self.assertIn(("hygiene", "OracleV5Tests.lean", "by decide"), grc.EXPECTED)
         self.assertIn(("binder", "BarrierVerdictB.lean", "abstractPVsNP_iff_verdictB"), grc.EXPECTED)
-        self.assertIn(("binder", "Oracle.lean", "emptyOracle"), grc.EXPECTED)
         self.assertIn(("binder", "OracleComplexity.lean", "y"), grc.EXPECTED)
         self.assertIn(("binder", "OracleComplexity.lean", "P_A_subset_NP_A"), grc.EXPECTED)
         # DEC-022 comparator statement references (issue #64).
         self.assertIn(("binder", "Relativization.lean", "equalizing_oracle_statement"), grc.EXPECTED)
         self.assertIn(("binder", "Relativization.lean", "separating_oracle_statement"), grc.EXPECTED)
+        # `emptyOracle` no longer flagged (referenced by OracleV5Tests; #40).
+        self.assertNotIn(("binder", "Oracle.lean", "emptyOracle"), grc.EXPECTED)
 
 
 class TestRejectUnexpected(unittest.TestCase):

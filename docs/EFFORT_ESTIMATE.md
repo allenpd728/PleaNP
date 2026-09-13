@@ -49,7 +49,7 @@ is an **external** dependency for Rung 6 only.
 |---|---|---|---|---|---|---|
 | #4 | 2 | Recharacterize `P_empty_eq_upstream_P_class` w/o oracle-free redefinition | upstream P | H | 1–2 | available |
 | #35 | 2 | v5 word-query oracle substrate repair | DEC-024 doc | H | 2–4 | available |
-| #40 | 2 | Tests: v5 word-query substrate repair | #35 | N | 1 | b-n-i → avail |
+| #40 | 2 | Tests: v5 word-query substrate repair | #35 | N | 1 | done (2026-09-13) |
 | #62 | 3a | BGS (a) design decomposition (A1–A5) | — | H | 1 | available |
 | #63 | 3a | BGS (a) impl: close `exists_equalizing_oracle` sorry (A5) | #62, #35 | H | 2–4 | available |
 | #64 | 3a | Comparator challenges: BGS (a)+(b) modules + JSON pins | — (root-adapt at #18/#63) | H | 1 | done (2026-09-13) |

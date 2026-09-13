@@ -30,11 +30,13 @@ SCAN_SET = (
     "lean/PleaNP/Challenges/Relativization.lean "
     "lean/PleaNP/Computability/Oracle.lean "
     "lean/PleaNP/Computability/OracleComplexity.lean "
-    "lean/PleaNP/Computability/OracleSmoke.lean"
+    "lean/PleaNP/Computability/OracleSmoke.lean "
+    "lean/PleaNP/Computability/OracleV5Tests.lean"
 ).split()
 BINDER_ALLOW = (
     r"^(exists_equalizing_oracle|exists_separating_oracle|"
-    r"smoke_accepts_true|smoke_rejects_false)$"
+    r"smoke_accepts_true|smoke_rejects_false|"
+    r"v5_smoke_accepts_true|v5_smoke_rejects_false)$"
 )
 
 # Expected REVIEW items from docs/GATE_REVIEW_NOTES.md ("the register table"),
@@ -42,8 +44,8 @@ BINDER_ALLOW = (
 # Tolerant of line drift: only the module + token must match.
 EXPECTED = {
     ("hygiene", "OracleSmoke.lean", "by decide"),
+    ("hygiene", "OracleV5Tests.lean", "by decide"),
     ("binder", "BarrierVerdictB.lean", "abstractPVsNP_iff_verdictB"),
-    ("binder", "Oracle.lean", "emptyOracle"),
     ("binder", "OracleComplexity.lean", "y"),             # weak witness ∃ y
     ("binder", "OracleComplexity.lean", "P_A_subset_NP_A"),
     # DEC-022 comparator statement references (issue #64): consumed by the
@@ -52,6 +54,9 @@ EXPECTED = {
     ("binder", "Relativization.lean", "equalizing_oracle_statement"),
     ("binder", "Relativization.lean", "separating_oracle_statement"),
 }
+# NOTE (2026-09-13): `emptyOracle` is no longer an EXPECTED item — the
+# word-query test module (OracleV5Tests.lean, issue #40) references it, so
+# the binder scanner no longer reports it as unreferenced.
 
 
 def _run(cmd: list[str]) -> tuple[int, str]:
