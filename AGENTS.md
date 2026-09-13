@@ -169,6 +169,16 @@ Do not commit to `main` and do not push to `main` from the same session that aut
 - **Namespace:** Project-specific declarations live under `PleaNP.*`, not `Complexity.*` (that namespace is contested upstream — see `docs/UPSTREAM_TRACKING.md`)
 - **Mathlib style:** All Lean code follows Mathlib naming and style conventions
 - **Gate discipline:** No proof search runs against a statement that hasn't passed the fidelity gates (see `docs/ARCHITECTURE.md`)
+- **Duplicate-work prevention (DEC-026, 2026-09-13):** three rules in
+  `docs/MULTI_AGENT_WORKFLOW.md` — (1) the **recent-activity guard** (§Claiming
+  step 1): before claiming an `available` item whose subject overlaps a
+  recently-active `claimed` item, check `git log origin/dev` for sibling
+  commits in the last ~1h *even when the claim comment is stale* (an agent can be
+  mid-session with an aged comment — the #63 duplicate mode); (2) the
+  **claim-race rule**: the *earlier* claim comment wins; the later claimant backs
+  off and restores `status:available`; (3) the **duplicate-work rule**: never
+  push a second copy of a pass/statement a sibling already landed — drop or
+  merge-and-reconcile in one commit.
 - **Review-fatigue protection (2026-09-06):** after a review point is confirmed, an agent SHOULD `review_inbox.py perturb <id>` (recheck-control twin with one load-bearing element flipped — it should be flagged) and sweep `review_inbox.py fatigue` in session reports. A human confirming a control = fatigue → the original is AUTO-REQUEUED immediately (no sweep needed; `reopened_by` records it). Controls are disclosed honestly; their identity is not pre-marked.
 - **Review-inbox discipline (2026-09-06):** at the irreducible semantic hop, file a review point (`tooling/reviews/review_inbox.py add .`) and CONTINUE — never block on the human. A `flag` reopens the claim in a later sweep; it is not a blocker. One point = one claim = one question. Expected answers come from the Lean, not the wish-list.
 - **Barrier-calculus discipline (Rung 5):** Any theorem claiming a P-vs-NP-shaped conclusion (`P = NP`, `P ≠ NP`, or separation of oracle-relative classes) should be triaged with `#barrier_check` before being cited as evidence — if it emits **DEAD: this proof relativizes**, it cannot resolve P vs NP (per BGS). If it emits "Inconclusive," non-relativizing potential survives. The `Relativizing` typeclass is meta-level: instances state "uniform in the oracle," and propagation instances carry it through composition/quantification automatically. New definitions that *should* relativize get explicit `Relativizing` instances; new definitions that can't are the interesting case — leave them instance-free so `#barrier_check` reports Inconclusive. **Do not hand-annotate a whole proof as `Relativizing`** — that would bypass the dependency-walk the elaborator performs.

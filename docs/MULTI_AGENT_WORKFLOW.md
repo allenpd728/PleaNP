@@ -132,6 +132,15 @@ final pass is done.
    `status:claimed`, restore the prior label, and comment that the work was
    reclaimed (audit trail). A fresh claim comment carrying a run-id that is not
    yours belongs to a live sibling — leave it alone.
+   **Recent-activity guard (DEC-026):** before claiming an `available` item
+   whose subject overlaps a recently-active `claimed` item (same file, same
+   rung, or an adjacent pass), check `git log origin/dev` for sibling commits
+   touching that subject in the last ~1h *even if the claim comment is stale*.
+   An agent can be mid-session on a pass whose claim comment is merely aged;
+   reclaiming it and starting parallel work is the #63-duplicate failure mode.
+   Default: if there is fresh commit/comment evidence of a live sibling on the
+   candidate's subject, prefer a DIFFERENT task; only reclaim if the evidence
+   is absent in both the claim and the git log.
 1a. **Sweep pass-sizing compliance.** Every start-of-session sweep also runs
    the multi-run pass-sizing scanner (the queue-health backstop for §Task
    definition rule 6):
@@ -184,9 +193,11 @@ final pass is done.
 4. **Attempt the claim, then verify ownership.** Whatever the work item: swap
    its current label to `status:claimed` **in one atomic edit** — self-assign,
    and post a claim comment (`claimed by <agent-name> run=<run-id> at <UTC
-   timestamp>`). Then re-fetch the issue **and read the latest claim comment**:
-   if its run-id is not yours, a sibling won — back off and pick a different
-   item.
+   timestamp>`). Then re-fetch the issue **and read the latest claim comment**
+   *and the commentary list*: if the latest run-id is not yours OR any sibling
+   claim on the same item landed within the last ~30 minutes with a different
+   run-id, a sibling won the race — back off, restore `status:available`, and
+   pick a different item (see the claim-race rule in §Concurrent-work).
 5. **Do the work; prove the done.** Commit directly to `dev` (no PR — review
    happens retrospectively on `dev`). **The commit is not done until it is
    pushed**: run `git push origin dev` before closing the issue — the system of
@@ -213,6 +224,19 @@ final pass is done.
    - **Rebase revealed a sibling landed the same work?** Compare the two
      implementations: if yours adds nothing, drop it; if yours genuinely
      extends it, merge the two in the rebase. Never push a second copy.
+   - **Claim-race rule (DEC-026):** when two agents claim the same item near
+     simultaneously, the **earlier claim comment wins** (by timestamp), and the
+     later claimant backs off — restores `status:available`, posts a one-line
+     back-off comment, and picks a different item. The back-off comment records
+     the run-ids so the sweep has an audit trail. This beats the old "latest
+     comment wins" reading, which let two agents both believe they owned the
+     item (the #65/#63 race mode).
+   - **Duplicate-work rule (DEC-026):** after a rebase reveals a sibling landed
+     the same pass/statement, **never push a second copy** — either drop yours
+     (if it adds nothing) or, when yours has genuinely distinct content, merge
+     AND reconcile in ONE commit that both agents' evidence can cite. Prefer
+     **not starting** the duplicate in the first place via the recent-activity
+     guard in §Claiming step 1.
    - **Never force-push to `dev`** — it can destroy a sibling agent's committed
      work.
    - A rebase conflict you cannot resolve confidently is a blocker — file it.

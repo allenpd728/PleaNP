@@ -442,6 +442,23 @@ agent-pair protocol.
 
 **Phasing:**(i) this commit: decision record + blocker files updated + design-doc note + issue queue wiring (no code,no Lean,no CI change);(ii) #33 spec written by an agent,then #35 implementation (the substrate re-type/rewire,build green + gates;; (iii) #36/#37/#38 consumethe repaired substratein dependency order; (iv) #39 docs deliverable can land anytime (no block. **Sandbox note:** no `lake`/`python-yaml` inthe write sandbox — docs-only edits, validated by structure/sweep only.
 
+### DEC-026
+
+**Date:** 2026-09-13
+**Status:** Active
+**Scope:** Multi-agent duplicate-work prevention — claim races + parallel-pass collisions + shared-file conflicts.
+
+**Context:** During the 2026-09-13 Rung-4/BGS burst, the parallel-agent protocol produced three avoidable duplicates and repeated shared-file conflicts: (1) **claim races** — two agents claimed #65 within ~80s, and the "latest comment wins" reading let both believe they owned it; (2) **stale-claim-then-return** — a sweep-reclaimed #63 Pass 1 (claim comment >1h old) while the original sibling returned mid-session and landed superior work, forcing the reclaiming agent to drop redundant parallel A2; (3) **shared-file collisions** — every new module lands on the same `ci.yml` + register-check + gate-docs files, causing repeated 4-way rebase conflicts.
+
+**Decision:** Amend `docs/MULTI_AGENT_WORKFLOW.md` with three rules:
+- **Recent-activity guard (§Claiming step 1):** before claiming an `available` item whose subject overlaps a recently-active `claimed` item (same file/rung/adjacent pass), check `git log origin/dev` for sibling commits in the last ~1h *even when the claim comment is stale* — an agent can be mid-session with an aged comment. Default to a DIFFERENT task when fresh evidence exists.
+- **Claim-race rule (§Concurrent-work):** the **earlier** claim comment (by timestamp) wins; the later claimant backs off, restores `status:available`, posts a one-line back-off recording run-ids, and picks different work. Replaces the "latest comment wins" ambiguity.
+- **Duplicate-work rule (§Concurrent-work):** after a rebase reveals a sibling landed the same pass/statement, never push a second copy — drop or merge-and-reconcile in ONE commit, and prefer preventing the duplicate via the recent-activity guard.
+
+**Why:** Parallel agents under a shared identity cannot tell coincident claims apart without run-ids and timestamps; the cost of a duplicate formalization run (elaborate Lean proofs on the same substrate) is the single highest-waste failure in this burst. The recent-activity guard makes the sweep defer to fresh evidence instead of the stale-claim clock; the claim-race rule gives an unambiguous, auditable winner; the duplicate-work rule makes "drop the redundant copy" the default, never-push-twice.
+
+**Workflow output:** the three rules above landed in `docs/MULTI_AGENT_WORKFLOW.md` §Claiming (step 1, step 4) and §Do-the-work (concurrent-work rules). **Phasing:** (i) this commit: DEC + workflow-doc amendments (docs-only); (ii) agents adopt the guard/rules at their next start-of-session sweep (no code/Lean/CI change required).
+
 ### DEC-025
 
 **Date:** 2026-09-13
