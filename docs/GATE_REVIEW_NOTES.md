@@ -125,13 +125,20 @@ self-check).
 |---|---|---|---|
 | hygiene (`--prove-stage`) | `by decide` smell ×3 | `OracleSmoke.lean:92,109,119` | Proof-body finiteness discharges, documented in module header; no-action |
 | binder | `abstractPVsNP_iff_verdictB` unreferenced | `BarrierVerdictB.lean:46` | `churn/barrier-verdict/matrix.json` + `lemmas.json`; no-action |
-| binder | `emptyOracle` unreferenced | `Oracle.lean:172` | `OracleUpstreamP.lean:28` (outside clean scan set); no-action |
-| binder | weak witness `∃ y` | `OracleComplexity.lean:63` | `AcceptsInTime M (x, y)` next conjunct; no-action |
-| binder | `P_A_subset_NP_A` unreferenced | `OracleComplexity.lean:80` | CI `axiom_check.py` + galaxy tests + `BoundaryProbe.lean`; no-action |
+| binder | weak witness `∃ y` | `OracleComplexity.lean:69` | `AcceptsInTime M (x, y)` next conjunct; no-action |
+| binder | `P_A_subset_NP_A` unreferenced | `OracleComplexity.lean:86` | CI `axiom_check.py` + galaxy tests + `BoundaryProbe.lean`; no-action |
 | binder | `equalizing_oracle_statement` / `separating_oracle_statement` (challenge) unreferenced | `Challenges/Relativization.lean` | statement references consumed by comparator JSON pin `lean/ComparatorChallenges/Relativization.json` (proof-root `theorem_names`); no-action |
+| hygiene (`--prove-stage`) | `by decide` smell ×3 | `OracleV5Tests.lean:138,155,165` | Same proof-body finiteness discharges as the OracleSmoke items (v5 word-query smoke accept/reject theorems + 2-step bound); no-action |
 
-Expected scan result on the clean set: **0 violations, 4 binder REVIEW
-items, 3 hygiene REVIEW items — all register entries above, all
+**Register changes (2026-09-13, #40):** `emptyOracle` is **no longer
+flagged** — the word-query test module (`OracleV5Tests.lean`)
+references it (`v5M (emptyOracle V5Query)`), so the binder scanner's
+"unreferenced" REVIEW resolved itself. `OracleV5Tests.lean` contributes
+3 new hygiene REVIEWs (registered above). The `y`/`P_A_subset_NP_A`
+line numbers shifted (v5 substrate #35 rewired `OracleComplexity.lean`).
+
+Expected scan result on the clean set: **0 violations, 5 binder REVIEW
+items, 6 hygiene REVIEW items — all register entries above, all
 demonstrated-intentional.** (The two challenge-module binder REVIEWs from
 `PleaNP.Challenges.Relativization` for the DEC-022 comparator references
 are registered in the row above; the challenge module is a statement
