@@ -54,6 +54,10 @@ jobs:
         run: python3 tooling/gates/model_consistency_scan.py lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
       - name: Binder-usage scan (Gate 5 Tier 1b)
         run: python3 tooling/gates/binder_usage_scan.py --allow-unreferenced '^(exists_equalizing_oracle|exists_separating_oracle|smoke_accepts_true|smoke_rejects_false)$' lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
+      - name: Gate-REVIEW register machine-check (issue #92; clean-module REVIEW set must match docs/GATE_REVIEW_NOTES.md)
+        run: python3 tooling/gates/gate_review_register_check.py
+      - name: Gate-REVIEW register unit tests (issue #92; stdlib-only)
+        run: python3 tooling/gates/tests/test_gate_review_register.py
       - name: Axiom check (Gate 6 Tier 2 — no smuggled sorry via meta-programs)
         run: python3 ../tooling/gates/axiom_check.py PleaNP.Computability.Oracle,PleaNP.Computability.OracleComplexity,PleaNP.Computability.OracleSmoke,PleaNP.Calculus.BarrierCalculus PleaNP.Oracles.evalsTo_unique_result PleaNP.Oracles.P_A_subset_NP_A PleaNP.Oracles.smoke_accepts_true PleaNP.Oracles.smoke_rejects_false
         working-directory: lean
