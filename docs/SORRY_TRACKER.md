@@ -95,6 +95,15 @@ module is expected to fail the build until upstream P lands.
 | 8 | `Relativization.lean:80` | BGS clause (a) proof — equalizing oracle existence. | #5 (done) + PSPACE/QBF + upstream P. | Low (Rung 3 Step 6) |
 | 9 | `Relativization.lean:101` | BGS clause (b) proof — separating oracle existence (diagonalization). | #5 (done) + machine enumeration + diagonalization. | Low (Rung 3 Step 6) |
 
+### Algebrization statement level (issue #69 Pass 1, 2026-09-13)
+
+`lean/PleaNP/Barriers/Algebrization.lean` renders the **AW09 v1 statement**
+zero-sorry (Gate 1 anchor; builds green in the clean module set). The two
+clause *statements* are `def`s (`algebrizing_separation_statement`,
+`algebrizing_equalization_statement`). The clause *proofs* (AZ5:
+diagonalization for (a), PSPACE sandwich for (b)) are not yet claimed; when
+proof work starts, the theorem claims land with honest placeholders here.
+
 ---
 
 ## Resolved

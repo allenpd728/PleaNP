@@ -28,6 +28,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 SCAN_SET = (
     "lean/PleaNP/Calculus lean/PleaNP/Basic.lean "
     "lean/PleaNP/Barriers/RelativizationProof.lean "
+    "lean/PleaNP/Barriers/Algebrization.lean "
     "lean/PleaNP/Challenges/Relativization.lean "
     "lean/PleaNP/Computability/Oracle.lean "
     "lean/PleaNP/Computability/OracleComplexity.lean "
@@ -77,7 +78,14 @@ EXPECTED = {
     ("binder", "RelativizationProof.lean", "uniform_collapse_contradicted_by_separating"),
     ("binder", "RelativizationProof.lean", "uniform_separation_contradicted_by_equalizing"),
     ("binder", "RelativizationProof.lean", "no_uniform_resolution_of_p_vs_np"),
-    
+    # Sibling #63 A2 console-oracle instances (issue #63 Pass 1): public
+    # proof-work API, consumed onward by A3/A5 — not dead code.
+    ("binder", "RelativizationProof.lean", "consoleOracleHead_computable"),
+    # AW09 v1 statement references (issue #69 Pass 1): consumed by AZ5's
+    # proof assembly — not dead code.
+    ("binder", "Algebrization.lean", "algebrizing_separation_statement"),
+    ("binder", "Algebrization.lean", "algebrizing_equalization_statement"),
+
     # Issue #41 marker-funeq campaign rendering targets: registered in
     # churn/marker-funeq/renderings/*.json (multi_render slots) and machine-
     # checked by dual_render/multi_render check; the binder scanner sees only
