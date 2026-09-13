@@ -274,6 +274,8 @@ removed accordingly; the remaining register matches the fired set.
   the statement content (parity is a genuine, non-constant family).
 - `parity_notin_AC0_relativizing` — the #73 Pass 2 classification: the AC0
   lower-bound claim is oracle-uniform (relativizing) via the Rung-4 method.
+- `depth_eq_zero_iff_input` — the #72 Pass 2 structural core: a depth-0
+  circuit is exactly an input gate (the depth-ladder first rung).
 - `parity_notin_AC0` itself is NOT flagged anymore — the classification
   theorem references it, so the scanner resolves it.
 
