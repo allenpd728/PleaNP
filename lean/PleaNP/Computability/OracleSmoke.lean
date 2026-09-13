@@ -63,9 +63,13 @@ def oracleTrue : Oracle Bool := fun _ => true
 
 def oracleFalse : Oracle Bool := fun _ => false
 
-/-- The same machine program with an oracle slot. -/
+/-- The same machine program with an oracle slot.
+  v5: `decode` maps the input-tape word (a Bool list) to the query
+  value-space `Bool` — here the head symbol, matching the smoke
+  convention that a nonempty word queries that symbol. -/
 def smokeM (A : Oracle Bool) : Machine Bool smokeTM where
   oracle := A
+  decode := fun w => match w with | [] => false | h :: _ => h
   queryLabel := SmokeLabel.ask
   yesLabel := SmokeLabel.yes
   noLabel := SmokeLabel.no
@@ -73,10 +77,10 @@ def smokeM (A : Oracle Bool) : Machine Bool smokeTM where
 /-- Two-step run of the smoke machine: step 1 consults the oracle,
   step 2 pushes the branch output and halts. -/
 def smokeRun (A : Oracle Bool) (input : List Bool) : Cfg Bool smokeTM :=
-  match @step smokeTM inferInstance (smokeM A)
+  match @step Bool smokeTM inferInstance (smokeM A)
       (@initCfg Bool smokeTM inferInstance (smokeM A) input) with
   | some c₁ =>
-    match @step smokeTM inferInstance (smokeM A) c₁ with
+    match @step Bool smokeTM inferInstance (smokeM A) c₁ with
     | some c₂ => c₂
     | none => c₁
   | none => @initCfg Bool smokeTM inferInstance (smokeM A) input
@@ -87,7 +91,7 @@ def smokeEa : PUnit → List Bool := fun _ => [true]
 /-- Positive: with the always-true oracle, the machine halts within
   2 steps with output head `true` — closed by evaluation. -/
 theorem smoke_accepts_true :
-    @AcceptsInTime smokeTM PUnit inferInstance smokeEa id
+    @AcceptsInTime Bool smokeTM PUnit inferInstance smokeEa id
       (smokeM oracleTrue) PUnit.unit (fun _ => 2) := by
   refine ⟨smokeRun oracleTrue [true], ⟨⟨⟨2, rfl⟩, by decide⟩⟩, rfl, rfl⟩
 
@@ -95,15 +99,15 @@ theorem smoke_accepts_true :
   outputs `true`. The only halted endpoint is the reject branch
   (determinism), and its output head is `false`. -/
 theorem smoke_rejects_false :
-    ¬ @AcceptsInTime smokeTM PUnit inferInstance smokeEa id
+    ¬ @AcceptsInTime Bool smokeTM PUnit inferInstance smokeEa id
       (smokeM oracleFalse) PUnit.unit (fun _ => 2) := by
   intro ⟨cfg', hReach, hHalt, hOutput⟩
-  have hFalseRun : StateTransition.EvalsToInTime (@step smokeTM inferInstance (smokeM oracleFalse))
+  have hFalseRun : StateTransition.EvalsToInTime (@step Bool smokeTM inferInstance (smokeM oracleFalse))
       (@initCfg Bool smokeTM inferInstance (smokeM oracleFalse) [true])
       (some (smokeRun oracleFalse [true])) 2 :=
     { steps := 2
       evals_in_steps :=
-        (rfl : (flip bind (@step smokeTM inferInstance (smokeM oracleFalse)))^[2]
+        (rfl : (flip bind (@step Bool smokeTM inferInstance (smokeM oracleFalse)))^[2]
             (some (@initCfg Bool smokeTM inferInstance (smokeM oracleFalse) [true]))
           = some (smokeRun oracleFalse [true]))
       steps_le_m := by decide }
