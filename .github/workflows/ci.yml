@@ -59,7 +59,11 @@ jobs:
       - name: Gate-REVIEW register unit tests (issue #92; stdlib-only)
         run: python3 tooling/gates/tests/test_gate_review_register.py
       - name: Axiom check (Gate 6 Tier 2 — no smuggled sorry via meta-programs)
-        run: python3 ../tooling/gates/axiom_check.py PleaNP.Computability.Oracle,PleaNP.Computability.OracleComplexity,PleaNP.Computability.OracleSmoke,PleaNP.Computability.OracleV5Tests,PleaNP.Calculus.BarrierCalculus PleaNP.Oracles.evalsTo_unique_result PleaNP.Oracles.P_A_subset_NP_A PleaNP.Oracles.smoke_accepts_true PleaNP.Oracles.smoke_rejects_false PleaNP.Oracles.v5_smoke_accepts_true PleaNP.Oracles.v5_smoke_rejects_false
+        # Soundness module (issue #65) theorems are axiom-free; the #41 fix makes
+        # axiom_check recognize Lean's "does not depend on any axioms" line as
+        # clean, so listing them here machine-asserts their axiom-free status
+        # continuously (issue #94).
+        run: python3 ../tooling/gates/axiom_check.py PleaNP.Computability.Oracle,PleaNP.Computability.OracleComplexity,PleaNP.Computability.OracleSmoke,PleaNP.Computability.OracleV5Tests,PleaNP.Calculus.BarrierCalculus,PleaNP.Calculus.Soundness PleaNP.Oracles.evalsTo_unique_result PleaNP.Oracles.P_A_subset_NP_A PleaNP.Oracles.smoke_accepts_true PleaNP.Oracles.smoke_rejects_false PleaNP.Oracles.v5_smoke_accepts_true PleaNP.Oracles.v5_smoke_rejects_false PleaNP.Calculus.transfer_under_ext PleaNP.Calculus.relAtom_uniform PleaNP.Calculus.langAtom_uniform PleaNP.Calculus.pA_mem_uniform PleaNP.Calculus.uniform_and PleaNP.Calculus.uniform_or PleaNP.Calculus.uniform_imp PleaNP.Calculus.uniform_iff PleaNP.Calculus.uniform_not PleaNP.Calculus.uniform_forall PleaNP.Calculus.uniform_exists PleaNP.Calculus.funeq_uniform PleaNP.Calculus.funne_uniform PleaNP.Calculus.sound_verdict_abstract PleaNP.Calculus.sound_verdict_abstract_rev
         working-directory: lean
       - name: Read-back harness unit tests (Gate 4; no secrets, no Lean needed)
         run: python3 tooling/gates/tests/test_readback.py
