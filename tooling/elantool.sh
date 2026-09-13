@@ -31,6 +31,12 @@ MOUNT_POINT="${PLEANP_LEAN_MOUNT:-/workspace}"
 
 __have() { command -v "$1" >/dev/null 2>&1; }
 
+__docker_works() {
+  # Docker CLI present AND daemon reachable — a bare `docker` binary with no
+  # daemon (common in sandboxes) must NOT count as working.
+  __have docker && docker info >/dev/null 2>&1
+}
+
 __in_container() {
   # If we're already inside the warm image, just run the command directly.
   [ -f /workspaces/PleaNP/lean/lean-toolchain ] && return 0
@@ -39,14 +45,16 @@ __in_container() {
 }
 
 __image_present() {
-  __have docker && docker images --format '{{.Repository}}:{{.Tag}}' | grep -qx "$IMAGE"
+  __docker_works && docker images --format '{{.Repository}}:{{.Tag}}' | grep -qx "$IMAGE"
 }
 
 __bootstrap_cold() {
-  echo "[elantool] docker unavailable; doing the AGENTS.md curl-bootstrap"
+  echo "[elantool] no working docker; doing the AGENTS.md curl-bootstrap"
   export PATH="$HOME/.elan/bin:$PATH"
   if ! __have elan; then
-    sh <(curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh) -s -- -y --default-toolchain none
+    # Match AGENTS.md exactly: pipe the installer into `sh -s -- <args>`.
+    curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+      | sh -s -- -y --default-toolchain none
     export PATH="$HOME/.elan/bin:$PATH"
   fi
   cd "$REPO_ROOT/lean"
@@ -67,13 +75,13 @@ __with_image() {
 cmd="${1:-}"
 case "$cmd" in
   pull|refresh)
-    __have docker || { echo "[elantool] docker required for pull"; exit 3; }
+    __docker_works || { echo "[elantool] docker daemon required for pull"; exit 3; }
     docker pull "$IMAGE"
     exit 0
     ;;
   shell)
     __in_container && { echo "[elantool] already in warm image; launching bash"; exec bash; }
-    if __image_present || __have docker; then
+    if __image_present || __docker_works; then
       if ! __image_present; then
         echo "[elantool] pulling ${IMAGE}"
         docker pull "$IMAGE"
@@ -102,13 +110,13 @@ case "$cmd" in
       __with_image "lake $*"
       exit $?
     fi
-    if __have docker; then
+    if __docker_works; then
       echo "[elantool] image ${IMAGE} not local; pulling once"
       docker pull "$IMAGE"
       __with_image "lake $*"
       exit $?
     fi
-    echo "[elantool] no docker and no warm image; falling back to bootstrap"
+    echo "[elantool] no working docker and no warm image; falling back to bootstrap"
     __bootstrap_cold
     cd "$REPO_ROOT/lean"
     lake "$@"
