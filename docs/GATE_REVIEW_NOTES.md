@@ -214,6 +214,27 @@ Lean declarations, not the benchmark docs.
 **Disposition.** No-action. The register EXPECTED set is updated to include
 these items so the machine-check agrees.
 
+### `Resolution.lean` — the resolution substrate API (issue #75 Pass 1)
+
+`binder_usage_scan.py` flags the substrate module's building blocks:
+- `eval` — **referenced internally** (by `Clause.eval`) but the scanner
+  resolves only top-level name references, so it still reports it as
+  unreferenced; a genuine false positive. (`var` was in the same class but
+  the rewritten `Clause.eval` exposes the reference, so it self-resolved.)
+- `simp` — a `@[simp]`-attribute misread as an implicit binder on `not`.
+- `Clause.empty`, `CNF.width`, `ResDerivation.width` — the public substrate
+  measures. (`ResDerivation.size` self-resolved: the merged scan set now
+  resolves it — no register entry needed.)
+- `ResDerivation.sound` — the headline soundness theorem (resolution derives
+  only entailed clauses).
+
+All are demonstrated-intentional public API of the Rung-4 proof-complexity
+substrate, consumed by #75 Pass 2 (the pigeonhole width lower bound) and
+#73 (the barrier classification).
+
+**Disposition.** No-action. The register EXPECTED set is updated to include
+these items so the machine-check agrees.
+
 ## 4. BGS clause-(a) A2/A3 console-oracle API (issue #63)
 
 **Sweep lineage:** run=20260913-1020-GY2l (issue #63).
