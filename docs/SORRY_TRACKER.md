@@ -21,8 +21,10 @@
 All remaining sorries are honest pending proofs/compositions. The structural
 self-check `P_A ⊆ NP^A` (#5a/#5b) is now proved in BOTH directions — the v4
 repair is behaviorally verified by the oracle-sensitivity smoke test
-(`lean/PleaNP/Computability/OracleSmoke.lean`). The four remaining sorries are: upstream-P-blocked
-(#6, #7 — in the isolated anchor module) and the BGS proofs (#8, #9).
+(`lean/PleaNP/Computability/OracleSmoke.lean`). The six remaining sorries are: upstream-P-blocked
+(#6, #7 — in the isolated anchor module), the BGS proofs (#8, #9), and the
+#36 U_B-machine bridge + assembly (#10, #11 — in the isolated DiagonalUB
+module).
 
 `lake build` status: `lean/PleaNP/Computability/Oracle.lean`, `lean/PleaNP/Computability/OracleComplexity.lean`,
 `lean/PleaNP/Computability/OracleSmoke.lean` build green. `lean/PleaNP/Computability/OracleUpstreamP.lean` (2 tracked sorries)
@@ -51,6 +53,20 @@ Mathlib-standard set; no `sorryAx`.
 |---|---|---|---|---|
 | 5a | ~~`lean/PleaNP/Computability/OracleComplexity.lean`~~ **Resolved** — forward direction proved in the v4-completion pass. | — | — |
 | 5b | ~~`lean/PleaNP/Computability/OracleComplexity.lean`~~ **Resolved** — backward direction proved in the v4-completion pass via the new determinism lemma `Oracles.evalsTo_unique_result` (+ `step_none`) in `lean/PleaNP/Computability/Oracle.lean`: the accept-run and the decide-run start from the same initial config and both halt, so they share the halted endpoint; the output bit carries over. | — | — |
+
+### U_B-machine level (DiagonalUB.lean, new isolated module — #36 Pass 1-2)
+
+Isolated module `lean/PleaNP/Barriers/DiagonalUB.lean` (not imported by
+BGSDiagonal) so `warningAsError` does not cascade. Proved zero-sorry:
+certificate encoding roundtrip (`encWord`/`decodeWord_encWord`), the
+guess-query-verify machine (`ubTM`/`ubM`), and its concrete-oracle
+behavior (`accepts_const_true`, `rejects_const_false`). Two remaining
+sorries, both tracked:
+
+| # | File:Line | What it is | Pending on | Priority |
+|---|---|---|---|---|
+| 10 | `lean/PleaNP/Barriers/DiagonalUB.lean:258` | `accepts_depends_on_answer`: run-identity of `ubM B` vs the constant-oracle machine when the oracle answers the encoded query the same way — a step-by-step extensionality over `step`/`ubRun`/`ubCRun`. | #36 Pass 3 bridge work (filed as follow-up) | High |
+| 11 | `lean/PleaNP/Barriers/DiagonalUB.lean:269` | `U_B_in_NP`: assembles `U_B ∈ NP_A (alpha := Nat) B` from the bridge + `decodeWord_encWord` + `U_B_iff_witness` + time bound (`p = Polynomial.X`, 2-step run). | Row #10 + `length_ea_empty` | High |
 
 ### Upstream-P anchor level (OracleUpstreamP.lean, new module)
 
