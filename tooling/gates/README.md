@@ -43,6 +43,17 @@ Scans for **stray, non-valid characters** in tracked source (`.lean`, `.py`, `.m
 
 Run: `python3 tooling/gates/unicode_scan.py .` — exit 0 clean, 1 violations, 2 usage error.
 
+## REVIEW items on the clean modules (issue #56)
+
+A scan that exits 0 can still print `REVIEW` items (non-fatal findings).
+The known REVIEW items on the clean modules — the three
+`OracleSmoke.lean` `by decide` smells and the four binder-usage REVIEWs
+(`abstractPVsNP_iff_verdictB`, `emptyOracle`, the `NP_A` weak witness,
+`P_A_subset_NP_A`) — are all **demonstrated-intentional**; their
+verification and disposition register live in
+`docs/GATE_REVIEW_NOTES.md`. When an audit sweep or a future scan run
+hits one of these, check that register before re-flagging it.
+
 ## Two tiers (different agents, different trust boundaries)
 
 Both gates are implemented in two tiers, because the sneaky cases require the Lean toolchain:
