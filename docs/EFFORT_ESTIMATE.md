@@ -68,7 +68,11 @@ is an **external** dependency for Rung 6 only.
 | #72 | 4 | AC⁰ lower bound: parity ∉ AC⁰ via switching lemma | #71 | N | 2 | available |
 | #74 | 4 | Monotone circuit bounds (Razborov CLIQUE) | #71 | N | 3 | available |
 | #75 | 4 | ProofComplexity resolution width/size (pigeonhole width) | #71 (soft) | N | 2 | available |
-| #76 | 4 | Williams transfer: NEXP ⊄ ACC⁰ (non-relativizing existence) — umbrella; passes sub-issued as #88–#91 (claimable units) | #71, #72/#74 idioms | H | 10–15 | available |
+| #76 | 4 | Williams transfer: NEXP ⊄ ACC⁰ (non-relativizing existence) — umbrella; passes sub-issued as #88–#91 (claimable units) | #71, #72/#74 idioms | H | 10–15 (see #88–#91) | available |
+| #88 | 4 | Williams #76 Pass 1 — statement freeze: NEXP / ACC⁰ / CircuitSAT | #76, #71 (substrate) ; #70 gates the choice | N | 2–3 | available |
+| #89 | 4 | Williams #76 Pass 2 — ACC⁰ CircuitSAT sub-exponential algorithm | #76, #88, #71 | N | 3 | available |
+| #90 | 4 | Williams #76 Pass 3 — transfer theorem (CircuitSAT ⇒ NEXP ⊄ ACC⁰) | #76, #89, #88, #71 | N | 3 | available |
+| #91 | 4 | Williams #76 Pass 4 — assembly: NEXP ⊄ ACC⁰ theorem + non-relativizing note | #76, #88/#89/#90 | N | 1 | available |
 | #73 | 4 | Barrier classifications: techniques are relativizing/natural/algebrizing | #65, #72/#74/#75/#76 | N | 3 | available |
 | #65 | 5 | `#barrier_check` soundness: Relativizing ⇒ BGS-relativizing | — | H | 1–2 (abstract) | available |
 | #82 | 5 | Rung 5 concrete integration: Relativizing seeds on P_A/NP_A | #35, #65 | N | 2 | available |
@@ -122,12 +126,17 @@ counts:
 > computed live from the issue queue on 2026-09-12:
 >
 > - Rung 2 = **4–6 runs**, Rung 3 = **22–28 runs**, Rung 4 = **25–29 runs**
->   (the #76 Williams umbrella is pass-sub-issued as #88–#91; its Effort is the
->   sub-issue sum ≈9–10), Rung 5 = **3 runs**, Rung 6 = **6–8 runs**,
+>   from the live tool (`effort_summary.py`; the #76 Williams umbrella is
+>   excluded by-design since its Effort line only enumerates the passes; adding
+>   the parsed #88–#91 pass rows — Freeze 2–3, CircuitSAT 3, Transfer 3,
+>   Assembly 1 ≈ 9–10 runs — brings Rung 4 to ≈34–39),
+>   Rung 5 = **3 runs**, Rung 6 = **6–8 runs**,
 >   Rung 7 = **2 runs**, Rung 8 = **2 runs**.
->   **Grand total (all in-scope) = 64–78 runs.**
+>   **Grand total (all in-scope) = 64–78 runs** per the live tool
+>   (≈73–88 once the #88–#91 pass rows are parsed in).
 > - Proof-search entry (Rungs 2+3+4+5+6, the ROADMAP dependency note):
->   **60–74 runs**, of which **54–66 runs** are unblocked now and **6–8 runs**
+>   **60–74 runs** per the live tool (≈69–84 once #88–#91 are parsed in),
+>   of which **54–66 runs** are unblocked now and **6–8 runs**
 >   are the upstream-P-gated Rung 6 slice.
 >
 > The per-block table above is retained as the conservative planning envelope;
