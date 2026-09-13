@@ -35,6 +35,14 @@ info: PleaNP/Calculus/BarrierCalculus.lean:298:0: #barrier_check PleaNP.Calculus
 
 
 
+info: PleaNP/Calculus/ConcreteSeed.lean:91:0: #barrier_check PleaNP.Calculus.concreteClassMembership: DEAD - this proof relativizes,and concludes a P-vs-NP-shaped claim;so BGS rules it out.
+
+
+
+info: PleaNP/Calculus/ConcreteSeed.lean:92:0: #barrier_check PleaNP.Calculus.bgsMetaStatement: Inconclusive - no Relativizing instanceon this statement;so it is not ruled out by BGS.
+
+
+
 """
 
 
