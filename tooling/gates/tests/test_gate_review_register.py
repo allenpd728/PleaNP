@@ -49,16 +49,26 @@ class TestExpectedRegister(unittest.TestCase):
         # DEC-022 comparator statement references (issue #64).
         self.assertIn(("binder", "Relativization.lean", "equalizing_oracle_statement"), grc.EXPECTED)
         self.assertIn(("binder", "Relativization.lean", "separating_oracle_statement"), grc.EXPECTED)
-        # DEC-022 §3.3 proof-work lemmas (issue #66), consumed onward by #37/#63.
-        self.assertIn(("binder", "RelativizationProof.lean", "uniform_collapse_contradicted_by_separating"), grc.EXPECTED)
-        self.assertIn(("binder", "RelativizationProof.lean", "uniform_separation_contradicted_by_equalizing"), grc.EXPECTED)
+        # DEC-022 §3.3 proof-work lemmas (issue #66): `uniform_collapse_...` /
+        # `uniform_separation_...` self-resolved once #69 Pass 2's
+        # AlgebrizationProof.lean referenced them (docs/GATE_REVIEW_NOTES.md
+        # §3.5 register-side effect); the headline one remains.
+        self.assertNotIn(("binder", "RelativizationProof.lean", "uniform_collapse_contradicted_by_separating"), grc.EXPECTED)
+        self.assertNotIn(("binder", "RelativizationProof.lean", "uniform_separation_contradicted_by_equalizing"), grc.EXPECTED)
         self.assertIn(("binder", "RelativizationProof.lean", "no_uniform_resolution_of_p_vs_np"), grc.EXPECTED)
-        # AW09 v1 statement references (issue #69 Pass 1).
-        self.assertIn(("binder", "Algebrization.lean", "algebrizing_separation_statement"), grc.EXPECTED)
-        self.assertIn(("binder", "Algebrization.lean", "algebrizing_equalization_statement"), grc.EXPECTED)
+        # AW09 statement refs self-resolved (#69 Pass 2 uses them as hypothesis
+        # types).
+        self.assertNotIn(("binder", "Algebrization.lean", "algebrizing_separation_statement"), grc.EXPECTED)
+        self.assertNotIn(("binder", "Algebrization.lean", "algebrizing_equalization_statement"), grc.EXPECTED)
         # Rung-4 circuit substrate API (issues #71 Pass 1-2); module-leaf is Basic.lean.
+        # (`CircuitFamily.sizeOf` self-resolved in Pass 2; depthOf remains.)
+        self.assertIn(("binder", "Basic.lean", "CircuitFamily.depthOf"), grc.EXPECTED)
         self.assertIn(("binder", "Basic.lean", "IsPPoly"), grc.EXPECTED)
         self.assertIn(("hygiene", "Basic.lean", "by decide"), grc.EXPECTED)  # univ_largeness discharge
+        # Rung-4 AC0 milestone (issue #72 Pass 1).
+        self.assertIn(("binder", "AC0.lean", "parity_notin_AC0"), grc.EXPECTED)
+        self.assertIn(("binder", "AC0.lean", "parity_zero"), grc.EXPECTED)
+        self.assertIn(("binder", "AC0.lean", "parity_nontrivial"), grc.EXPECTED)
         # `emptyOracle` no longer flagged (referenced by OracleV5Tests; #40).
         self.assertNotIn(("binder", "Oracle.lean", "emptyOracle"), grc.EXPECTED)
 

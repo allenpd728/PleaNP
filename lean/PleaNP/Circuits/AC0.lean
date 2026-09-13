@@ -1,0 +1,109 @@
+import PleaNP.Circuits.Basic
+
+set_option warningAsError true
+
+/-!
+# AC⁰ lower bound milestone — parity ∉ AC⁰ (issue #72, Pass 1)
+
+Rung 4's marker circuit lower bound, on the `PleaNP.Circuits` substrate
+(issue #71, `d6857d9`: `BoolGate` with structural `size`/`depth`,
+`BoolFunc`, `CircuitFamily`).
+
+Pass 1 (this module) — the **statement layer + structural content**, all
+zero-sorry:
+
+- `BoolGate.eval`: the missing circuit **semantics** (evaluation of a gate
+  term on an assignment), the load-bearing bridge between the `BoolGate`
+  syntax and the Boolean function it computes.
+- `parity n`: the parity function (XOR of all `n` inputs).
+- `IsAC0 C`: a constant-depth circuit family (`∃ d, ∀ n, depth (C n) ≤ d`).
+- `ComputesParity C`: the family agrees with parity at every length.
+- `parity_notin_AC0`: the frozen lower-bound statement — no constant-depth
+  family computes parity. **Not yet a theorem** (the switching-lemma
+  depth-reduction is Pass 2); rendered as a zero-sorry `def` target.
+- Structural meaningfulness lemmas (so the statement is not vacuous):
+  `parity_zero`, `parity_single_true`, `parity_single_false`,
+  `parity_nontrivial` — parity is a genuine, non-constant family.
+
+**Barrier classification (for Rung 4):** the parity ∉ AC⁰ lower bound is
+**relativizing** (it holds relative to every oracle — the proof never uses
+oracle access) and **natural** (it is exactly Razborov–Rudich's canonical
+example: a large, constructive property that would break OWFs). It does not
+separate P from NP. Classification link: `docs/ROADMAP.md` Rung 4 + the
+#73 issue (barrier classifications).
+
+Pass 2: the switching lemma (random-restriction depth reduction) — the
+actual hardness proof. Tracked in #72's follow-up.
+-/
+
+namespace PleaNP
+
+namespace Circuits
+
+/-- **Evaluation of a Boolean circuit on an assignment.** The semantics of
+  `BoolGate`: an input gate reads its variable, AND/OR/NOT gates apply the
+  Boolean operation. This is the bridge asserting a gate term actually
+  computes the function we claim. -/
+def BoolGate.eval {n : Nat} : BoolGate n → (Fin n → Bool) → Bool
+  | .input i, v => v i
+  | .and a b, v => BoolGate.eval a v && BoolGate.eval b v
+  | .or a b, v => BoolGate.eval a v || BoolGate.eval b v
+  | .not a, v => !(BoolGate.eval a v)
+
+/-- The **parity** Boolean function on `n` inputs: the XOR of all bits.
+  Parity is the canonical function separating AC⁰ from polynomial-size
+  unbounded-depth circuits (it is in polynomial size but not constant depth). -/
+def parity (n : Nat) (v : Fin n → Bool) : Bool :=
+  (List.ofFn v).foldr (fun b acc => xor b acc) false
+
+/-- A circuit **family** has constant depth — the AC⁰ shape. -/
+def IsAC0 (C : CircuitFamily) : Prop :=
+  ∃ d : Nat, ∀ n : Nat, BoolGate.depth (C n) ≤ d
+
+/-- A family **computes parity** if its eval agrees with parity at every length. -/
+def ComputesParity (C : CircuitFamily) : Prop :=
+  ∀ n : Nat, ∀ v : Fin n → Bool, BoolGate.eval (C n) v = parity n v
+
+/-- **The frozen lower-bound statement (Pass 2's theorem):** no
+  constant-depth circuit family computes parity. Rendered here as a
+  zero-sorry `def` target; the switching-lemma proof is Pass 2. -/
+def parity_notin_AC0 : Prop :=
+  ¬ ∃ C : CircuitFamily, IsAC0 C ∧ ComputesParity C
+
+/-- Parity of the all-false assignment is `false`. -/
+lemma parity_zero (n : Nat) : parity n (fun _ => false) = false := by
+  unfold parity
+  rw [List.ofFn_const]
+  induction n with
+  | zero => decide
+  | succ m ih =>
+      simpa [List.replicate, xor] using ih
+
+/-- Parity of the single-`true` word at length 1 is `true`. -/
+lemma parity_single_true : parity 1 (fun i => i = 0) = true := by
+  decide
+
+/-- Parity of the all-false word at length 1 is `false`. -/
+lemma parity_single_false : parity 1 (fun _ => false) = false := by
+  unfold parity
+  simp
+
+/-- Parity is genuinely non-trivial: it takes both Boolean values at
+  length 1, so `parity` is not a constant family (the statement `parity ∉
+  AC⁰` is about a real function, not a name). -/
+lemma parity_nontrivial :
+    (∃ v : Fin 1 → Bool, parity 1 v = true) ∧ (∃ v : Fin 1 → Bool, parity 1 v = false) := by
+  constructor
+  · exact ⟨fun i => i = 0, parity_single_true⟩
+  · exact ⟨fun _ => false, parity_single_false⟩
+
+/-- The substrate's `and2` gate evaluates to the AND of its inputs on a
+  concrete assignment (sanity: the new `eval` agrees with the intended
+  semantics; `and2` from `Circuits.Basic`). -/
+example :
+    BoolGate.eval and2 (fun _ : Fin 2 => true) = true := by
+  decide
+
+end Circuits
+
+end PleaNP
