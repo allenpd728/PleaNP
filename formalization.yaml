@@ -135,6 +135,18 @@ status:
      - "Classical.choice"
      - "Quot.sound"
    status: "validated-in-ci"
+ - description: >-
+     Algebrization barrier consequence (AZ3, issue #69 Pass 2): no algebrizing-uniform
+     resolution of P vs NP — given AW09 separating + equalizing low-degree pairs, neither
+     uniform direction survives the asymmetric-access model (clean, green in CI)
+   declaration: "PleaNP.Barriers.AlgebrizationProof.no_algebrizing_uniform_resolution"
+   file: "lean/PleaNP/Barriers/AlgebrizationProof.lean"
+   sorry_count: 0
+   axioms:
+     - "propext"
+     - "Classical.choice"
+     - "Quot.sound"
+   status: "validated-in-ci"
 
 automation:
  methods:
