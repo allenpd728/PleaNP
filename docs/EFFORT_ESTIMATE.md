@@ -64,7 +64,7 @@ is an **external** dependency for Rung 6 only.
 | #68 | 3c | Algebrization proof-path decomposition (AZ1–AZ6) | — (design; AZ-impl → #35) | N | 1–2 | available |
 | #69 | 3c | Algebrization impl: render AW09 v1 + first proof sub-task | #68, #35 | H | 2–4 | Pass 1 done (2026-09-13); Pass 2 available |
 | #70 | 4 | complexitylib dependency reconciliation | — | H | 3–6 | available |
-| #71 | 4 | PleaNP.Circuits + P/poly + natural-property definitions | #70 | N | 3 | Pass 1 done (2026-09-13); Pass 2 available |
+| #71 | 4 | PleaNP.Circuits + P/poly + natural-property definitions | #70 | N | 3 | Pass 2 done (2026-09-13); Pass 3 available |
 | #72 | 4 | AC⁰ lower bound: parity ∉ AC⁰ via switching lemma | #71 | N | 2 | available |
 | #74 | 4 | Monotone circuit bounds (Razborov CLIQUE) | #71 | N | 3 | available |
 | #75 | 4 | ProofComplexity resolution width/size (pigeonhole width) | #71 (soft) | N | 2 | available |
