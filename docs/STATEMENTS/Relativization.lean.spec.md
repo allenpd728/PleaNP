@@ -59,6 +59,8 @@ If `P^A` and `NP^A` are `Set (Set α)`, then `P^A = NP^A` is set extensional equ
 
 **Acceptance criterion:** the query type `Q` is either concretely instantiated (and recorded) or existentially quantified. It is not left as an open universe variable. Gate 4 (read-back) checks this.
 
+<!-- Audit note (#54): the actual Lean declares `abbrev QueryType := List Bool` (and `abbrev InputType := List Bool`) in `lean/PleaNP/Barriers/Relativization.lean`, and both BGS clauses quantify `∃ A : Oracle QueryType` / `∃ B : Oracle QueryType`. The spec and the Lean agree; `PleaNP.Oracles.Oracle` is the total oracle type `Q → Bool`, and `QueryType` is its instance here. No re-flag needed. -->
+
 ---
 
 ## 4. What "done" looks like for `Relativization.lean` (the statement)
