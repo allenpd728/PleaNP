@@ -133,6 +133,30 @@ theorem parity_notin_AC0_relativizing (Q : Type) :
   intro _ _ _
   rfl
 
+/-! ## AC0 lower-bound structural core — depth-0 structure (issue #72 Pass 2)
+
+The structural pretext of the switching-lemma depth-reduction: a **depth-0
+circuit** is a single input gate (it reads one variable and nothing else),
+so it cannot compute parity at length 2. This pass lands the structural
+lemma (a depth-0 circuit is exactly an input gate); the concrete depth-0
+exclusion of parity and the depth-∞ switching-lemma reduction are the
+follow-up (tracked in #72 Pass 2's continuation).
+-/
+
+/-- A depth-0 circuit is an input gate: `depth c = 0` forces `c = input i`
+  for some variable `i` (every non-input gate has depth at least 1). -/
+theorem depth_eq_zero_iff_input {n : Nat} (c : BoolGate n) :
+    BoolGate.depth c = 0 ↔ ∃ i : Fin n, c = BoolGate.input i := by
+  constructor
+  · intro hd
+    cases c with
+    | input i => exact ⟨i, rfl⟩
+    | and a b => simp [BoolGate.depth] at hd
+    | or a b => simp [BoolGate.depth] at hd
+    | not a => simp [BoolGate.depth] at hd
+  · rintro ⟨i, rfl⟩
+    simp [BoolGate.depth]
+
 end Circuits
 
 end PleaNP

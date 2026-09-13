@@ -140,6 +140,7 @@ EXPECTED = {
     ("binder", "AC0.lean", "parity_zero"),
     ("binder", "AC0.lean", "parity_nontrivial"),
     ("binder", "AC0.lean", "parity_notin_AC0_relativizing"),
+    ("binder", "AC0.lean", "depth_eq_zero_iff_input"),  # #72 Pass 2 structural core
     # Issue #71 Pass 3: the must-refute suite's public API (MustRefute.lean)
     # — the validation-suite facts (constructive-universal, empty-not-large,
     # counting baseline) consumed by VALIDATION_SUITE.md and Rung-4 lower
