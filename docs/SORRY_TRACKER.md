@@ -60,13 +60,14 @@ Isolated module `lean/PleaNP/Barriers/DiagonalUB.lean` (not imported by
 BGSDiagonal) so `warningAsError` does not cascade. Proved zero-sorry:
 certificate encoding roundtrip (`encWord`/`decodeWord_encWord`), the
 guess-query-verify machine (`ubTM`/`ubM`), and its concrete-oracle
-behavior (`accepts_const_true`, `rejects_const_false`). Two remaining
-sorries, both tracked:
+behavior (`accepts_const_true`, `rejects_const_false`). Three remaining
+sorries, all tracked:
 
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 10 | `lean/PleaNP/Barriers/DiagonalUB.lean:258` | `accepts_depends_on_answer`: run-identity of `ubM B` vs the constant-oracle machine when the oracle answers the encoded query the same way — a step-by-step extensionality over `step`/`ubRun`/`ubCRun`. | #36 Pass 3 bridge work (filed as follow-up) | High |
-| 11 | `lean/PleaNP/Barriers/DiagonalUB.lean:269` | `U_B_in_NP`: assembles `U_B ∈ NP_A (alpha := Nat) B` from the bridge + `decodeWord_encWord` + `U_B_iff_witness` + time bound (`p = Polynomial.X`, 2-step run). | Row #10 + `length_ea_empty` | High |
+| 10 | `lean/PleaNP/Barriers/DiagonalUB.lean:309` | Reject-run identity inside `accepts_true_oracle`: the `evals_in_steps` proof that with oracle-false the machine's run ends in the no-branch (step-1 rewrite `step1false_eq` + the step-2 push are verified seeds; the bind-wise composition of `(flip bind step)^2` remains). | #93 Pass-3 bridge work (filed as follow-up) | High |
+| 10b | `lean/PleaNP/Barriers/DiagonalUB.lean:328` | `accepts_depends_on_answer`: run-identity of `ubM B` vs the constant-oracle machine when the oracle answers the encoded query the same way — step-by-step extensionality over `step`/`ubRun`. | #93 Pass-3 bridge work | High |
+| 11 | `lean/PleaNP/Barriers/DiagonalUB.lean:336` | `U_B_in_NP`: assembles `U_B ∈ NP_A (alpha := Nat) B` from the bridge + `decodeWord_encWord` + `U_B_iff_witness` + time bound (`p = Polynomial.X`, 2-step run). | Rows #10/#10b + `length_ea_empty` | High |
 
 ### Upstream-P anchor level (OracleUpstreamP.lean, new module)
 
