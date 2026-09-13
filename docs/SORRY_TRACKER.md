@@ -108,6 +108,14 @@ One tracked sorry:
 |---|---|---|---|---|
 | 12 | `lean/PleaNP/Barriers/DiagonalAssembly.lean:72` | `exists_separating_oracle_assembly` - the assembled "exists B, P_A B != NP_A B" (the BGS clause-(b) target #9). Needs the Machine-to-Code bridge (#23/#97 gap: poly-time oracle machines into Partrec.Code) plus the stage/tournament composition of the Diagonal* modules. | #23/#97 gap (Machine-to-Code bridge) + compose stage_step_exists over M_of-indices. | High when the bridge lands |
 
+### Monotone / Rung-4 model level (issue #74 Pass 1, 2026-09-13)
+
+`lean/PleaNP/Circuits/Monotone.lean` lands the **monotone-circuit model**
+zero-sorry: the no-NOT gate basis (`MonotoneGate`), its size/depth measures,
+and the **monotonicity theorem** (`monotone_eval_preserves_order`) — the
+defining structural property the Razborov CLIQUE bound exploits. Pass 2
+(approximation-reducer lemma) and Pass 3 (CLIQUE bound) are open proof work.
+
 ### Williams / Rung-4 statement level (issues #72/#88, 2026-09-13)
 
 `lean/PleaNP/Circuits/AC0.lean` (#72 Pass 1) renders the **parity ∉ AC⁰**

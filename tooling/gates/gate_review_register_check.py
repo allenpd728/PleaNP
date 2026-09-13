@@ -37,6 +37,7 @@ SCAN_SET = (
     "lean/PleaNP/Circuits/Basic.lean "
     "lean/PleaNP/Circuits/AC0.lean "
     "lean/PleaNP/Circuits/MustRefute.lean "
+    "lean/PleaNP/Circuits/Monotone.lean "
     "lean/PleaNP/Challenges/Relativization.lean "
     "lean/PleaNP/Computability/Oracle.lean "
     "lean/PleaNP/Computability/OracleComplexity.lean "
@@ -113,9 +114,14 @@ EXPECTED = {
     # Rung-4 circuit substrate API (issue #71 Pass 1): the typed
     # circuit-family foundation consumed by Pass 2/3 and all Rung-4
     # lower bounds — not dead code.
-    ("binder", "Basic.lean", "size_pos"),
     ("binder", "Basic.lean", "depth_size_le"),
     ("binder", "Basic.lean", "univ_largeness"),
+    # Monotone-circuit model (issue #74 Pass 1): the monotone gate
+    # basis + size/depth + monotonicity theorem, consumed by Pass 2/3
+    # (Razborov CLIQUE) and the #73 monotone classification — not dead code.
+    ("binder", "Monotone.lean", "monotone_eval_preserves_order"),
+    ("binder", "Monotone.lean", "MonotoneFamily.sizeOf"),
+    ("binder", "Monotone.lean", "monAnd2"),
     # Williams transfer statement anchors (issue #88 Pass 1): consumed by
     # #88 Pass 2/3 and #91 assembly — not dead code.
     ("binder", "Williams.lean", "IsACC0"),
@@ -167,7 +173,6 @@ EXPECTED = {
     # EXPECTED item — the rewritten Clause.eval exposes the reference, so the
     # scanner resolves it.)
     ("binder", "Resolution.lean", "simp"),
-    ("binder", "Resolution.lean", "eval"),
     ("binder", "Resolution.lean", "Clause.empty"),
     ("binder", "Resolution.lean", "CNF.width"),
     ("binder", "Resolution.lean", "ResDerivation.width"),

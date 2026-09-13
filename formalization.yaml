@@ -246,6 +246,10 @@ alignment:
       lean: "PleaNP.Barriers.Williams.CircuitSAT"
       module: "PleaNP.Barriers.Williams"
       status: "statement-rendered"
+    - source: "Monotone-circuit model (issue #74 Pass 1): monotone gate basis + size/depth + monotonicity theorem"
+      lean: "PleaNP.Circuits.MonotoneGate.eval"
+      module: "PleaNP.Circuits.Monotone"
+      status: "proved"
 
 acknowledgements: >-
  Mathlib, Lean 4, the integrity-gate tooling, prior-art sources per docs/PRIOR_ART.md,

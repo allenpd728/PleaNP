@@ -136,6 +136,8 @@ self-check).
 | binder | `algebrizing_separation_statement` / `algebrizing_equalization_statement` unreferenced | `Barriers/Algebrization.lean` | AW09 v1 statement references (issue #69 Pass 1): consumed by AZ5's proof assembly — not dead code; no-action |
 | binder | `size_pos` / `depth_size_le` / `CircuitFamily.depthOf` / `univ_largeness` unreferenced | `Circuits/Basic.lean` | Rung-4 circuit substrate API (issues #71 Pass 1-2): the typed circuit-family + P/poly + natural-property foundation consumed by Rung-4 lower bounds — not dead code; no-action |
 | binder | `IsPPoly` **RESOLVED (2026-09-13, #88 Pass 1)** | `Circuits/Basic.lean` | now referenced by `Williams.IsACC0` — no longer flagged |
+| binder | `monotone_eval_preserves_order` / `MonotoneFamily.sizeOf` / `monAnd2` unreferenced | `Circuits/Monotone.lean` | Monotone-circuit model (issue #74 Pass 1): the monotone gate basis + monotonicity theorem, consumed by Pass 2/3 (Razborov CLIQUE) + the #73 monotone classification — not dead code; no-action |
+| binder | `eval` / `depth` / `size_pos` (Monotone) **RESOLVED (2026-09-13, #74 Pass 1)** | `Circuits/Monotone.lean` | referenced in-module (monotonicity theorem, size examples) in the full scan set — no longer flagged |
 | binder | `NaturalProperty` **RESOLVED (2026-09-13, #71 Pass 3)** | `Circuits/Basic.lean` | now referenced by `Circuits/MustRefute.lean`'s `empty_not_natural` — no longer flagged |
 | binder | `and2` **RESOLVED (2026-09-13, #72 Pass 1)** | `Circuits/Basic.lean` | now referenced by `Circuits/AC0.lean`'s eval sanity examples — no longer flagged |
 | hygiene | `by decide` (1) | `Circuits/Basic.lean` | `Nat.one_le_pow` discharge in `univ_largeness` — same proof-body finiteness category as the OracleSmoke smells; no-action |

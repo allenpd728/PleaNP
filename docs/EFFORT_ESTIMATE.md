@@ -66,7 +66,7 @@ is an **external** dependency for Rung 6 only.
 | #70 | 4 | complexitylib dependency reconciliation | — | H | 3–6 | available |
 | #71 | 4 | PleaNP.Circuits + P/poly + natural-property definitions | #70 | N | 3 | Pass 2 done (2026-09-13); Pass 3 available |
 | #72 | 4 | AC⁰ lower bound: parity ∉ AC⁰ via switching lemma | #71 | N | 2 | available |
-| #74 | 4 | Monotone circuit bounds (Razborov CLIQUE) | #71 | N | 3 | available |
+| #74 | 4 | Monotone circuit bounds (Razborov CLIQUE) | #71 | N | 3 | Pass 1 done (2026-09-13); Pass 2 available |
 | #75 | 4 | ProofComplexity resolution width/size (pigeonhole width) | #71 (soft) | N | 2 | available |
 | #76 | 4 | Williams transfer: NEXP ⊄ ACC⁰ (non-relativizing existence) — umbrella; passes sub-issued as #88–#91 (claimable units) | #71, #72/#74 idioms | H | 10–15 (see #88–#91) | available |
 | #88 | 4 | Williams #76 Pass 1 — statement freeze: NEXP / ACC⁰ / CircuitSAT | #76, #71 (substrate) ; #70 gates the choice | N | 2–3 | Pass 1 done (2026-09-13); Pass 2 available |
