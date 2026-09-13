@@ -56,6 +56,8 @@ class TestExpectedRegister(unittest.TestCase):
         # AW09 v1 statement references (issue #69 Pass 1).
         self.assertIn(("binder", "Algebrization.lean", "algebrizing_separation_statement"), grc.EXPECTED)
         self.assertIn(("binder", "Algebrization.lean", "algebrizing_equalization_statement"), grc.EXPECTED)
+        # Rung-4 circuit substrate API (issue #71 Pass 1); module-leaf is Basic.lean.
+        self.assertIn(("binder", "Basic.lean", "CircuitFamily.sizeOf"), grc.EXPECTED)
         # `emptyOracle` no longer flagged (referenced by OracleV5Tests; #40).
         self.assertNotIn(("binder", "Oracle.lean", "emptyOracle"), grc.EXPECTED)
 

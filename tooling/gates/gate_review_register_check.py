@@ -30,6 +30,7 @@ SCAN_SET = (
     "lean/PleaNP/Benchmark/Closure.lean "
     "lean/PleaNP/Barriers/RelativizationProof.lean "
     "lean/PleaNP/Barriers/Algebrization.lean "
+    "lean/PleaNP/Circuits/Basic.lean "
     "lean/PleaNP/Challenges/Relativization.lean "
     "lean/PleaNP/Computability/Oracle.lean "
     "lean/PleaNP/Computability/OracleComplexity.lean "
@@ -93,6 +94,15 @@ EXPECTED = {
     # proof assembly — not dead code.
     ("binder", "Algebrization.lean", "algebrizing_separation_statement"),
     ("binder", "Algebrization.lean", "algebrizing_equalization_statement"),
+    # Rung-4 circuit substrate API (issue #71 Pass 1): the typed
+    # circuit-family foundation consumed by Pass 2/3 and all Rung-4
+    # lower bounds — not dead code.
+    ("binder", "Basic.lean", "size_pos"),
+    ("binder", "Basic.lean", "depth_size_le"),
+    ("binder", "Basic.lean", "BoolFunc"),
+    ("binder", "Basic.lean", "CircuitFamily.sizeOf"),
+    ("binder", "Basic.lean", "CircuitFamily.depthOf"),
+    ("binder", "Basic.lean", "and2"),
 
     # Issue #41 marker-funeq campaign rendering targets: registered in
     # churn/marker-funeq/renderings/*.json (multi_render slots) and machine-
