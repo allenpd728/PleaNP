@@ -65,10 +65,13 @@ class TestExpectedRegister(unittest.TestCase):
         self.assertIn(("binder", "Basic.lean", "CircuitFamily.depthOf"), grc.EXPECTED)
         self.assertIn(("binder", "Basic.lean", "IsPPoly"), grc.EXPECTED)
         self.assertIn(("hygiene", "Basic.lean", "by decide"), grc.EXPECTED)  # univ_largeness discharge
-        # Rung-4 AC0 milestone (issue #72 Pass 1).
-        self.assertIn(("binder", "AC0.lean", "parity_notin_AC0"), grc.EXPECTED)
+        # Rung-4 AC0 milestone (issue #72 Pass 1 + #73 Pass 2).
+        # parity_notin_AC0 not in register: referenced by the #73 Pass 2
+        # classification theorem parity_notin_AC0_relativizing.
+        self.assertNotIn(("binder", "AC0.lean", "parity_notin_AC0"), grc.EXPECTED)
         self.assertIn(("binder", "AC0.lean", "parity_zero"), grc.EXPECTED)
         self.assertIn(("binder", "AC0.lean", "parity_nontrivial"), grc.EXPECTED)
+        self.assertIn(("binder", "AC0.lean", "parity_notin_AC0_relativizing"), grc.EXPECTED)
         # `emptyOracle` no longer flagged (referenced by OracleV5Tests; #40).
         self.assertNotIn(("binder", "Oracle.lean", "emptyOracle"), grc.EXPECTED)
 

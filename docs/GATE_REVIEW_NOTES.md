@@ -265,20 +265,18 @@ as hypothesis types) and the per-direction lemmas (`uniform_collapse_...`,
 scanner no longer flags them as unreferenced. Those EXPECTED entries were
 removed accordingly; the remaining register matches the fired set.
 
-### `AC0.lean` — the AC0 milestone public API (issue #72 Pass 1)
+### `AC0.lean` — the AC0 milestone public API (issue #72 Pass 1 + #73 Pass 2)
 
-`binder_usage_scan.py` flags the Pass-1 milestone's public API:
-- `parity_notin_AC0` — the frozen lower-bound statement (consumed by Pass 2
-  and Gate 4 read-back; a `def`, not a dead declaration).
+`binder_usage_scan.py` flags the AC0 milestone's public API:
 - `parity_zero` / `parity_nontrivial` — the structural parity facts giving
   the statement content (parity is a genuine, non-constant family).
+- `parity_notin_AC0_relativizing` — the #73 Pass 2 classification: the AC0
+  lower-bound claim is oracle-uniform (relativizing) via the Rung-4 method.
+- `parity_notin_AC0` itself is NOT flagged anymore — the classification
+  theorem references it, so the scanner resolves it.
 
-All demonstrated-intentional public API of the Rung-4 AC0 milestone.
-(`Basic.lean`'s `and2` was in the register but self-resolved once AC0.lean's
-eval sanity examples referenced it.)
-
-**Disposition.** No-action. The register EXPECTED set is updated to include
-these items so the machine-check agrees.
+**Disposition.** No-action. The register EXPECTED set reflects the current
+set (structural facts + the classification theorem).
 
 ## 4. BGS clause-(a) A2/A3 console-oracle API (issue #63)
 
