@@ -147,6 +147,18 @@ status:
      - "Classical.choice"
      - "Quot.sound"
    status: "validated-in-ci"
+ - description: >-
+     Monotone-circuit approximation reducer (Razborov, issue #74 Pass 2): the sm-AND/sm-OR
+     approximators over the monotone substrate with size bounds + membership identities +
+     the structural reducer (clean, green in CI; the CLIQUE counting bound follows in Pass 3)
+   declaration: "PleaNP.Circuits.MonotoneApprox.sm_and_size_le"
+   file: "lean/PleaNP/Circuits/MonotoneApprox.lean"
+   sorry_count: 0
+   axioms:
+     - "propext"
+     - "Classical.choice"
+     - "Quot.sound"
+   status: "validated-in-ci"
 
 automation:
  methods:

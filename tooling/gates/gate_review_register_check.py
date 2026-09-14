@@ -36,6 +36,7 @@ SCAN_SET = (
     "lean/PleaNP/Barriers/WilliamsTransfer.lean "
     "lean/PleaNP/Barriers/WilliamsSat.lean "
     "lean/PleaNP/Circuits/Basic.lean "
+    "lean/PleaNP/Circuits/MonotoneApprox.lean "
     "lean/PleaNP/Circuits/AC0.lean "
     "lean/PleaNP/Circuits/MustRefute.lean "
     "lean/PleaNP/Circuits/Monotone.lean "
@@ -121,7 +122,7 @@ EXPECTED = {
     # basis + size/depth + monotonicity theorem, consumed by Pass 2/3
     # (Razborov CLIQUE) and the #73 monotone classification — not dead code.
     ("binder", "Monotone.lean", "monotone_eval_preserves_order"),
-    ("binder", "Monotone.lean", "MonotoneFamily.sizeOf"),
+
     ("binder", "Monotone.lean", "monAnd2"),
     # Williams transfer statement anchors (issue #88 Pass 1): consumed by
     # #88 Pass 2/3 and #91 assembly — not dead code.
@@ -166,7 +167,24 @@ EXPECTED = {
     ("binder", "MustRefute.lean", "univ_property_constructive"),
     ("binder", "MustRefute.lean", "empty_not_natural"),
     ("binder", "MustRefute.lean", "boolfunc_card"),
-    # Issue #75 Pass 1: the resolution substrate API (Resolution.lean) —
+    # Monotone-circuit approximation reducer (issue #74 Pass 2): the
+    # sm-AND/sm-OR approximators, their size bounds, membership identities,
+    # and the reducer, of lean/PleaNP/Circuits/MonotoneApprox.lean — public
+    # proof-work API consumed by Pass 3 (the CLIQUE counting bound). The
+    # `m`/`a`/`b` tokens are the binder's weak-witness/vacuous-forall notes
+    # on the honest `∀ i ∈ m, ...` and paired-`∃` statement shapes (same
+    # register pattern as `y` in OracleComplexity.lean).
+    ("binder", "MonotoneApprox.lean", "sm_or_size_le"),
+    ("binder", "MonotoneApprox.lean", "sm_and_size_le"),
+    ("binder", "MonotoneApprox.lean", "sm_or_mem"),
+    ("binder", "MonotoneApprox.lean", "sm_and_mem"),
+    ("binder", "MonotoneApprox.lean", "approximate_nonempty"),
+    ("binder", "MonotoneApprox.lean", "MonomialEval"),
+    ("binder", "MonotoneApprox.lean", "m"),
+    ("binder", "MonotoneApprox.lean", "a"),
+    ("binder", "MonotoneApprox.lean", "b"),
+        # Issue #75 Pass 1: the resolution substrate API (Resolution.lean) —
+
     # `eval` is referenced internally by Clause.eval but the scanner resolves
     # only top-level name references; `Clause.empty`, `CNF.width`,
     # `ResDerivation.size/.width` are the public substrate measures;
