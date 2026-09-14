@@ -266,6 +266,10 @@ alignment:
       lean: "PleaNP.Barriers.WilliamsTransfer.williams_transfer"
       module: "PleaNP.Barriers.WilliamsTransfer"
       status: "statement-rendered"
+    - source: "Williams transfer assembly (issue #91 Pass 4): final NEXP not-subset ACC0 + assembled classification record"
+      lean: "PleaNP.Barriers.WilliamsAssembly.final_NEXP_not_subset_ACC0"
+      module: "PleaNP.Barriers.WilliamsAssembly"
+      status: "statement-rendered"
 
 acknowledgements: >-
  Mathlib, Lean 4, the integrity-gate tooling, prior-art sources per docs/PRIOR_ART.md,
