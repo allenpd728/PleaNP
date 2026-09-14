@@ -127,6 +127,15 @@ sub-exponential ACC⁰-CircuitSAT bound (#89 gap: `acc0SatSubExpBound`,
 Shah–Shetty Good-SAT) + the NTIME-to-CircuitSAT encoding — a decomposed
 sub-lemma follow-up (no sorry).
 
+### Williams transfer assembly level (issue #91 Pass 4, 2026-09-13)
+
+`lean/PleaNP/Barriers/WilliamsAssembly.lean` assembles the four passes
+into the final `NEXP ⊄ ACC⁰` statement (`final_NEXP_not_subset_ACC0`)
++ the transfer closure + the classification record; the classification
+note is `docs/STATEMENTS/WilliamsTransfer.classification.md`. The full
+zero-sorry PROOF is blocked on the tracked sub-exponential bound
+(#89 gap / #98 follow-up) — never a sorry, per #76 DoD fallback.
+
 ### Williams / Rung-4 statement level (issues #72/#88, 2026-09-13)
 
 `lean/PleaNP/Circuits/AC0.lean` (#72 Pass 1) renders the **parity ∉ AC⁰**

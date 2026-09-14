@@ -73,6 +73,8 @@ class TestExpectedRegister(unittest.TestCase):
         # williams_transfer NOT in register: #90 Pass 3's #barrier_check
         # references it, so it stops firing.
         self.assertNotIn(("binder", "WilliamsTransfer.lean", "williams_transfer"), grc.EXPECTED)
+
+        self.assertIn(("binder", "WilliamsAssembly.lean", "assembled_classification"), grc.EXPECTED)
         # Monotone-circuit model (issue #74 Pass 1).
         self.assertIn(("binder", "Monotone.lean", "monotone_eval_preserves_order"), grc.EXPECTED)
         # Rung-4 AC0 milestone (issue #72 Pass 1).

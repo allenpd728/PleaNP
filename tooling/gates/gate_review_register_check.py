@@ -34,6 +34,7 @@ SCAN_SET = (
     "lean/PleaNP/Barriers/AlgebrizationProof.lean "
     "lean/PleaNP/Barriers/Williams.lean "
     "lean/PleaNP/Barriers/WilliamsTransfer.lean "
+    "lean/PleaNP/Barriers/WilliamsAssembly.lean "
     "lean/PleaNP/Barriers/WilliamsSat.lean "
     "lean/PleaNP/Circuits/Basic.lean "
     "lean/PleaNP/Circuits/MonotoneApprox.lean "
@@ -132,6 +133,9 @@ EXPECTED = {
     ("binder", "WilliamsTransfer.lean", "williams_classification_asserted"),
     # NOTE: williams_transfer is NOT in the register anymore — #90 Pass 3's
     # #barrier_check williams_transfer references it, so it stops firing.
+
+    ("binder", "WilliamsAssembly.lean", "assembled_williams_transfer"),
+    ("binder", "WilliamsAssembly.lean", "assembled_classification"),
     # Issue #89 Pass 2: the CircuitSAT-decider milestone public API
     # (WilliamsSat.lean) ŌĆö correctness + verified runtime-baseline theorems,
     # the sub-exp tracked goal, and the sat smoke.
