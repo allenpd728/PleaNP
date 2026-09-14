@@ -157,6 +157,53 @@ theorem depth_eq_zero_iff_input {n : Nat} (c : BoolGate n) :
   · rintro ⟨i, rfl⟩
     simp [BoolGate.depth]
 
+
+/-! ## AC0 lower-bound structural core -- depth-1 exclusion (issue #72 Pass 2)
+
+The second rung of the depth ladder (after `depth_eq_zero_iff_input`). A
+**depth-1** circuit is one gate over input literals: a negated literal, an
+AND/OR of literals, or a negated AND/OR over input gates. Parity at length 2
+is neither constant nor a (negated) projection, so no depth-1 circuit
+computes it. The proof cases on the top gate, uses the depth-0 lemma to
+force children to input gates, then closes each concrete two-input shape by
+`decide` (the `Fin 2` function space is finite).
+-/
+
+/-- **Depth-1 parity exclusion (all shapes).** No length-2 depth-1 circuit
+  computes parity. The whole function space `Fin 2 -> Bool` is finite, so
+  `decide` closes the universally-quantified shape: for every depth-1
+  circuit, some assignment witnesses the failure. -/
+theorem not_computes_parity_depth1 :
+    forall c : BoolGate 2, BoolGate.depth c = 1 ->
+      Not (forall v : Fin 2 -> Bool, BoolGate.eval c v = parity 2 v) := by
+  intro c hd
+  -- Case on the top gate (named binders); depth-1 forces each child to be
+  -- depth-0 (an input gate), after which `decide` closes the concrete
+  -- two-input shape.
+  cases c with
+  | input i => simp [BoolGate.depth] at hd
+  | and a b =>
+      have hda : 1 + max (BoolGate.depth a) (BoolGate.depth b) = 1 := by
+        simpa [BoolGate.depth] using hd
+      have ha0 : BoolGate.depth a = 0 := by omega
+      have hb0 : BoolGate.depth b = 0 := by omega
+      rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨ia, rfl⟩
+      rcases (depth_eq_zero_iff_input b).1 hb0 with ⟨ib, rfl⟩
+      fin_cases ia <;> fin_cases ib <;> decide
+  | or a b =>
+      have hda : 1 + max (BoolGate.depth a) (BoolGate.depth b) = 1 := by
+        simpa [BoolGate.depth] using hd
+      have ha0 : BoolGate.depth a = 0 := by omega
+      have hb0 : BoolGate.depth b = 0 := by omega
+      rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨ia, rfl⟩
+      rcases (depth_eq_zero_iff_input b).1 hb0 with ⟨ib, rfl⟩
+      fin_cases ia <;> fin_cases ib <;> decide
+  | not a =>
+      have ha0 : BoolGate.depth a = 0 := by
+        simpa [BoolGate.depth] using hd
+      rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨ia, rfl⟩
+      fin_cases ia <;> decide
+
 end Circuits
 
 end PleaNP

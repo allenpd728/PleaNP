@@ -282,7 +282,12 @@ removed accordingly; the remaining register matches the fired set.
 - `parity_notin_AC0_relativizing` — the #73 Pass 2 classification: the AC0
   lower-bound claim is oracle-uniform (relativizing) via the Rung-4 method.
 - `depth_eq_zero_iff_input` — the #72 Pass 2 structural core: a depth-0
-  circuit is exactly an input gate (the depth-ladder first rung).
+  circuit is exactly an input gate (the depth-ladder first rung); referenced
+  by `not_computes_parity_depth1`, so it is no longer flagged.
+- `not_computes_parity_depth1` — the #72 Pass 2 depth-1 exclusion: no
+  length-2 depth-1 circuit computes parity (the depth-ladder second rung).
+  NOT flagged: it uses `depth_eq_zero_iff_input` and closes each two-input
+  shape by decide over the finite `Fin 2 -> Bool` space.
 - `parity_notin_AC0` itself is NOT flagged anymore — the classification
   theorem references it, so the scanner resolves it.
 
