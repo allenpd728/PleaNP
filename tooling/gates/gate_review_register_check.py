@@ -9,7 +9,7 @@ Runs the four Tier-1 gate scans against the CI scan set and asserts:
   3. an unexpected REVIEW item fails the check with its text, so a new scan
      finding cannot silently appear once the register is established.
 
-Stdlib-only, no Lean, no secrets — mirrors the ci.yml invocations exactly, so
+Stdlib-only, no Lean, no secrets ŌĆö mirrors the ci.yml invocations exactly, so
 it is a runnable local oracle for the register.
 
 Usage:
@@ -60,17 +60,17 @@ EXPECTED = {
     ("hygiene", "OracleV5Tests.lean", "by decide"),
     ("hygiene", "Basic.lean", "by decide"),  # Nat.one_le_pow discharge in univ_largeness
     ("binder", "BarrierVerdictB.lean", "abstractPVsNP_iff_verdictB"),
-    ("binder", "OracleComplexity.lean", "y"),             # weak witness ∃ y
-    ("binder", "OracleComplexity.lean", "UpstreamPolyTime"),  # P^∅ = P anchor RHS
-    # NOTE: P_A_subset_NP_A is NOT in the register anymore — #63 Pass 3's
+    ("binder", "OracleComplexity.lean", "y"),             # weak witness Ōłā y
+    ("binder", "OracleComplexity.lean", "UpstreamPolyTime"),  # P^Ōłģ = P anchor RHS
+    # NOTE: P_A_subset_NP_A is NOT in the register anymore ŌĆö #63 Pass 3's
     # P_subset_NP_console references it, so the binder stops flagging it.
     # Rung-5 soundness lemma API (issue #65): library-level uniformity
     # lemmas, intentional public API for downstream proofs (see
-    # docs/GATE_REVIEW_NOTES.md §3).
+    # docs/GATE_REVIEW_NOTES.md ┬¦3).
     ("binder", "Soundness.lean", "funeq_uniform"),
     ("binder", "Soundness.lean", "funne_uniform"),
     ("binder", "Soundness.lean", "relAtom_uniform"),
-    # NOTE: Soundness.pA_mem_uniform is NOT in the register anymore — #73
+    # NOTE: Soundness.pA_mem_uniform is NOT in the register anymore ŌĆö #73
     # Pass 1's Classification.classification_uniform references it.
     ("binder", "Soundness.lean", "sound_verdict_abstract_rev"),
     ("binder", "Soundness.lean", "transfer_under_ext"),
@@ -87,22 +87,22 @@ EXPECTED = {
     ("binder", "Relativization.lean", "equalizing_oracle_statement"),
     ("binder", "Relativization.lean", "separating_oracle_statement"),
     # Rung-4 barrier-classification method (issue #73 Pass 1): the
-    # classification spine + A3 method demo — intentional public API for the
+    # classification spine + A3 method demo ŌĆö intentional public API for the
     # per-family classification instances (#72/#74/#75/#76).
     ("binder", "Classification.lean", "classification_uniform"),
     ("binder", "Classification.lean", "oneQuery_classification_uniform"),
     # BGS clause-(a) proof-work API (issues #63/#62): the console-oracle +
-    # one-query-machine lemmas beyond the §3.3 barrier-consequence set above,
-    # intentional public API for the A3/A5 assembly (GATE_REVIEW_NOTES.md §4).
+    # one-query-machine lemmas beyond the ┬¦3.3 barrier-consequence set above,
+    # intentional public API for the A3/A5 assembly (GATE_REVIEW_NOTES.md ┬¦4).
     ("binder", "RelativizationProof.lean", "consoleOracleHead_computable"),
     ("binder", "RelativizationProof.lean", "consoleLang_mem_P_false"),
     ("binder", "RelativizationProof.lean", "P_subset_NP_console"),
-    # DEC-022 §3.3 paper-statement layout (issue #66): RelativizationProof
+    # DEC-022 ┬¦3.3 paper-statement layout (issue #66): RelativizationProof
     # holds the provable barrier-consequence lemmas, consumed onward by the
-    # #37/#63 assembly work — not dead code.
+    # #37/#63 assembly work ŌĆö not dead code.
     ("binder", "RelativizationProof.lean", "no_uniform_resolution_of_p_vs_np"),
     # Sibling #63 A2 console-oracle instances (issue #63 Pass 1): public
-    # proof-work API, consumed onward by A3/A5 — not dead code.
+    # proof-work API, consumed onward by A3/A5 ŌĆö not dead code.
     ("binder", "RelativizationProof.lean", "consoleOracleHead_computable"),
     # AW09 AZ3 barrier-consequence lemmas (issue #69 Pass 2): the
     # algebrizing-uniformity incompatibility theorems of
@@ -115,24 +115,25 @@ EXPECTED = {
     ("binder", "AlgebrizationProof.lean", "no_algebrizing_uniform_resolution"),
     # Rung-4 circuit substrate API (issue #71 Pass 1): the typed
     # circuit-family foundation consumed by Pass 2/3 and all Rung-4
-    # lower bounds — not dead code.
+    # lower bounds ŌĆö not dead code.
     ("binder", "Basic.lean", "depth_size_le"),
     ("binder", "Basic.lean", "univ_largeness"),
     # Monotone-circuit model (issue #74 Pass 1): the monotone gate
     # basis + size/depth + monotonicity theorem, consumed by Pass 2/3
-    # (Razborov CLIQUE) and the #73 monotone classification — not dead code.
+    # (Razborov CLIQUE) and the #73 monotone classification ŌĆö not dead code.
     ("binder", "Monotone.lean", "monotone_eval_preserves_order"),
 
     ("binder", "Monotone.lean", "monAnd2"),
     # Williams transfer statement anchors (issue #88 Pass 1): consumed by
-    # #88 Pass 2/3 and #91 assembly — not dead code.
+    # #88 Pass 2/3 and #91 assembly ŌĆö not dead code.
     ("binder", "Williams.lean", "circuitSAT_tautology"),
     # Williams transfer theorem statement (issue #90 Pass 3): consumed by
-    # #91 assembly — not dead code.
-    ("binder", "WilliamsTransfer.lean", "williams_transfer"),
+    # #91 assembly ŌĆö not dead code.
     ("binder", "WilliamsTransfer.lean", "williams_classification_asserted"),
+    # NOTE: williams_transfer is NOT in the register anymore — #90 Pass 3's
+    # #barrier_check williams_transfer references it, so it stops firing.
     # Issue #89 Pass 2: the CircuitSAT-decider milestone public API
-    # (WilliamsSat.lean) — correctness + verified runtime-baseline theorems,
+    # (WilliamsSat.lean) ŌĆö correctness + verified runtime-baseline theorems,
     # the sub-exp tracked goal, and the sat smoke.
     ("binder", "WilliamsSat.lean", "acc0SatBrute_correct"),
     ("binder", "WilliamsSat.lean", "acc0SatSteps_eq"),
@@ -152,8 +153,8 @@ EXPECTED = {
     # benchmark docs (docs/BENCHMARK.md baseline run), not dead code.
     ("binder", "Closure.lean", "emptyLang_in_UpstreamPolyTime"),
     ("binder", "Closure.lean", "univLang_in_UpstreamPolyTime"),
-    # Issue #72 Pass 1 + #73 Pass 2: the AC⁰ milestone's public API
-    # (AC0.lean) — the structural parity facts and the #73 Pass 2
+    # Issue #72 Pass 1 + #73 Pass 2: the ACŌü░ milestone's public API
+    # (AC0.lean) ŌĆö the structural parity facts and the #73 Pass 2
     # classification theorem. parity_notin_AC0 itself is NOT registered
     # (referenced by parity_notin_AC0_relativizing, so it stops firing).
     ("binder", "AC0.lean", "parity_zero"),
@@ -161,7 +162,7 @@ EXPECTED = {
     ("binder", "AC0.lean", "parity_notin_AC0_relativizing"),
     ("binder", "AC0.lean", "depth_eq_zero_iff_input"),  # #72 Pass 2 structural core
     # Issue #71 Pass 3: the must-refute suite's public API (MustRefute.lean)
-    # — the validation-suite facts (constructive-universal, empty-not-large,
+    # ŌĆö the validation-suite facts (constructive-universal, empty-not-large,
     # counting baseline) consumed by VALIDATION_SUITE.md and Rung-4 lower
     # bounds. Demonstrated-intentional.
     ("binder", "MustRefute.lean", "univ_property_constructive"),
@@ -191,7 +192,7 @@ EXPECTED = {
     # `ResDerivation.sound` is the headline soundness theorem; `simp` is a
     # `@[simp]`-attribute misread (binder). All demonstrated-intentional,
     # consumed by Pass 2 (pigeonhole width bound). (`var` is no longer an
-    # EXPECTED item — the rewritten Clause.eval exposes the reference, so the
+    # EXPECTED item ŌĆö the rewritten Clause.eval exposes the reference, so the
     # scanner resolves it.)
     ("binder", "Resolution.lean", "simp"),
     ("binder", "Resolution.lean", "Clause.empty"),
@@ -200,11 +201,11 @@ EXPECTED = {
     ("binder", "Resolution.lean", "ResDerivation.sound"),
 
 }
-# NOTE (2026-09-13): `emptyOracle` is no longer an EXPECTED item — the
+# NOTE (2026-09-13): `emptyOracle` is no longer an EXPECTED item ŌĆö the
 # word-query test module (OracleV5Tests.lean, issue #40) references it, so
 # the binder scanner no longer reports it as unreferenced.
-# `UpstreamPolyTime` (OracleComplexity.lean) is the P^∅ = P compatibility
-# RHS (the function→language bridge per OracleTM2Recompose Trap 1); it is
+# `UpstreamPolyTime` (OracleComplexity.lean) is the P^Ōłģ = P compatibility
+# RHS (the functionŌåÆlanguage bridge per OracleTM2Recompose Trap 1); it is
 # the anchor for #4/#40 upstream-P work, not dead code.
 
 

@@ -2,6 +2,7 @@ import PleaNP.Barriers.Williams
 import PleaNP.Barriers.WilliamsSat
 import PleaNP.Circuits.Basic
 import PleaNP.Circuits.AC0
+import PleaNP.Calculus.BarrierCalculus
 
 set_option warningAsError true
 
@@ -96,6 +97,19 @@ def williams_classification_asserted : Prop :=
   NonNatural NEXP_not_subset_ACC0 ∧
   NonAlgebrizing NEXP_not_subset_ACC0
 
+/-! ## Barrier-classification verification (issue #90 Pass 3)
+
+The Williams transfer is the **non-relativizing** lower bound: the statement
+`williams_transfer` (and `NEXP_not_subset_ACC0`) deliberately carries **no**
+`Relativizing` instance — nothing in its body is an oracle-uniform atom, so
+`#barrier_check` must report **Inconclusive** (not ruled out by BGS). This
+is the honest classification record the #90 DoD asks to *record* (proven in
+#91/Pass 4): the negative instance-check here is the machine-verifiable half
+of "non-relativizing".
+-/
+
+#barrier_check williams_transfer
+#barrier_check NEXP_not_subset_ACC0
 
 end Williams
 
