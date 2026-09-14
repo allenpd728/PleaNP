@@ -11,6 +11,8 @@ A Lean 4 / Mathlib project formalizing the **barrier landscape** of computationa
 - **A lower-bound compiler**: Williams' transfer theorem as a Lean elaborator (verify an algorithm + runtime bound → get a circuit lower bound), plus the supporting circuit- and proof-complexity library.
 
 > Full background below, or jump to [scope & non-scope](#scope-and-non-scope).
+>> **Built with agentic AI tooling.** The author specified the architecture and validated the machine-checked proofs; agent-based coding workflows produced and iterated on the Lean formalizations. See commit history.
+
 
 ## Why this project exists
 
