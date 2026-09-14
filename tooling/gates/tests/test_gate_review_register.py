@@ -70,7 +70,9 @@ class TestExpectedRegister(unittest.TestCase):
         # classification theorem parity_notin_AC0_relativizing.
         self.assertNotIn(("binder", "AC0.lean", "parity_notin_AC0"), grc.EXPECTED)
         # Williams-transfer statement anchors (issues #88 Pass 1 / #90 Pass 3).
-        self.assertIn(("binder", "WilliamsTransfer.lean", "williams_transfer"), grc.EXPECTED)
+        # williams_transfer NOT in register: #90 Pass 3's #barrier_check
+        # references it, so it stops firing.
+        self.assertNotIn(("binder", "WilliamsTransfer.lean", "williams_transfer"), grc.EXPECTED)
         # Monotone-circuit model (issue #74 Pass 1).
         self.assertIn(("binder", "Monotone.lean", "monotone_eval_preserves_order"), grc.EXPECTED)
         # Rung-4 AC0 milestone (issue #72 Pass 1).
