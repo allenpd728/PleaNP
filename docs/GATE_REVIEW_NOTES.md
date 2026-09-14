@@ -318,6 +318,26 @@ Williams umbrella (#76/#90/#91).
 **Disposition.** No-action. The register EXPECTED set is updated to include
 these items so the machine-check agrees.
 
+## 3.6 Monotone-circuit approximation reducer (issue #74 Pass 2)
+
+**Sweep lineage:** run=20260913-2232-9297 (issue #74 Pass 2).
+
+`binder_usage_scan.py` flags the structural API of
+`lean/PleaNP/Circuits/MonotoneApprox.lean` (`sm_or_size_le`,
+`sm_and_size_le`, `sm_or_mem`, `sm_and_mem`, `approximate_nonempty`,
+`MonomialEval`, and the `m`/`a`/`b` weak-witness tokens) as referenced by
+no other scanned declaration / weakly-constrained. They are the
+**intentional public API** of the approximation-reducer milestone — the
+sm-AND/sm-OR approximators (+ size bounds + membership identities) that
+Pass 3's CLIQUE counting bound consumes. The `m`/`a`/`b` tokens are the
+binder's notes on the honest `∀ i ∈ m, ...` and paired-`∃` statement
+shapes (same register pattern as `y` in `OracleComplexity.lean`).
+
+**Disposition.** No-action. Registered in
+`tooling/gates/gate_review_register_check.py` EXPECTED. Adding the module
+to the scan set resolved `Monotone.lean`'s `MonotoneFamily.sizeOf` (no
+longer flagged), so that EXPECTED entry was removed.
+
 ## 4. BGS clause-(a) A2/A3 console-oracle API (issue #63)
 
 **Sweep lineage:** run=20260913-1020-GY2l (issue #63).
