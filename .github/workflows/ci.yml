@@ -1,8 +1,17 @@
 name: CI
 
 on:
+  # `dev` is the integration branch and carries most of the work (116 commits
+  # ahead of main as of 2026-09-16), so it needs CI feedback on push -- not only
+  # at merge time. Before this was added, the build/test workflow had NEVER run
+  # on dev, which let a structurally-broken galaxy check and a stale artifact
+  # accumulate undetected (issue #103).
+  #
+  # `main` stays in the list: it is the reviewed branch, and a push there should
+  # still be verified. PRs to main also remain gated (issue #104 discusses the
+  # trigger policy).
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
     branches: [main]
 

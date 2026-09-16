@@ -366,7 +366,12 @@ def build_galaxy(repo_root: Path, metadata: dict | None = None) -> Galaxy:
                                          GATE_COLORS["unresolved"])
 
     meta = {
-        "repo": str(repo_root),
+        # Location-independent by design: the committed galaxy.html is
+        # byte-compared against a regeneration by CI's "Galaxy regen smoke"
+        # step, which runs in a different directory (actions/checkout uses
+        # /home/runner/work/<repo>/<repo>). An absolute path here made that
+        # step fail unconditionally, independent of staleness (issue #103).
+        "repo": "PleaNP",
         "generated": datetime.datetime.now().isoformat(timespec="seconds"),
         "generator": "galaxy_data.build_galaxy (stdlib; issue #86)",
         **(metadata or {}),
