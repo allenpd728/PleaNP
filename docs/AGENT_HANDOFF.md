@@ -30,17 +30,25 @@ conventions; this doc is the "what do I do on day one" summary.
 7. **No task available?** Fall through: `Tests:` issues → PR review comments →
    blockers. Only when all are exhausted is the queue empty.
 
-## Current state (2026-09-06)
+## Current state (2026-09-16, run=20260916-1622-p8k2)
 
-- **Working tree:** clean at `main`/`dev` `8939367` (fast-forwarded).
+- **Working tree:** `dev` — sweep + `#80` Pass 2 landed (see below).
 - **Lean builds:** clean modules green (BarrierCalculus, Oracle substrate,
-  BgsRenderings); `lean/PleaNP/Barriers/Relativization.lean` + `lean/PleaNP/Computability/OracleUpstreamP.lean` fail ONLY on
-  their tracked sorries (expected; see SORRY_TRACKER).
-- **Tools (all tested; pytest tooling/gates/tests/ tooling/reviews/tests/ — 75 passing at this commit):** hygiene/vacuity/model/binder scans,
-  `axiom_check.py` (no sorryAx), `lean_readback.py`, `readback.py` (two
-  translators must agree), `dual_render.py` (+`--lemma`), `statement_lint.py`
-  (pure-code shape classification), `multi_render.py` (init/render/check/mine),
-  `review_inbox.py` (add/index/confirm/flag/perturb/requeue/fatigue).
+  Williams chain, Circuit substrate, **LowerBoundCompiler**);
+  `lean/PleaNP/Barriers/Relativization.lean`,
+  `lean/PleaNP/Barriers/DiagonalAssembly.lean` + `lean/PleaNP/Computability/OracleUpstreamP.lean`
+  fail ONLY on their tracked sorries (expected; see SORRY_TRACKER).
+- **Queue sweep (2026-09-16):** five stale `status:claimed` claims reclaimed to
+  `status:available` (#37/#72/#74/#90/#91 — heartbeats 2 days old, commits
+  verified landed); the completed Williams-transfer passes closed
+  (#88/#89/#90/#91 `status:done`, umbrella #76 closed; residual proof = #98);
+  #22 closed as superseded by the #37 chain; #23 unblocked to `available`.
+  **Label drift is real — re-sweep before claiming.**
+- **Tools (all tested; `pytest tooling/` — 176 passing):** hygiene/vacuity/model/
+  binder/unicode/pass scans, `axiom_check.py` (no sorryAx), `lean_readback.py`,
+  `readback.py`, `dual_render.py`, `statement_lint.py`, `multi_render.py`,
+  `review_inbox.py`, `lakefile_sync_check.py`, `docs_links_scan.py`
+  (**pre-existing 43 broken refs — not CI-wired**).
 - **Repo hydrology:** `docs/REVIEW_INBOX.md` (human review surface),
   `docs/GRANT_READINESS.md` (funding gap analysis),
   `docs/STATEMENTS/SEMANTIC_APPROVAL.md` + `HUMAN_REVIEW_LAYERS.md`.
