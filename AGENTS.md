@@ -50,6 +50,10 @@ Scope note (2026-09-06, DEC-012): three components added — Barrier Calculus (R
 | `docs/ARCHITECTURE.md` | The gate pipeline (integrity architecture) |
 | `docs/FAILURE_AUDIT.md` | Prior attempts at "formalized P vs NP" and how they failed |
 | `docs/PRIOR_ART.md` | Cross-assistant prior-art survey + AI-tooling landscape (validates "no barriers formalized anywhere") |
+| `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` | **Lessons from the 2026-09-08 AI-assisted Navier–Stokes/Euler Lean releases** (`openai/NavierStokesAndEuler`, `tristanbuckmaster/fluid_lean`) — verified facts, what they do/don't establish, three adoptions (Comparator challenge, `formalization.yaml`, standalone-paper-theorem files) per DEC-022, and anti-patterns not copied. Read before touching statement-fidelity machinery or the BGS proof path (`#18`). |
+| `docs/STATEMENTS/ComparatorChallenge.template.md` | **Template: independent machine-checkable reference statement ("Comparator challenge") for every frozen PleaNP statement** (DEC-022): challenge module in `lean/PleaNP/Challenges/` must **not** be imported bythe proof root; JSON pin(theorem names + `permitted_axioms`); `lake exe comparator`-style check when available. **Read before rendering any barrier statement into Lean.** |
+| `docs/STATEMENTS/ProofIntuition.template.md` | **Template: proof-intuition record (human-legibility deliverable for an AI-discovered formal claim,** DEC-023: 5-layer plain-words construction, load-bearing-choice audit, perturbation tests, cheap-outs confession, steelman, reviewer checklist——the "explanation" slot authority at the frontier. File per AI-discovered claim,reviewed with Gate 4,before citing as authoritative. **Run the load-bearing-choice audit (also in `docs/VALIDATION_SUITE.md`) alongside Gate 4 for any barrier/lower-bound proof.** |
+| `formalization.yaml` | **Repo-root machine-readable statement manifest (v0.4, DEC-022):** per declaration: informal source ↔ Lean declaration ↔ file ↔ sorry_count ↔ axioms ↔ comparator_config ↔ review status. Declarative data;the gate scanners remain the executables. **Checked artifact — must be parse-valid YAML at commit time** (parsed by `tooling/galaxy/miniyaml.py`; Galaxy/CI consume it). Add/update rows in the same commit as every proof freeze (same rule as `docs/SORRY_TRACKER.md`). |
 | `docs/PLAYBOOK.md` | **Prior groundwork indexed by trigger point** — at each rung / workflow step, which prior art applies and what to do with it (imitate / import / cite / avoid). Consulted at workflow Step 0 and when starting a rung. Keeps the learnings actionable instead of rediscovered. |
 | `docs/SORRY_TRACKER.md` | Tracks every open `sorry` in the Lean codebase — what it's pending on, what unblocks it, and its priority. Prevents `sorry`s from being forgotten or filled in wrong. **Update when adding/resolving a `sorry`.** |
 | `docs/UPSTREAM_TRACKING.md` | Tracking the active Mathlib complexity efforts (currently #1–#8) |
@@ -89,6 +93,7 @@ Scope note (2026-09-06, DEC-012): three components added — Barrier Calculus (R
 | `lean/PleaNP/Barriers/Relativization.lean` | **BGS statement (rendered):** `exists_equalizing_oracle` (clause a) and `exists_separating_oracle` (clause b), both `sorry`'d. Quantifies over `P_A`/`NP_A` from `OracleComplexity.lean`. **Not frozen** — depends on unvalidated class definitions. |
 | `lean/PleaNP/Calculus/BarrierCalculus.lean` | **Rung 5 (new,in progress):** `Relativizing` prop-carrying typeclass + composition/application/quantifier propagation instances + `#barrier_check` elaborator (walks dependency closure; emits `DEAD: this proof relativizes` if every leaf relativizesand the conclusion separates/collapses `P`/`NP`, else `Inconclusive`) + time-hierarchy-theorem unit test(THH is relativizing — must emit DEAD). Meta-level: does NOT depend on upstream P/NP substrate. |
 | `tooling/gates/hygiene_scan.py` | Gate 6 Tier 1: scans for `sorry`/`admit`/`axiom` in Lean source. `--prove-stage` treats every `sorry` as a violation (for freeze PRs); without it, `sorry`s are tracked warnings. |
+| `tooling/gates/unicode_scan.py` | **Gate 8 Tier 1 (2026-09-12):** scans tracked source for stray/non-valid characters (fullwidth ASCII swaps U+FF01..FF5E, CJK punctuation U+3000..U+303F, zero-width/bidi/format chars, stray combining diacritics, Devanagari danda, circled digits) — the LLM/CJK-IME authoring-artifact class. Allows the repo's genuine math/Lean glyphs, emoji with VS-16, and reports LRM in the two bidi-sensitive files as SOFT (exit 0). Audited `--allow`/`--allow-file` escape hatch. **Run before committing ANY doc/code change that may carry foreign or invisible characters.** |
 | `tooling/gates/vacuity_scan.py` | Gate 5 Tier 1: scans for `True := by trivial`, `↔ True`, `:= none` patterns (dishonest placeholders). Catches top-level vacuity but not deep vacuity (a `True` buried inside `∃` — see DEC-011). |
 | `tooling/gates/model_consistency_scan.py` | Gate 2 Tier 1: scans for local redefinitions of complexity-class names or forbidden namespaces (`Complexity.*`). |
 | `tooling/gates/binder_usage_scan.py` | Gate 7 Tier 1 (lethality scanner): checks that every named parameter, field, and bound variable in a definition is load-bearing (actually used in the body). Catches unused params (Flaw A), dead binders (Flaw C), and unreferenced declarations (Flaw B). **Run before claiming any definition is "fixed" or "load-bearing."** |
@@ -101,7 +106,7 @@ Scope note (2026-09-06, DEC-012): three components added — Barrier Calculus (R
 | `tooling/gates/multi_render.py` | **Gate 3 multi-rendering driver (2026-09-06):** the AI-multi-rendering → human-mine loop. init/render/check/mine: N independent Lean renderings per informal claim, pairwise machine-verified equivalence (dual_render), and each DISAGREEMENT becomes a review point the human mines via GitHub issues. Incrementally maps the shape of every barrier. Unit-tested in `tooling/gates/tests/test_multi_render.py`. |
 | `tooling/reviews/review_inbox.py` | **Review inbox tool (2026-09-06):** add/index/confirm/flag review points (YAML, one per claim) + generate `reviews/INBOX.md`. Non-blocking by design — agents file and continue; the human answers in batch. Unit-tested in `tooling/reviews/tests/test_review_inbox.py`. |
 | `tooling/gates/statement_lint.py` | **Pure-code statement linter (2026-09-06):** classifies a Lean statement's SHAPE (quantifiers, connectives, relations =/≠/⊆/∈, oracle-dependence, class constants) mechanically from its syntax — no LLM, no human. This is the "use Lean itself as validator" answer: the probe facts are machine-derived. It CANNOT decide whether the shape matches an informal intention (Tarski floor) — that single confirmation is the irreducible human step. Unit-tested; CI smoke on authored statements. |
-| `tooling/gates/tests/` | Test cases for the gate scanners (case1–case9: placeholder, sorry, axiom, smells, clean, unused-param, dead-decl, vacuous-binder, clean). |
+| `tooling/gates/tests/` | Test cases for the gate scanners (case1–case13: placeholder, real-sorry, axiom, smells, clean, dead-binder, clean-binders, unused-param, dead-decl, vacuous-binder, clean, docstring-swallow, elab-check-refs). |
 
 ## Build and test
 
@@ -114,11 +119,19 @@ export PATH="$HOME/.elan/bin:$PATH"
 cd lean && lake exe cache get
 # 3. build the clean modules (v4 substrate + Barrier Calculus compile green)
 lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus \
-  PleaNP.Computability.Oracle PleaNP.Computability.OracleComplexity PleaNP.Computability.OracleSmoke
+ PleaNP.Computability.Oracle PleaNP.Computability.OracleComplexity PleaNP.Computability.OracleSmoke
 # 4. full tree (fails ONLY on the two documented pending-sorry modules:
-#    OracleUpstreamP = upstream-P anchor; Relativization = BGS statement)
+# OracleUpstreamP = upstream-P anchor; Relativization = BGS statement)
 lake build
 ```
+**Faster cold start for agents (Plan E, 2026-09-13):** the repo pushes a warm
+Lean+Mathlib image to `ghcr.io/allenpd728/pleanp:main` on every `main`
+push (workflow `warm-toolchain.yml`). Prefer pulling it over the curl-bootstrap
+above where Docker is available: `docker pull ghcr.io/allenpd728/pleanp:main`
+then mount the repo — elan + Lean + Mathlib oleans already warm. And use
+`python3 ../tooling/leancheck.py <module.lean>` (first-error typechecker) +
+`watch_leancheck.py` (poll-until-clean) for the edit→check loop. Details:
+`docs/TOOLCHAIN_AGENTS.md`, `docs/TOOLCHAIN_SOLUTIONS.md` §Plan E.
 CI (`.github/workflows/ci.yml`) runs the same recipe on every push/PR; a sandbox
 that reproduces the CI steps is a reliable local oracle. On a long-lived
 workstation you can install the toolchain once (`AGENTS_LOCAL.md`, gitignored)
@@ -130,6 +143,7 @@ and reuse it.
 ## Git workflow
 
 **Branch discipline (minimum flow -- mandatory):** All changes go to the `dev` branch first. A *different* agent (or a human) reviews on `dev` before anything is merged to `main`. **Nothing is pushed directly to `main` without review.** This is the integrity architecture applied to the repo itself: the agent that writes a change is not the agent that approves it (the same isolation as Gate 1/Gate 3, one level up).
+**A commit is not complete until it is pushed to `dev`:** `git push origin dev` immediately after every commit, before closing the issue or citing the commit in a done comment. The system of record is `git log origin/dev` — work that exists only in a local clone is invisible to siblings and review, so it counts as undone until pushed.
 
 ```bash
 # 1. Work on dev (create it from main if needed, else check out the shared dev)
@@ -143,7 +157,7 @@ git -c user.name="openhands" -c user.email="openhands@all-hands.dev" commit -m "
 git push origin dev
 
 # 4. A DIFFERENT agent/human reviews dev, then merges to main:
-#    git checkout main && git merge --no-ff dev && git push origin main
+# git checkout main && git merge --no-ff dev && git push origin main
 ```
 
 Do not commit to `main` and do not push to `main` from the same session that authored the change. If you find yourself about to `git push origin main`, stop -- push to `dev` instead and hand off for review.
@@ -155,8 +169,18 @@ Do not commit to `main` and do not push to `main` from the same session that aut
 - **Namespace:** Project-specific declarations live under `PleaNP.*`, not `Complexity.*` (that namespace is contested upstream — see `docs/UPSTREAM_TRACKING.md`)
 - **Mathlib style:** All Lean code follows Mathlib naming and style conventions
 - **Gate discipline:** No proof search runs against a statement that hasn't passed the fidelity gates (see `docs/ARCHITECTURE.md`)
+- **Duplicate-work prevention (DEC-026, 2026-09-13):** three rules in
+  `docs/MULTI_AGENT_WORKFLOW.md` — (1) the **recent-activity guard** (§Claiming
+  step 1): before claiming an `available` item whose subject overlaps a
+  recently-active `claimed` item, check `git log origin/dev` for sibling
+  commits in the last ~1h *even when the claim comment is stale* (an agent can be
+  mid-session with an aged comment — the #63 duplicate mode); (2) the
+  **claim-race rule**: the *earlier* claim comment wins; the later claimant backs
+  off and restores `status:available`; (3) the **duplicate-work rule**: never
+  push a second copy of a pass/statement a sibling already landed — drop or
+  merge-and-reconcile in one commit.
 - **Review-fatigue protection (2026-09-06):** after a review point is confirmed, an agent SHOULD `review_inbox.py perturb <id>` (recheck-control twin with one load-bearing element flipped — it should be flagged) and sweep `review_inbox.py fatigue` in session reports. A human confirming a control = fatigue → the original is AUTO-REQUEUED immediately (no sweep needed; `reopened_by` records it). Controls are disclosed honestly; their identity is not pre-marked.
-- **Review-inbox discipline (2026-09-06):** at the irreducible semantic hop, file a review point (`tooling/reviews/review_inbox.py add ...`) and CONTINUE — never block on the human. A `flag` reopens the claim in a later sweep; it is not a blocker. One point = one claim = one question. Expected answers come from the Lean, not the wish-list.
+- **Review-inbox discipline (2026-09-06):** at the irreducible semantic hop, file a review point (`tooling/reviews/review_inbox.py add .`) and CONTINUE — never block on the human. A `flag` reopens the claim in a later sweep; it is not a blocker. One point = one claim = one question. Expected answers come from the Lean, not the wish-list.
 - **Barrier-calculus discipline (Rung 5):** Any theorem claiming a P-vs-NP-shaped conclusion (`P = NP`, `P ≠ NP`, or separation of oracle-relative classes) should be triaged with `#barrier_check` before being cited as evidence — if it emits **DEAD: this proof relativizes**, it cannot resolve P vs NP (per BGS). If it emits "Inconclusive," non-relativizing potential survives. The `Relativizing` typeclass is meta-level: instances state "uniform in the oracle," and propagation instances carry it through composition/quantification automatically. New definitions that *should* relativize get explicit `Relativizing` instances; new definitions that can't are the interesting case — leave them instance-free so `#barrier_check` reports Inconclusive. **Do not hand-annotate a whole proof as `Relativizing`** — that would bypass the dependency-walk the elaborator performs.
 - **Lethality scan (Gate 5 Tier 1b):** Before claiming a definition is "fixed" or "load-bearing," run `python3 tooling/gates/binder_usage_scan.py --allow-unreferenced '^(exists_equalizing_oracle|exists_separating_oracle|smoke_accepts_true|smoke_rejects_false)$' lean/PleaNP` and require 0 violations. It catches the three 2026-08-19 flaw shapes: unused definition parameters, discarded `let _x := …` bindings, unreferenced declarations, and quantifier witnesses that don't constrain their bodies. Every parameter, binder, and declaration must be load-bearing — verified in the *body*, not asserted in the docstring.
 - **Sorry tracking:** Every `sorry` in `lean/PleaNP/` must be recorded in `docs/SORRY_TRACKER.md` — what it's pending on, what unblocks it, and its priority. When you add a `sorry` (new placeholder, new pending proof), add a row. When you resolve one, mark it "Resolved" with the commit. When you push changes that add/remove `sorry`s, update the tracker in the same commit. The hygiene scanner (`tooling/gates/hygiene_scan.py --prove-stage`) catches `sorry`s mechanically; the tracker documents what each one *means* so none are forgotten or filled in wrong (the exact failure mode `docs/FAILURE_AUDIT.md` Pattern A warns about). A `sorry` with no tracker entry is a process violation — add it before pushing.

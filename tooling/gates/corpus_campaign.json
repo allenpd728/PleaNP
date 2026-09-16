@@ -1,0 +1,36 @@
+{
+  "generated": "2026-09-07T22:25:16.264486+00:00",
+  "corpus": {
+    "bgs": {
+      "slug": "bgs",
+      "renderings": 4,
+      "pairs": 6,
+      "equivalent": 1,
+      "disagree": 5,
+      "mined_review_points": 0,
+      "previously_mined": 5,
+      "skipped_mine": true,
+      "matrix": "churn/bgs/matrix.json"
+    },
+    "barrier-verdict": {
+      "slug": "barrier-verdict",
+      "renderings": 2,
+      "pairs": 1,
+      "equivalent": 1,
+      "disagree": 0,
+      "mined_review_points": 0,
+      "previously_mined": 0,
+      "skipped_mine": true,
+      "matrix": "churn/barrier-verdict/matrix.json"
+    }
+  },
+  "totals": {
+    "claims": 2,
+    "renderings": 6,
+    "pairs": 7,
+    "equivalent": 2,
+    "disagree": 5,
+    "mined_this_run": 0,
+    "mined_historical": 5
+  }
+}

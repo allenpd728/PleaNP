@@ -122,6 +122,31 @@ you know it.
 
 ---
 
+---
+
+## Rendering disagreements ARE probe checklists
+
+Since 2026-09-07 (#28),a Gate-3 multi-rendering disagreement (two Lean
+renderings not proven equivalent) is no longer reviewed as an open-ended
+"what did you intend" ratification. It arrives as a **probe checklist**: 3-5
+tiny, independent, single-choice probes, derived mechanically from the Lean
+renderings, each with a concrete `question`, labeled `choices`, a `hint` / inline `gloss`,
+and the machine-derived `expected` answer (from the Lean, not the informal wish).
+
+The one-wrong-ao-blocked contract applies unchanged:one wrong answer = the
+claim is wrong. The `batch_narrative` (if present) recaps why the renderings
+diverged,so you never reassemble the disagreement from scattered labels.
+
+**Rule:** any disagreement that cannot be decomposed into >= 3 concrete probes
+returns to the agents as 'not yet reviewable' - no intent-ratification anywhere.
+No manual reassembly, no "which did you mean" questions.
+
+Probes appear inside the review issue body (and in `reviews/INBOX.md`); you
+answer them exactly as described above (`confirm` when every answer matches;
+`flag <reason>` otherwise). Nothing else changes in the review flow.
+
+---
+
 ## Process summary (what you do, end to end)
 
 1. Agent files a claim with an **informal English statement** (Layer 0).

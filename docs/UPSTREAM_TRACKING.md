@@ -2,7 +2,7 @@
 
 The computational-model substrate (Rung 2) is *not* PleaNP's to build — it's being actively contested by multiple efforts upstreaming into Mathlib. This document tracks them so PleaNP imports the right thing rather than reinventing or picking sides.
 
-Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-computability finding; added complexitylib (Schlesinger) as tracked effort #6; verified no OWF/PRF infrastructure). This is a living document — update when upstream lands.
+Last reviewed: 2026-08-18 (deepened: recorded Mathlib `Mathlib/Computability/RecursiveIn.lean` (upstream) oracle-computability finding; added complexitylib (Schlesinger) as tracked effort #6; verified no OWF/PRF infrastructure). This is a living document — update when upstream lands.
 
 ---
 
@@ -11,8 +11,8 @@ Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-
 ### 1. Mathlib #35366 — `Turing.TM1` with fuel-based step counting
 
 - **Author:** KrystianYCSilva (Feb 2026)
-- **Approach:** Extends Mathlib's existing `Turing.TM1` (from `PostTuringMachine.lean`, Carneiro 2018) with `runN` (fuel-based) step counting, then defines P, NP, and proves `p_sub_np`.
-- **Status:** Working, zero `sorry`, compiles against Mathlib v4.28.0-rc1. Seeking maintainer feedback on PR sequencing. Proposes a 3-PR sequence: `step_none_iff` lemma → `TM1Complexity.lean` with `runN` → complexity classes + `p_sub_np`.
+- **Approach:** Extends Mathlib's existing `Turing.TM1` (from `Mathlib/Computability/PostTuringMachine.lean` (upstream), Carneiro 2018) with `runN` (fuel-based) step counting, then defines P, NP, and proves `p_sub_np`.
+- **Status:** Working, zero `sorry`, compiles against Mathlib v4.28.0-rc1. Seeking maintainer feedback on PR sequencing. Proposes a 3-PR sequence: `step_none_iff` lemma → `Mathlib/Computability/TM1Complexity.lean` (upstream) with `runN` → complexity classes + `p_sub_np`.
 - **Builds on:** existing, merged Mathlib infrastructure (`Turing.TM1`).
 - **PleaNP stance:** Strong candidate to import from. Uses existing infrastructure, lowest-risk path. Pending maintainer feedback on `runN` vs relational approach.
 
@@ -45,18 +45,13 @@ Last reviewed: 2026-08-18 (deepened: recorded Mathlib `RecursiveIn.lean` oracle-
 
 - **Repo:** https://github.com/SamuelSchlesinger/complexitylib (default branch `master`)
 - **Approach:** A standalone Lean 4 / Mathlib formalization of complexity theory using concrete Arora–Barak-style multi-tape Turing machines (deterministic, nondeterministic, probabilistic) over a fixed four-symbol alphabet, with explicit time and space predicates. Concrete over abstract: machines, circuits, reductions, and encoders are concrete definitions, not bare existence claims. An `AxiomGuard` script mechanically guards headline results against hidden axioms.
-- **Toolchain:** `leanprover/lean4:v4.30.0`, pinning Mathlib to `v4.30.0`. **This does NOT match PleaNP's `v4.31.0`** — a toolchain/dependency reconciliation is a prerequisite to any import. Review item.
+- **Toolchain:** `leanprover/lean4:v4.34.0-rc2` (current head `6c248df`, 2026-09-08), pinning Mathlib rev `e06eff5f9537` (2026-08-31, v4.34-rc2 era) plus the `cslib` dependency (`leanprover/cslib@d9be641`). **This does NOT match PleaNP's `v4.31.0`** — and the gap has widened since this entry was written (was v4.30, now v4.34-rc2 + the rc toolchain + cslib). Import is **rejected** per DEC-025 (issue #70 Pass 1, 2026-09-13); the Rung-4 circuit substrate is built locally under `PleaNP.Circuits` (#71).
 - **License:** Apache 2.0 (compatible with PleaNP).
 - **What it has:** `P`, `NP`, `BPP`, `PSPACE` (plus `DTIME`/`NTIME`/`DSPACE`/`NSPACE`, `PPoly`/`PAdvice`, `RP`/`ZPP`/`PP`/`EXP`/`NEXP`/`SC`/`FNP`/`TFNP`); multi-tape-to-single-tape simulation; universal machines; the deterministic time-hierarchy theorem; a full Cook-Levin reduction (`SAT` is NP-complete) via computation tableaux; a typed Boolean-circuit model with size/depth, CNF/DNF, Shannon bounds, gate-elimination lower bounds, Schnorr's XOR lower bound, Valiant depth reduction; a logarithmic-cost RAM model; and a Fourier-analysis-of-Boolean-functions subtheory (O'Donnell ch. 1) — the analytic foundation for small-depth lower bounds and natural proofs.
 - **What it explicitly lacks:** Oracle machines (the roadmap lists "oracle access" as needing common interfaces before headline equivalences can be stated), and **all three barriers** (relativization, natural proofs, algebrization) — code search confirms zero hits for `oracle`/`relativization`/`barrier`/`algebrization`. These are exactly PleaNP's gap.
-- **PleaNP stance:** Strong candidate to import P/NP/reductions/Cook-Levin/circuit-basics from, *if* the toolchain reconciles to v4.31.0 (or PleaNP adjusts). Its circuit lower bounds and Fourier-analysis subtheory are directly reusable for Rung 4. Pending review — **not yet added to `lakefile.lean`**. Proposed dependency entry:
-  ```lean
-  require complexitylib from git
-    "https://github.com/SamuelSchlesinger/complexitylib.git" @ "main"
-  ```
-  (Note: the repo's default branch is `master`, not `main`; the entry above matches the requested form but should be `@ "master"` — or a tagged release — before being added.)
+- **PleaNP stance:** **Closed — do not import.** The 2026-08-18 attempt failed (below), and the drift has since widened to v4.34.0-rc2 + cslib, well past the point where repair or toolchain-matching is worth it for the small slice Rung 4 needs. Per **DEC-025** (2026-09-13, issue #70 Pass 1): build the Rung-4 circuit substrate locally under `PleaNP.Circuits` (#71). Not added to `lean/lakefile.lean`, and no longer proposed. Revisit only if complexitylib reconciles onto a stable toolchain that PleaNP pins, or upstream circuit machinery lands in Mathlib proper.
 
-  **Reconciliation check (2026-08-18, attempted):** Added complexitylib (`dev` branch) to PleaNP's lakefile and built under Lean v4.31.0 / Mathlib v4.31.0. **Result: does NOT reconcile cleanly.** The build fails on ~23 of ~4033 modules with Mathlib API-drift errors (e.g. `Complexitylib.Mathlib.NatBits` — `simp made no progress`; `Complexitylib.Models.TuringMachine.Trace.Internal` — type-mismatch after simplification; failures in `Asymptotics`, `Circuits.Internal.Spira`, `Models.TuringMachine.*`, `DescriptiveComplexity.Reduction`, etc.). These are caused by `simp`-lemma and term-structure changes between Mathlib v4.30.0 (what complexitylib pins) and v4.31.0 (what PleaNP pins). complexitylib would need its proofs updated for the v4.31.0 Mathlib API before it can be imported. **Decision: build Oracle.lean against core `Turing.TM1` (partial prototype) for now; revisit complexitylib import when it bumps to v4.31.0+ or when PleaNP can pin v4.30.0.**
+  **Reconciliation check (2026-08-18, attempted):** Added complexitylib (`dev` branch) to PleaNP's lakefile and built under Lean v4.31.0 / Mathlib v4.31.0. **Result: does NOT reconcile cleanly.** The build fails on ~23 of ~4033 modules with Mathlib API-drift errors (e.g. `Complexitylib.Mathlib.NatBits` — `simp made no progress`; `Complexitylib.Models.TuringMachine.Trace.Internal` — type-mismatch after simplification; failures in `Asymptotics`, `Circuits.Internal.Spira`, `Models.TuringMachine.*`, `DescriptiveComplexity.Reduction`, etc.). These are caused by `simp`-lemma and term-structure changes between Mathlib v4.30.0 (what complexitylib pinned then) and v4.31.0 (what PleaNP pins). **Superseded by DEC-025 (2026-09-13):** the fork is closed toward local `PleaNP.Circuits` build-out (#71); the reconciliation path is abandoned rather than revisited-on-bump, because complexitylib moved further away (v4.34.0-rc2 + cslib) rather than toward PleaNP's stable pin.
 
 ---
 

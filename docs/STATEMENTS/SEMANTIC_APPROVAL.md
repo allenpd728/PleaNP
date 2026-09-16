@@ -13,7 +13,7 @@ approves the *meaning* (semantics) of Lean statements and incremental barrier
 claims without reading Lean code, and how agents prove that meaning is
 non-vacuous. This is the operationalized form of Gates 3/4/5 from
 `docs/ARCHITECTURE.md` and the validation-suite requirement
-(`docs/STATEMENTS/ValidationSuite.spec.md`).
+(`docs/VALIDATION_SUITE.md`).
 
 The short version: **you never approve Lean. You approve English.** The Lean is
 machine-checked (build + hygiene + vacuums + `#print axioms`); the *meaning* is

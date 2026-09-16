@@ -89,6 +89,15 @@ DECL_START_RE = re.compile(
     re.MULTILINE,
 )
 
+# Elaborator command bodies (`elab_rules`) and command-script invocations
+# (`#barrier_check <ident>`) are pseudo-blocks:they are NOT declarations to flag,
+# but their content may reference (and thus keep alive) helper declarations that the
+# previous DECL_START_RE-only split would bury inside the OWN block of the declaration
+# preceding them (making their references invisible — the #2 false positives).
+ELAB_RULES_RE = re.compile(r"^elab_rules\b", re.MULTILINE)
+BARRIER_CHECK_RE = re.compile(r"^#barrier_check\s+([A-Za-z_][A-Za-z0-9_'.]*)",
+                                 re.MULTILINE)
+
 _OPEN_TO_CLOSE = {"(": ")", "{": "}", "[": "]"}
 
 
@@ -112,8 +121,18 @@ def _strip_comments(src: str) -> str:
 
 
 def _split_decls(src: str) -> list[tuple[str, str, int, str]]:
-    """Split source into (kind, name, start_offset, block) per top-level decl."""
+    """Split source into (kind, name, start_offset, block) per top-level decl.
+
+    Elaborator command bodies (`elab_rules`) and `#barrier_check <id>` script lines
+    become singleton pseudo-blocks (kind `elab` / `check`) so their references are
+    visible to the unreferenced-declaration check (see #2:the previous split loaded
+    them into the OWN block of the declaration preceding them, hiding those
+    references from the cross-decl scan). They are not declarations and are never
+    flagged themselves."""
     decls = [(m.group(1), m.group(2), m.start()) for m in DECL_START_RE.finditer(src)]
+    decls.extend(("elab", "elab_rules", m.start()) for m in ELAB_RULES_RE.finditer(src))
+    decls.extend(("check", m.group(1), m.start()) for m in BARRIER_CHECK_RE.finditer(src))
+    decls.sort(key=lambda t: t[2])
     blocks = []
     for i, (kind, name, start) in enumerate(decls):
         end = decls[i + 1][2] if i + 1 < len(decls) else len(src)
@@ -326,7 +345,7 @@ def _check_discarded_lets(path: Path, src: str, blocks) -> list[Finding]:
     """Check 3: `let _x := v` computes v and throws it away."""
     findings: list[Finding] = []
     for kind, name, start, block in blocks:
-        if kind in ("structure", "class", "inductive"):
+        if kind in ("structure", "class", "inductive", "elab", "check"):
             continue
         for m in re.finditer(r"\blet\s+(_[A-Za-z0-9_']*)\s*:?=", block):
             findings.append(Finding(
@@ -346,7 +365,10 @@ def _check_unreferenced(path_blocks: dict[Path, tuple[str, list]],
         for kind, name, start, block in blocks:
             all_decls.append((path, kind, name, start, block))
     for path, kind, name, start, block in all_decls:
-        if kind in ("instance", "axiom", "constant", "inductive"):
+        # Pseudo-blocks (elab_rules bodies, `#barrier_check <id>` lines) are not
+        # declarations;they act only as reference sources for the cross-decl scan.
+
+        if kind in ("instance", "axiom", "constant", "inductive", "elab", "check"):
             continue
         if allow_re and allow_re.search(name):
             continue

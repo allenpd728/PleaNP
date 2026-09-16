@@ -3,10 +3,18 @@ import Mathlib.Computability.StateTransition
 set_option warningAsError true
 
 /-!
-# Oracle machines (v4: reachability wired)
+# Oracle machines (v5: word-query substrate)
 
 v4 repair: closes Flaw A by wiring EvalsToInTime reachability through
 the real step function. ea, M, t are now load-bearing by construction.
+
+v5 repair (DEC-024, word-query substrate): the oracle query is the
+*content* of the input tape — a finite word `List (tm.Γ tm.k₀)` —
+decoded by `Machine.decode` into the query value-space `Q`. The tape's
+alphabet stays finite (FinTM2's bundled `Fintype (Γ k₀)`); the query
+value-space `Q` is arbitrary (e.g. `Q = Σ n, Bits n` for BGS, which is
+infinite). This removes the v4 fusion of Q into the alphabet slot
+(`hΓ : tm'.Γ tm'.k₀ = Q`) that caused the Fintype-Query wall (#26/#22).
 
 Flaw B (oracle inert) was fixed in v3 and is kept: step branches on
 queryLabel and routes the oracle answer to yesLabel/noLabel.
@@ -41,11 +49,22 @@ structure Cfg (Q : Type) (tm : FinTM2) where
   cfg : tm.Cfg
   oracle : Oracle Q
 
-/-- An oracle machine: a FinTM2 with a fixed oracle and query/yes/no
-  labels. The tm parameter is NOT stored as a field (avoids the
-  type-unification issue from v2). -/
+/-- An oracle machine: a FinTM2 with a fixed oracle, a decode from
+  input-tape words to the oracle's query type, and query/yes/no labels.
+  The tm parameter is NOT stored as a field (avoids the type-unification
+  issue from v2).
+
+  v5 (DEC-024, word-query substrate): the query is the *content* of the
+  input tape — a finite word `List (tm.Γ tm.k₀)` — decoded by `decode`
+  into the query value-space `Q`. The tape's *alphabet* `Γ k₀` stays
+  finite (Fintype, per FinTM2's bundled `Γk₀Fin`); the query *value-space*
+  `Q` is arbitrary (for BGS, `Q = Σ n, Bits n`, infinite). This removes
+  the v4 fusion of Q into the alphabet slot (`hΓ : tm'.Γ tm'.k₀ = Q`),
+  resolving the Fintype-Query wall without touching any frozen statement.
+-/
 structure Machine (Q : Type) (tm : FinTM2) [DecidableEq tm.Λ] where
   oracle : Oracle Q
+  decode : List (tm.Γ tm.k₀) → Q
   queryLabel : tm.Λ
   yesLabel : tm.Λ
   noLabel : tm.Λ
@@ -57,26 +76,26 @@ def initCfg {Q : Type} {tm : FinTM2} [DecidableEq tm.Λ]
   ⟨Turing.initList tm input, M.oracle⟩
 
 /-- A step of the oracle machine. If the current label is the query
-  label, the oracle is consulted: the query (head of the input stack)
-  is sent to the oracle, the answer determines the next label
-  (yesLabel for true, noLabel for false). Otherwise, delegates to
-  FinTM2.step. The oracle answer IS used (Flaw B fix). -/
-def step {tm : FinTM2} [DecidableEq tm.Λ]
-    (M : Machine (tm.Γ tm.k₀) tm) (c : Cfg (tm.Γ tm.k₀) tm) :
-    Option (Cfg (tm.Γ tm.k₀) tm) :=
+  label, the oracle is consulted: the query is the *content* of the
+  input tape (a finite word), decoded by `M.decode` into the query
+  value-space; the answer determines the next label (yesLabel for
+  true, noLabel for false). Otherwise, delegates to FinTM2.step.
+  The oracle answer IS used (Flaw B fix). The query consultation is
+  exactly one step (v5 spec §4.3 ii). -/
+def step {Q : Type} {tm : FinTM2} [DecidableEq tm.Λ]
+    (M : Machine Q tm) (c : Cfg Q tm) :
+    Option (Cfg Q tm) :=
   match c.cfg.l with
   | Option.none => Option.none
   | Option.some l =>
     if l = M.queryLabel then
-      match c.cfg.stk tm.k₀ with
-      | [] => Option.none
-      | q :: rest =>
-        let answer := Oracle.query c.oracle q
-        some (Cfg.mk
+      let q := M.decode (c.cfg.stk tm.k₀)
+      let answer := Oracle.query c.oracle q
+      some (Cfg.mk
           { l := if answer then some M.yesLabel else some M.noLabel
             var := c.cfg.var
             stk := fun k =>
-              if h : k = tm.k₀ then by rw [h]; exact rest
+              if h : k = tm.k₀ then by rw [h]; exact []
               else c.cfg.stk k }
           c.oracle)
     else
@@ -85,8 +104,8 @@ def step {tm : FinTM2} [DecidableEq tm.Λ]
       | Option.some cfg' => some (Cfg.mk cfg' c.oracle)
 
 /-- A halted oracle machine never steps again. -/
-theorem step_none {tm : FinTM2} [DecidableEq tm.Λ]
-    (M : Machine (tm.Γ tm.k₀) tm) (c : Cfg (tm.Γ tm.k₀) tm)
+theorem step_none {Q : Type} {tm : FinTM2} [DecidableEq tm.Λ]
+    (M : Machine Q tm) (c : Cfg Q tm)
     (hl : c.cfg.l = Option.none) :
     step M c = Option.none := by
   unfold step
@@ -108,12 +127,12 @@ def outputEncodesChi {Q : Type} {tm : FinTM2} {alpha : Type}
 
   v4 fix (Flaw A): ea, M, t are ALL load-bearing — ea builds the
   initial config, M provides the step function, t bounds the steps. -/
-def DecidesInTime {tm : FinTM2} {alpha : Type}
+def DecidesInTime {Q : Type} {tm : FinTM2} {alpha : Type}
     [DecidableEq tm.Λ] (ea : alpha -> List (tm.Γ tm.k₀))
     (outputAlphabet : tm.Γ tm.k₁ -> Bool)
-    (M : Machine (tm.Γ tm.k₀) tm) (L : Set alpha) (t : Nat -> Nat) : Prop :=
+    (M : Machine Q tm) (L : Set alpha) (t : Nat -> Nat) : Prop :=
   ∀ x : alpha,
-    ∃ cfg' : Cfg (tm.Γ tm.k₀) tm,
+    ∃ cfg' : Cfg Q tm,
       Nonempty (StateTransition.EvalsToInTime (step M) (initCfg M (ea x)) (some cfg') (t (ea x).length))
       ∧ cfg'.cfg.l = Option.none
       ∧ outputEncodesChi outputAlphabet cfg' L x

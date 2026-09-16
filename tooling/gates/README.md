@@ -26,6 +26,41 @@ Scans for local redefinitions of canonical types and forbidden namespace usage �
 
 **Does NOT catch** a subtly-weaker redefinition using a different name (e.g. `def MyNP := ...`) — that is Gate 4 (read-back) and the review layer's job. "Gate 2 passed" = Tier 1 + review.
 
+## Gate 8 — Unicode-hygiene scanner (`unicode_scan.py`, 2026-09-12)
+
+Scans for **stray, non-valid characters** in tracked source (`.lean`, `.py`, `.md`, `.yaml`, `.yml`, `.json`, `.toml`) — the class of LLM/CJK-IME authoring artifacts that are not valid parts of Lean 4, the metaprogramming layer, or the project's English prose:
+
+- **fullwidth/halfwidth forms** U+FF01..U+FF5E + U+FF61..U+FFEF (fullwidth parens `U+FF08`/`U+FF09`, fullwidth comma `U+FF0C`, fullwidth plus `U+FF0B` — ASCII swaps)
+- **CJK punctuation** U+3000..U+303F (ideographic full stop `U+3002`, ideographic comma `U+3001`, corner-bracket/quote forms) and CJK radicals U+2E80..U+2FDF
+- **CJK ideographs/kana/hangul** (keeps non-English text out of the tree)
+- **invisible format chars**: zero-width space/joiner (U+200B..U+200D), LRM/RLM/bidi controls (U+200E..U+200F, U+202A..U+202E), invisible operators (U+2060..U+2064), BOM/soft-hyphen/line-sep
+- **combining diacritics** U+0300..U+036F — flagged when standalone or glued to a non-letter (the `U+0304`-before-digit heading corruption and the `U+0368`-after-space corruption); legal after a Letter (B + U+0303 = B-tilde, the only correct spelling, used in the Algebrization spec)
+- **Devanagari danda** U+0964
+- **circled/enclosed alphanumerics** U+2460..U+24FF (enclosed digits like `U+2463` — authoring artifacts as section refs)
+- **variation selectors** U+FE00..U+FE0F — VS-16 legal only after an allowed emoji base (the `U+26A0`+`U+FE0F` warning sign used in CLI output)
+
+**Allows** the repo's genuine non-ASCII: Greek, math operators/arrows (∀ ∃ ∈ ⊆ ▸ ⟨⟩ ℕ ∅ …), en/em dash, curly quotes, superscripts/subscripts, box drawing, emoji with VS-16, precomposed accents, and the two bidi-sensitive files' LRM (`docs/decisions/LOG.md`, `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md`) reported as SOFT. An audited `--allow` / `--allow-file` escape hatch exists for a future file that genuinely needs a form (document it there, not by smuggling).
+
+Run: `python3 tooling/gates/unicode_scan.py .` — exit 0 clean, 1 violations, 2 usage error.
+
+## REVIEW items on the clean modules (issue #56)
+
+A scan that exits 0 can still print `REVIEW` items (non-fatal findings).
+The known REVIEW items on the clean modules — the three
+`OracleSmoke.lean` `by decide` smells, the three `OracleV5Tests.lean`
+`by decide` smells, the three binder-usage REVIEWs
+(`abstractPVsNP_iff_verdictB`, the `NP_A` weak witness,
+`P_A_subset_NP_A`), and the two challenge-module REVIEWs on
+`PleaNP.Challenges.Relativization` (`equalizing_oracle_statement` /
+`separating_oracle_statement`, consumed by the comparator JSON pin
+`lean/ComparatorChallenges/Relativization.json`) — are all
+**demonstrated-intentional**; their verification and disposition
+register live in `docs/GATE_REVIEW_NOTES.md`. When an audit sweep or a
+future scan run hits one of these, check that register before
+re-flagging it. (`emptyOracle` was a register item until 2026-09-13 —
+`OracleV5Tests.lean` (#40) now references it, so it is no longer
+flagged.)
+
 ## Two tiers (different agents, different trust boundaries)
 
 Both gates are implemented in two tiers, because the sneaky cases require the Lean toolchain:
@@ -66,6 +101,90 @@ body). Catches:
 - Declarations never applied / fields never read (Flaw B shape)
 - Bound variables absent from their own conjunct (Flaw C shape)
 
-Usage: `python3 binder_usage_scan.py lean/PleaNP`
+Usage:`python3 binder_usage_scan.py lean/PleaNP`
 
 See `docs/VALIDATION_SUITE.md` for the full validation requirements.
+
+## Gate 3 — Multi-rendering driver (`multi_render.py`)
+
+The multi-rendering engine — "AI produces many renderings; humans mine the
+shape." Pipeline (`init` → `render` → `check` → `mine`): independent Lean
+renderings of one informal claim are registered in `churn/<slug>/renderings/`,
+pairwise machine-verified equivalent via `dual_render`,ford disagreements
+become **review points** in the review inbox (`review_inbox.py`; one plain-
+language question each),filed as GitHub issues by `review-issue.yml`.
+
+**Merge/registration step (`merge <slug>`; 2026-09-07,#25).** Pulls each
+contributor's submission manifest (`churn/<slug>/submissions/<slot>.json`) into
+`renderings/`,then re-runs `check`(+ `churn/<slug>/lemmas.json` if present)
+and `mine` on the merged set. **Idempotent**: re-running is harmless — re-
+registration overwrites the same `<id>.json`,check rewrites `matrix.json`,and
+`mine` dedupes review points by stable key (`run` + `decl` pair),so no
+duplicate pending points nor GitHub issues are filed (the #7-#16 double-
+filing bug class; see `review-issue.yml`'s inbox-id dedupe).
+
+Usage: `python3 tooling/gates/multi_render.py merge <slug> [--lean-dir lean]`
+
+## Process compliance — pass-sizing scanner (`pass_scan.py`, 2026-09-12)
+
+`pass_scan.py` enforces the multi-run pass-sizing rule in
+`docs/MULTI_AGENT_WORKFLOW.md` §Task definition: any open issue whose
+`**Effort:**` line claims ≥2 runs must carry an explicit `**Passes:**` block
+(Pass 1..n, each = one run) so long-horizon epics are worked as successive
+claimable passes rather than one oversized claim. Single-run issues and
+design/decomposition tasks (whose deliverable *is* the pass list) are exempt.
+
+- **Violation** (exit 1): multi-run `Effort` without a `Passes` block.
+- **Warning** (exit 0): `Passes` block counts fewer pass lines than the
+  `Effort` max (under-specified), or (with `--warn-no-effort`) legacy issues
+  with no `Effort` line.
+- **Usage:** `python3 pass_scan.py` (live GitHub, needs `GITHUB_TOKEN`; the
+  52 open issues scanned 2026-09-12 give 0 violations) or
+  `python3 pass_scan.py --json-file issues.json` (offline, same shape).
+- **Sweep step.** Since 2026-09-12 the scanner is a **mandatory start-of-session
+  sweep step** (§Claiming step 1a): every sweep runs it and acts on the output
+  per the sweep action table (violation → add the `Passes` block or split the
+  epic; under-spec warning → complete the pass lines or tighten `Effort`;
+  no-Effort → backfill). Umbrella multi-claim epics (e.g. #76) are filed as one
+  `status:available` sub-issue per pass so the umbrella's warning resolves
+  instead of lingering.
+- **Not a Lean gate** — a queue-health scan, like the stale-claim sweep.
+
+## Effort re-sum (`effort_summary.py`, 2026-09-12)
+
+Reproducible recomputation of the per-rung run totals in `docs/EFFORT_ESTIMATE.md`
+by summing each in-scope issue's `**Effort:**` line from the live queue (or an
+offline JSON dump). One command replaces hand-summing the ledger:
+
+- **Output:** per-rung totals, in-scope total (Rungs 2–8), proof-search entry
+  (Rungs 2+3+4+5+6), and the unblocked-now vs upstream-gated (Rung 6) split.
+- **`--csv`:** per-issue rows (issue, rung, effort_lo, effort_hi, title).
+- **`--table-rows`:** Markdown table rows for `docs/EFFORT_ESTIMATE.md`.
+- **Rung map** (`RUNG_MAP` in the file): the single source of truth for
+  issue→rung; keep in sync with the ledger when tasks are filed, closed, or
+  re-runged.
+- **Usage:** `python3 effort_summary.py` (live, needs `GITHUB_TOKEN`) or
+  `python3 effort_summary.py --json-file issues.json` (offline). Unit tests in
+  `tests/test_effort_summary.py`, CI-wired.
+
+
+## Rung-5 `#barrier_check` verdict harness (`barrier_check_test.py`; 2026-09-07; #3
+
+Asserts the four `#barrier_check` verdicts logged by
+`lean/PleaNP/Calculus/BarrierCalculus.lean` during compile:
+
+  - `thhStatement`            -> "relativizes, not P-vs-NP-shaped"
+  - `abstractPVsNP`           -> "DEAD"
+  - `plainRelHeuristic`       -> "relativizes, not P-vs-NP-shaped"
+  - `nonRelativizingControl`  -> "Inconclusive"
+
+The elaborator's verdict print via `logInfo`;CI's build step `tee`s its output
+to a log file,then the harness runs on that log and fails if any expected
+verdict segment is missing or wrong - so a regression (a DEAD flipping to
+Inconclusive, an instance that stops synthesizing, a message rewrite) kills
+the build mechanically. Dash-family chars are folded before matching
+(terminal/encoding-tolerant). Unit tests: `tests/test_barrier_check_test.py`
+(stdlib, no Lean,no secrets).
+
+Usage: `python3 barrier_check_test.py <build-log>` (or `--run-lake [MODULE]`
+to build locally first). See `docs/STATEMENTS/BarrierCheckVerdicts.spec.md`.
