@@ -231,6 +231,20 @@ def scan(paths: list[Path], allow: set[str] | None = None) -> list[Finding]:
             files.append(p)
     wanted_suffixes = {".lean", ".py", ".md", ".yaml", ".yml", ".json", ".toml"}
     files = [f for f in files if f.is_file() and f.suffix in wanted_suffixes]
+
+    # Skip vendored/build trees. `rglob("*")` walks everything, and in a fresh
+    # CI checkout `lean/.lake/packages/` contains Mathlib + aesop + batteries --
+    # ~645 stray-character findings that belong to UPSTREAM, not to this repo.
+    # This was a latent bug: the step looked green locally only because `.lake`
+    # did not exist until `lake exe cache get` ran, so the first real CI run on
+    # `dev` failed on third-party code (issue #104). Excluding them here keeps
+    # the gate's meaning ("our source is clean") and makes it stable across
+    # environments.
+    EXCLUDE_DIRS = {".lake", ".git", "__pycache__", "node_modules", ".venv", "venv"}
+    files = [
+        f for f in files
+        if not any(part in EXCLUDE_DIRS for part in f.parts)
+    ]
     files = sorted(set(files))
 
     all_findings: list[Finding] = []
