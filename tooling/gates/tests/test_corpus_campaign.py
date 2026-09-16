@@ -43,14 +43,22 @@ class CorpusCampaignTest(unittest.TestCase):
             "run: multi-rendering-demo\nstatus: pending\n", encoding="utf-8")
         # Stub the Lean-driving subprocess: the test exercises only the
         # collation helpers (counts, dedupe, aggregation), not the engine.
-        self._sub = subprocess.run
+        # NOTE: patch only corpus_campaign's OWN module-level reference, never
+        # `subprocess.run` on the shared module object — `import subprocess`
+        # binds the same module everywhere, so assigning through it leaks the
+        # stub into every other test that shells out (it silently neutered
+        # workflow_scan's `bash -n` check, issue #115).
+        import types
+        self._orig_subprocess = corpus_campaign.subprocess
 
         def fake_run(args, **kw):
-            return subprocess.CompletedProcess(args, 0, stdout="ok", stderr="")
+            return self._orig_subprocess.CompletedProcess(args, 0, stdout="ok", stderr="")
 
-        corpus_campaign.subprocess.run = fake_run
+        corpus_campaign.subprocess = types.SimpleNamespace(
+            run=fake_run, CompletedProcess=self._orig_subprocess.CompletedProcess)
 
     def tearDown(self):
+        corpus_campaign.subprocess = self._orig_subprocess
         self._tmp.cleanup()
 
     def test_counts_slugs(self):

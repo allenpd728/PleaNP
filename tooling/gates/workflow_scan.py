@@ -31,6 +31,7 @@ Exit codes: 0 clean, 1 violations, 2 usage/read error.
 from __future__ import annotations
 
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -48,6 +49,55 @@ STEP_KEYS = (
 # signature (the check below looks at what precedes the match).
 BOUNDARY_TOKEN = r"-\s+(?:name|uses|run|with|id|if|shell|env|working-directory)\s*:"
 BOUNDARY_RE = re.compile(BOUNDARY_TOKEN)
+
+
+def _shell_syntax_violations(text: str, label: str) -> list[str]:
+    """Check every `run:` block parses as shell (`bash -n`).
+
+    Why: a corrupted line lost its `#` comment prefix in
+    `.github/workflows/review-issue.yml` (the #101 signature), which made the
+    `respond` job's `run:` block a shell syntax error — the job failed on every
+    issue comment until it was found in a CI log (#115). YAML and structure
+    checks pass on that file; only shell parsing catches it.
+    """
+    out: list[str] = []
+    try:
+        doc = loads(text)
+    except MiniYamlError:
+        return out
+    if not isinstance(doc, dict):
+        return out
+    jobs = doc.get("jobs") or {}
+    if not isinstance(jobs, dict):
+        return out
+    for jname, job in jobs.items():
+        if not isinstance(job, dict):
+            continue
+        for idx, step in enumerate(job.get("steps") or []):
+            if not isinstance(step, dict):
+                continue
+            run = step.get("run")
+            if not isinstance(run, str):
+                continue
+            shell = step.get("shell", "bash")
+            interp = {"bash": "bash", "sh": "sh", "python": "python3"}.get(shell)
+            if interp is None:
+                continue  # custom shell; cannot check portably
+            try:
+                r = subprocess.run([interp, "-n"], input=run,
+                                   capture_output=True, text=True, timeout=20)
+            except (OSError, subprocess.SubprocessError) as e:
+                out.append(f"{label}: job '{jname}' step {idx}: could not check "
+                           f"shell syntax ({e})")
+                continue
+            if r.returncode != 0:
+                err = (r.stderr or "").strip().splitlines()
+                detail = err[-1] if err else "syntax error"
+                out.append(
+                    f"{label}: job '{jname}' step {idx} ('{step.get('name','')}') "
+                    f"run: block is not valid {shell}: {detail}"
+                )
+    return out
 
 
 def _violations_for_text(text: str, label: str) -> list[str]:
@@ -112,6 +162,7 @@ def _violations_for_text(text: str, label: str) -> list[str]:
                     f"{label}: job '{job_name}' step {idx} has unknown key(s) "
                     f"{unknown} — a swallowed boundary often lands here"
                 )
+    out.extend(_shell_syntax_violations(text, label))
     return out
 
 
