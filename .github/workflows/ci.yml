@@ -1,8 +1,17 @@
 name: CI
 
 on:
+  # `dev` is the integration branch and carries most of the work (116 commits
+  # ahead of main as of 2026-09-16), so it needs CI feedback on push -- not only
+  # at merge time. Before this was added, the build/test workflow had NEVER run
+  # on dev, which let a structurally-broken galaxy check and a stale artifact
+  # accumulate undetected (issue #103).
+  #
+  # `main` stays in the list: it is the reviewed branch, and a push there should
+  # still be verified. PRs to main also remain gated (issue #104 discusses the
+  # trigger policy).
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
     branches: [main]
 
@@ -19,6 +28,9 @@ jobs:
         run: lean --version
         working-directory: lean
       - name: Restore Mathlib olean cache (community Azure cache; DEC-013)
+        # The install-elan step appended $HOME/.elan/bin to GITHUB_PATH and
+        # `lean --version` ran in this same job already; steps share the runner
+        # sequentially, so there is no fresh-runner race here (issue #51).
         run: lake exe cache get
         working-directory: lean
       # NOTE (DEC-013 / B): the full-tree `lake build` is intentionally NOT the
@@ -30,22 +42,49 @@ jobs:
       # see docs/SORRY_TRACKER.md. CI therefore gates on every module that is
       # actually clean, so the "build oracle" stays green; widen to the full tree
       # when the pending sorries are resolved.
-      - name: Build clean modules (Basic + v4 substrate + Barrier Calculus; sorry-as-error)
-        run: lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus PleaNP.Computability.Oracle PleaNP.Computability.OracleComplexity PleaNP.Computability.OracleSmoke
+      - name: Build clean modules (Basic + v4 substrate + Barrier Calculus + Challenges; sorry-as-error)
+        run: lake build PleaNP.Basic PleaNP.Calculus.BarrierCalculus PleaNP.Calculus.ConcreteSeed PleaNP.Calculus.Soundness PleaNP.Calculus.Classification PleaNP.Barriers.RelativizationProof PleaNP.Barriers.Algebrization PleaNP.Barriers.Williams PleaNP.Benchmark.Closure PleaNP.ProofComplexity.Resolution PleaNP.Barriers.WilliamsSat PleaNP.Barriers.WilliamsTransfer PleaNP.Barriers.WilliamsAssembly PleaNP.Circuits.Basic PleaNP.Circuits.AC0 PleaNP.Circuits.MustRefute PleaNP.Computability.Oracle PleaNP.Computability.OracleComplexity PleaNP.Computability.OracleSmoke PleaNP.Computability.OracleV5Tests PleaNP.Challenges.Relativization 2>&1 | tee /tmp/barcheck.log
         working-directory: lean
+      - name: Barrier-check verdict harness (Rung-5,#3; asserts the four #barrier_check verdict lines)
+        run: python3 ../tooling/gates/barrier_check_test.py /tmp/barcheck.log
+        working-directory: lean
+      - name: Build tests exe (funeq/funne propagation + DEAD verdict;#30)
+        run: lake build tests
+        working-directory: lean
+      # Root `lakefile.lean` exists so downstream repos can `require PleaNP`
+      # (issue #102). It must restate the library declarations from
+      # `lean/lakefile.lean`, because a minimal root file does not work —
+      # consumers fail with `unknown module prefix 'PleaNP'`. This step fails if
+      # the two files drift. Needs no Lean toolchain.
+      - name: Lakefile sync check (root shim vs lean/lakefile.lean; #102)
+        run: python3 tooling/gates/lakefile_sync_check.py
       - name: Hygiene scan (Gate 6 Tier 1)
-        run: python3 tooling/gates/hygiene_scan.py --prove-stage lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
+        run: python3 tooling/gates/hygiene_scan.py --prove-stage lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Barriers/RelativizationProof.lean lean/PleaNP/Barriers/Algebrization.lean lean/PleaNP/Barriers/Williams.lean lean/PleaNP/Barriers/WilliamsTransfer.lean lean/PleaNP/Barriers/WilliamsAssembly.lean lean/PleaNP/Barriers/WilliamsSat.lean lean/PleaNP/Benchmark/Closure.lean lean/PleaNP/ProofComplexity/Resolution.lean lean/PleaNP/Challenges/Relativization.lean lean/PleaNP/Circuits/Basic.lean lean/PleaNP/Circuits/AC0.lean lean/PleaNP/Circuits/MustRefute.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean lean/PleaNP/Computability/OracleV5Tests.lean
+      - name: Unicode-hygiene scan (Gate 8 Tier 1 — stray/fullwidth/CJK/invisible chars)
+        run: python3 tooling/gates/unicode_scan.py .
       - name: Vacuity scan (Gate 5 Tier 1)
-        run: python3 tooling/gates/vacuity_scan.py lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
+        run: python3 tooling/gates/vacuity_scan.py lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Barriers/RelativizationProof.lean lean/PleaNP/Barriers/Algebrization.lean lean/PleaNP/Barriers/Williams.lean lean/PleaNP/Barriers/WilliamsTransfer.lean lean/PleaNP/Barriers/WilliamsAssembly.lean lean/PleaNP/Barriers/WilliamsSat.lean lean/PleaNP/Benchmark/Closure.lean lean/PleaNP/ProofComplexity/Resolution.lean lean/PleaNP/Challenges/Relativization.lean lean/PleaNP/Circuits/Basic.lean lean/PleaNP/Circuits/AC0.lean lean/PleaNP/Circuits/MustRefute.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean lean/PleaNP/Computability/OracleV5Tests.lean
+      - name: Vacuity scanner unit tests (Gate 5 comment-strip regression, #60)
+        run: python3 tooling/gates/tests/test_vacuity_scan.py
       - name: Model-consistency scan (Gate 2 Tier 1)
-        run: python3 tooling/gates/model_consistency_scan.py lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
+        run: python3 tooling/gates/model_consistency_scan.py lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Barriers/RelativizationProof.lean lean/PleaNP/Barriers/Algebrization.lean lean/PleaNP/Barriers/Williams.lean lean/PleaNP/Barriers/WilliamsTransfer.lean lean/PleaNP/Barriers/WilliamsAssembly.lean lean/PleaNP/Barriers/WilliamsSat.lean lean/PleaNP/Benchmark/Closure.lean lean/PleaNP/ProofComplexity/Resolution.lean lean/PleaNP/Challenges/Relativization.lean lean/PleaNP/Circuits/Basic.lean lean/PleaNP/Circuits/AC0.lean lean/PleaNP/Circuits/MustRefute.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean lean/PleaNP/Computability/OracleV5Tests.lean
       - name: Binder-usage scan (Gate 5 Tier 1b)
-        run: python3 tooling/gates/binder_usage_scan.py --allow-unreferenced '^(exists_equalizing_oracle|exists_separating_oracle|smoke_accepts_true|smoke_rejects_false)$' lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean
+        run: python3 tooling/gates/binder_usage_scan.py --allow-unreferenced '^(exists_equalizing_oracle|exists_separating_oracle|smoke_accepts_true|smoke_rejects_false|v5_smoke_accepts_true|v5_smoke_rejects_false)$' lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Barriers/RelativizationProof.lean lean/PleaNP/Barriers/Algebrization.lean lean/PleaNP/Barriers/Williams.lean lean/PleaNP/Barriers/WilliamsTransfer.lean lean/PleaNP/Barriers/WilliamsAssembly.lean lean/PleaNP/Barriers/WilliamsSat.lean lean/PleaNP/Benchmark/Closure.lean lean/PleaNP/ProofComplexity/Resolution.lean lean/PleaNP/Challenges/Relativization.lean lean/PleaNP/Circuits/Basic.lean lean/PleaNP/Circuits/AC0.lean lean/PleaNP/Circuits/MustRefute.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean lean/PleaNP/Computability/OracleV5Tests.lean
+      - name: Gate-REVIEW register machine-check (issue #92; clean-module REVIEW set must match docs/GATE_REVIEW_NOTES.md)
+        run: python3 tooling/gates/gate_review_register_check.py
+      - name: Gate-REVIEW register unit tests (issue #92; stdlib-only)
+        run: python3 tooling/gates/tests/test_gate_review_register.py
       - name: Axiom check (Gate 6 Tier 2 — no smuggled sorry via meta-programs)
-        run: python3 ../tooling/gates/axiom_check.py PleaNP.Computability.Oracle,PleaNP.Computability.OracleComplexity,PleaNP.Computability.OracleSmoke,PleaNP.Calculus.BarrierCalculus PleaNP.Oracles.evalsTo_unique_result PleaNP.Oracles.P_A_subset_NP_A PleaNP.Oracles.smoke_accepts_true PleaNP.Oracles.smoke_rejects_false
+        # Soundness module (issue #65) theorems are axiom-free; the #41 fix makes
+        # axiom_check recognize Lean's "does not depend on any axioms" line as
+        # clean, so listing them here machine-asserts their axiom-free status
+        # continuously (issue #94).
+        run: python3 ../tooling/gates/axiom_check.py PleaNP.Computability.Oracle,PleaNP.Computability.OracleComplexity,PleaNP.Computability.OracleSmoke,PleaNP.Computability.OracleV5Tests,PleaNP.Calculus.BarrierCalculus,PleaNP.Calculus.Soundness PleaNP.Oracles.evalsTo_unique_result PleaNP.Oracles.P_A_subset_NP_A PleaNP.Oracles.smoke_accepts_true PleaNP.Oracles.smoke_rejects_false PleaNP.Oracles.v5_smoke_accepts_true PleaNP.Oracles.v5_smoke_rejects_false PleaNP.Calculus.transfer_under_ext PleaNP.Calculus.relAtom_uniform PleaNP.Calculus.langAtom_uniform PleaNP.Calculus.pA_mem_uniform PleaNP.Calculus.uniform_and PleaNP.Calculus.uniform_or PleaNP.Calculus.uniform_imp PleaNP.Calculus.uniform_iff PleaNP.Calculus.uniform_not PleaNP.Calculus.uniform_forall PleaNP.Calculus.uniform_exists PleaNP.Calculus.funeq_uniform PleaNP.Calculus.funne_uniform PleaNP.Calculus.sound_verdict_abstract PleaNP.Calculus.sound_verdict_abstract_rev
         working-directory: lean
       - name: Read-back harness unit tests (Gate 4; no secrets, no Lean needed)
         run: python3 tooling/gates/tests/test_readback.py
+      - name: Barrier-check verdict harness unit tests (Rung-5,#3; stdlib-only, no Lean,no secrets)
+        run: python3 tooling/gates/tests/test_barrier_check_test.py
       - name: Read-back smoke (Gate 4; deterministic skeleton on a real theorem)
         run: python3 ../tooling/gates/lean_readback.py "PleaNP.Oracles.evalsTo_unique_result" "PleaNP.Computability.Oracle" >/dev/null && echo "read-back smoke ok"
         working-directory: lean
@@ -58,14 +97,18 @@ jobs:
           python3 ../tooling/gates/dual_render.py self "PleaNP.Calculus.BarrierCalculus" "PleaNP.Calculus.thhStatement" >/dev/null
           echo "Gate 3 self-checks ok"
         working-directory: lean
-      - name: Probe-checklist unit tests (Gate 4 Layer 3; no secrets, no Lean)
+      - name: Probe-checklist unit tests (Gate 4 Layer  #####3; no secrets, no Lean)
         run: python3 tooling/gates/tests/test_probe_check.py
+      - name: Rendering-disagreement spec unit tests (schema + checklist renderer; no secrets, no Lean)
+        run: python3 tooling/gates/tests/test_rendering_disagreement.py
       - name: Probe-checklist approve/block smoke (Layer 3)
         run: |
           python3 tooling/gates/probe_check.py checklist tooling/gates/specs/pA_subset_npA.json --answers tooling/gates/specs/pA_subset_npA.answers.ok.json >/dev/null
           if python3 tooling/gates/probe_check.py checklist tooling/gates/specs/pA_subset_npA.json --answers tooling/gates/specs/pA_subset_npA.answers.wrong.json >/dev/null 2>&1; then
             echo "ERROR: wrong answers unexpectedly passed"; exit 1
           fi
+          python3 tooling/gates/probe_check.py validate-spec tooling/gates/specs/rendering_disagreement.example.json --schema tooling/gates/specs/rendering_disagreement.schema.json >/dev/null
+          python3 tooling/gates/probe_check.py checklist tooling/gates/specs/rendering_disagreement.example.json >/dev/null
           echo "probe-checklist approve/block smoke ok"
       - name: Statement-lint unit tests (pure-code shape classification)
         run: python3 tooling/gates/tests/test_statement_lint.py
@@ -79,7 +122,23 @@ jobs:
         run: python3 tooling/reviews/tests/test_review_inbox.py
       - name: Gate 3 multi-rendering unit tests (AI-multi-rendering → human-mine driver)
         run: python3 tooling/gates/tests/test_multi_render.py
+      - name: Gate 8 Unicode-hygiene scanner unit tests (stray-character authoring-hygiene gate)
+        run: python3 tooling/gates/tests/test_unicode_scan.py
+      - name: Corpus-campaign collation unit tests (Gate 3; counted-table regression guard, #31)
+        run: python3 tooling/gates/tests/test_corpus_campaign.py
+      - name: Pass-sizing compliance scanner unit tests (multi-run pass rule; stdlib, no secrets, no Lean)
+        run: python3 tooling/gates/tests/test_pass_scan.py
+      - name: Effort re-sum unit tests (reproducible per-rung totals; stdlib, no secrets, no Lean)
+        run: python3 tooling/gates/tests/test_effort_summary.py
       - name: Review-inbox index smoke (INBOX.md stays generated)
         run: |
           python3 tooling/reviews/review_inbox.py index >/dev/null
           test -f reviews/INBOX.md && echo "review-inbox index ok"
+      - name: Galaxy data layer unit tests (issue #86; negative-space extraction, stdlib, no network)
+        run: python3 tooling/galaxy/tests/test_galaxy_data.py
+      - name: Galaxy renderer unit tests (issue #87; self-contained galaxy.html invariants, stdlib)
+        run: python3 tooling/galaxy/tests/test_galaxy_render.py
+      - name: Galaxy regen smoke (committed galaxy.html stays up to date with repo artifacts)
+        run: |
+          python3 tooling/galaxy/galaxy.py --repo . --out /tmp/galaxy-ci.html >/dev/null
+          cmp /tmp/galaxy-ci.html tooling/galaxy/galaxy.html && echo "galaxy.html regenerable ok"

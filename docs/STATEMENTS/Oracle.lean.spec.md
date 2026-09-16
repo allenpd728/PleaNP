@@ -1,19 +1,19 @@
-# Design spec: `PleaNP/Computability/Oracle.lean`
+# Design spec: `lean/PleaNP/Computability/Oracle.lean`
 
 **Rung:** 2 (the local, unblocked piece) — oracle machines are PleaNP's to build regardless of which upstream P/NP model lands (`docs/UPSTREAM_TRACKING.md` decision rule 2; `docs/STATEMENTS/Relativization.md` §2).
-**Status:** Substrate confirmed (PARTIAL -- oracle machine only; P^A/NP^A blocked on step counting). Oracle.lean rendered, type-checks, hygiene-clean. See lean/PleaNP/Computability/Oracle.lean.
+**Status:** Substrate confirmed (PARTIAL -- oracle machine only; P^A/NP^A blocked on step counting). Oracle.lean rendered, type-checks, hygiene-clean. See `lean/PleaNP/Computability/Oracle.lean`.
 
 ---
 
 ## 1. Why this file exists and what it is *not*
 
-`Oracle.lean` defines the **oracle-machine substrate** that relativization (Baker–Gill–Solovay) requires. It is the single highest-leverage unblocked piece of the project: `docs/STATEMENTS/Relativization.md` cannot be rendered into Lean until this file exists, and this file does *not* depend on the contested upstream P/NP choice (it composes with whichever model lands).
+`lean/PleaNP/Computability/Oracle.lean` defines the **oracle-machine substrate** that relativization (Baker–Gill–Solovay) requires. It is the single highest-leverage unblocked piece of the project: `docs/STATEMENTS/Relativization.md` cannot be rendered into Lean until this file exists, and this file does *not* depend on the contested upstream P/NP choice (it composes with whichever model lands).
 
-**What this file is *not*:** it is *not* a proof, *not* a barrier theorem, and *not* a definition of `P`/`NP` (those are upstream, per DEC-003). It is the *machinery* — the oracle type, the oracle machine, and the step-counting that lets us later define `P^A`/`NP^A`. Proving anything about oracles (the BGS existence result) is Rung 3 work and lives in `PleaNP/Barriers/Relativization.lean`, gated by the frozen statement spec.
+**What this file is *not*:** it is *not* a proof, *not* a barrier theorem, and *not* a definition of `P`/`NP` (those are upstream, per DEC-003). It is the *machinery* — the oracle type, the oracle machine, and the step-counting that lets us later define `P^A`/`NP^A`. Proving anything about oracles (the BGS existence result) is Rung 3 work and lives in `lean/PleaNP/Barriers/Relativization.lean`, gated by the frozen statement spec.
 
 ---
 
-## 2. The four objects `Oracle.lean` must define
+## 2. The four objects `lean/PleaNP/Computability/Oracle.lean` must define
 
 ### 2.1 The oracle type
 
@@ -50,7 +50,7 @@ This is the piece that turns "oracle machine" into "oracle *complexity*." Mathli
 
 **Logical shape:**
 - A `runN`-style (fuel-based) or relational `EvalsToInTime`-style measure on oracle machines, where each oracle query consumes 1 unit of fuel/time.
-- This is the substrate on which `P^A` and `NP^A` will later be defined (in `OracleComplexity.lean`, a separate file): `P^A` = languages decidable by a deterministic oracle machine for `A` in `poly(n)` steps; `NP^A` = the nondeterministic analogue.
+- This is the substrate on which `P^A` and `NP^A` will later be defined (in `lean/PleaNP/Computability/OracleComplexity.lean`, a separate file): `P^A` = languages decidable by a deterministic oracle machine for `A` in `poly(n)` steps; `NP^A` = the nondeterministic analogue.
 
 **Acceptance criteria:**
 - Oracle queries count as exactly 1 step, consistent with §2.2.
@@ -58,7 +58,7 @@ This is the piece that turns "oracle machine" into "oracle *complexity*." Mathli
 
 ### 2.4 The `P^A` / `NP^A` complexity classes (likely a separate file)
 
-**Scope note:** The actual `P^A`/`NP^A` definitions probably belong in `PleaNP/Computability/OracleComplexity.lean`, not `Oracle.lean` itself — `Oracle.lean` provides the machine + step-counting substrate, and the *classes* are built on top. The local agent may split or combine these; the spec only requires that the split is recorded and the dependency direction is clear (oracle machine → step counting → complexity classes). These classes are what `Relativization.md` §2 lists as "PleaNP-local — the time-complexity layer."
+**Scope note:** The actual `P^A`/`NP^A` definitions probably belong in `lean/PleaNP/Computability/OracleComplexity.lean`, not `lean/PleaNP/Computability/Oracle.lean` itself — `lean/PleaNP/Computability/Oracle.lean` provides the machine + step-counting substrate, and the *classes* are built on top. The local agent may split or combine these; the spec only requires that the split is recorded and the dependency direction is clear (oracle machine → step counting → complexity classes). These classes are what `Relativization.md` §2 lists as "PleaNP-local — the time-complexity layer."
 
 **Acceptance criteria for the classes (when built):**
 - `P^A` and `NP^A` are *language classes* (sets of languages), so that `P^A = NP^A` is extensional set equality — a Gate 2 check item from `Relativization.md` §3.
@@ -78,7 +78,7 @@ This is the single most important acceptance criterion, because it's where "buil
 **Gate mapping for this file specifically:**
 - Gate 2 (model-consistency): the oracle type is `PleaNP.Oracles.Oracle`, not a local alias of `RecursiveIn` or `TuringReducible`. The linter/human checks the import.
 - Gate 4 (read-back): an auto-generated read-back of the `Oracle` definition must produce "a total function from strings to yes/no" — if it reads "a partial function..." or "a function that may not answer," the rendering is wrong.
-- Gate 6 (hygiene): `Oracle.lean` itself should have zero `sorry` (it's definitions, not proofs) — run `python3 tooling/gates/hygiene_scan.py --prove-stage lean/PleaNP/Computability/` and expect a clean pass.
+- Gate 6 (hygiene): `lean/PleaNP/Computability/Oracle.lean` itself should have zero `sorry` (it's definitions, not proofs) — run `python3 tooling/gates/hygiene_scan.py --prove-stage lean/PleaNP/Computability/` and expect a clean pass.
 
 ---
 
@@ -94,14 +94,14 @@ These do not affect the *logical shape* in §2; they affect only the Lean render
 
 ---
 
-## 5. What "done" looks like for `Oracle.lean`
+## 5. What "done" looks like for `lean/PleaNP/Computability/Oracle.lean`
 
 Per the `LOCAL_AGENT_WORKFLOW.md` status convention, this file progresses:
 - **Draft spec** (this document) →
 - **Substrate confirmed** (the base model is chosen; `lake build` on the dependency succeeds) →
-- **Rendered, type-checks** (`Oracle.lean` compiles; definitions are `sorry`-free) →
+- **Rendered, type-checks** (`lean/PleaNP/Computability/Oracle.lean` compiles; definitions are `sorry`-free) →
 - **Gates 2/4/6 passed** (totality verified at type level; read-back matches §2.1; hygiene scan clean) →
-- **Frozen** (the oracle-machine substrate is fixed; `Relativization.lean` may now be built against it).
+- **Frozen** (the oracle-machine substrate is fixed; `lean/PleaNP/Barriers/Relativization.lean` may now be built against it).
 
 At that point `docs/STATEMENTS/Relativization.md`'s §2 dependency "Oracle machines — PleaNP-local" flips from *Unblocked* to *Done*, and the relativization statement can be rendered (Step 1 of its own workflow), still blocked on the *upstream* `P`/`NP` for the final statement.
 
@@ -112,5 +112,5 @@ At that point `docs/STATEMENTS/Relativization.md`'s §2 dependency "Oracle machi
 - **Mathlib substrate to compose with:** `Mathlib/Computability/PostTuringMachine.lean` (TM0/TM1/TM2, Carneiro 2018), `Mathlib/Computability/RecursiveIn.lean` (Duve/Roth 2025 — the partial oracle-computability notion, *not* to be reused as the oracle type, per §3).
 - **The totality defect (why not to reuse `RecursiveIn`):** `docs/PRIOR_ART.md` §1 (Edwin Park / Mario Carneiro / Tanner Duve Zulip discussion, Feb 2026).
 - **No existing oracle-machine formalization:** `docs/PRIOR_ART.md` (cross-assistant survey) confirms no proof assistant has time-bounded oracle machines — this file is genuinely novel substrate.
-- **complexitylib (potential shortcut for the base model, not the oracle):** `docs/UPSTREAM_TRACKING.md` §6 — has multi-tape TMs + step counting but *not* oracle machines (its roadmap lists oracle access as unfinished). So even if complexitylib is imported, `Oracle.lean` is still PleaNP's to write.
+- **complexitylib (potential shortcut for the base model, not the oracle):** `docs/UPSTREAM_TRACKING.md` §6 — has multi-tape TMs + step counting but *not* oracle machines (its roadmap lists oracle access as unfinished). So even if complexitylib is imported, `lean/PleaNP/Computability/Oracle.lean` is still PleaNP's to write.
 - **The BGS statement this substrate serves:** `docs/STATEMENTS/Relativization.md`.

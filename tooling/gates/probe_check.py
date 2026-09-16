@@ -107,6 +107,70 @@ PROBE_KINDS = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Rendering-disagreement spec (Gate 3 multi-rendering -> human review)
+# ---------------------------------------------------------------------------
+
+# The allowed top-level fields of a rendering-disagreement spec. Mirrors
+# tooling/gates/specs/rendering_disagreement.schema.json (the unit tests
+# keep the two in sync).
+_RENDER_TOP_LEVEL = {"campaign", "lens_a", "lens_b", "informal_claim",
+                       "batch_narrative", "probes"}
+_RENDER_PROBE_FIELDS = {"key", "kind", "question", "choices", "expected",
+                          "hint", "gloss"}
+_RENDER_REQUIRED = ("key", "kind", "question", "choices", "expected", "hint")
+
+
+def validate_rendering_disagreement_spec(spec: dict) -> list[str]:
+    """Validate a rendering-disagreement spec against the schema (stdlib).
+
+    Returns a list of violation strings (empty = valid). The rules mirror
+    tooling/gates/specs/rendering_disagreement.schema.json: required
+    top-level fields, 3-5 probes with required per-probe fields, no extra
+    fields, and the expected answer must be one of the choices."""
+    violations = []
+    for f in ("campaign", "lens_a", "lens_b", "informal_claim", "probes"):
+        if f not in spec:
+            violations.append(f"missing required field '{f}'")
+    for f in ("campaign", "lens_a", "lens_b", "informal_claim", "batch_narrative"):
+        if f in spec and not isinstance(spec[f], str):
+            violations.append(f"field '{f}' must be a string (got {type(spec[f]).__name__})")
+    probes = spec.get("probes")
+    if "probes" in spec and not isinstance(probes, list):
+        violations.append(f"'probes' must be an array (got {type(probes).__name__})")
+    elif isinstance(probes, list):
+        if not (3 <= len(probes) <= 5):
+            violations.append(f"'probes' must have 3-5 items ( got {len(probes)})")
+        for i, p in enumerate(probes):
+            pref = f"probes[{i}]"
+            if not isinstance(p, dict):
+                violations.append(f"{pref}: must be an object")
+                continue
+            for f in _RENDER_REQUIRED:
+                if f not in p:
+                    violations.append(f"{pref}: missing required field '{f}'")
+            extra = set(p) - _RENDER_PROBE_FIELDS
+            if extra:
+                violations.append(f"{pref}: unknown field(s): {sorted(extra)}")
+            choices= p.get("choices")
+            if choices is not None:
+                if not isinstance(choices, list) or not choices:
+                    violations.append(f"{pref}: 'choices' must be a non-empty array")
+                elif any(not isinstance(c, str) for c in choices):
+                    violations.append(f"{pref}: every choice must be a string")
+            expected = p.get("expected")
+            if expected is not None and isinstance(choices, list) and choices:
+                if expected not in choices:
+                    violations.append(f"{pref}: expected value must be one of the choices")
+            for f in ("key", "kind", "question", "expected", "hint", "gloss"):
+                if f in p and not isinstance(p[f], str):
+                    violations.append(f"{pref}: '{f}' must be a string")
+    extra = set(spec) - _RENDER_TOP_LEVEL
+    if extra:
+        violations.append(f"unknown top-level field(s): {sorted(extra)}")
+    return violations
+
+
 def validate_checklist(spec: dict, answers: dict) -> list[str]:
     """Validate a human's answers against the spec's expected values.
     Returns a list of violation strings (empty = pass)."""
@@ -130,8 +194,16 @@ def render_checklist(spec: dict) -> str:
     lines.append("=" * 70)
     lines.append("Semantic review checklist (Layer 3 — probe style)")
     lines.append("=" * 70)
-    lines.append(f"claim: {spec.get('title', '')}")
-    lines.append(f"informal statement: {spec.get('informal', '')}")
+    claim = spec.get("campaign") or spec.get("title", "")
+    lines.append(f"claim: {claim}")
+    if spec.get("lens_a") or spec.get("lens_b"):
+        lines.append(f"lenses: A = {spec.get('lens_a', '?')}, B = {spec.get('lens_b', '?')}")
+    lines.append(f"informal statement: {spec.get('informal_claim') or spec.get('informal', '')}")
+    narrative = spec.get("batch_narrative")
+    if narrative:
+        lines.append("")
+        lines.append("batch narrative:")
+        lines.append(narrative)
     lines.append("")
     lines.append("Answer each probe INDEPENDENTLY (yes/no or pick one). A claim")
     lines.append("is trusted only if EVERY answer matches the expected value.")
@@ -142,8 +214,12 @@ def render_checklist(spec: dict) -> str:
         lines.append(f"  [{p.get('key')}] {p.get('question') or meta.get('question')}")
         if p.get("choices"):
             lines.append(f"      choices: {', '.join(p['choices'])}")
-        if meta.get("explain"):
-            lines.append(f"      hint: {meta['explain']}")
+        hint = p.get("hint") or meta.get("explain")
+        if hint:
+            lines.append(f"      hint: {hint}")
+        gloss = p.get("gloss")
+        if gloss:
+            lines.append(f"      gloss: {gloss}")
         lines.append(f"      expected: {p.get('expected')}")
         lines.append("")
     lines.append("=" * 70)
@@ -161,6 +237,10 @@ def main() -> int:
     p_chk = sub.add_parser("checklist", help="render/validate a claim checklist")
     p_chk.add_argument("spec", help="path to claim spec JSON")
     p_chk.add_argument("--answers", help="path to answers JSON (validate); else render only")
+    p_val = sub.add_parser("validate-spec",
+                           help="validate a rendering-disagreement spec against the schema")
+    p_val.add_argument("spec", help="path to spec JSON")
+    p_val.add_argument("--schema", help="path to the schema JSON (optional; coherence check)")
     args = ap.parse_args()
 
     if args.mode == "probe":
@@ -176,9 +256,25 @@ def main() -> int:
         print("=" * 70)
         return 0 if rc == 0 else 1
 
-    spec = json.loads(Path(args.spec).read_text())
+    if args.mode == "validate-spec":
+        p = Path(args.spec)
+        spec = json.loads(p.read_text())
+        violations = validate_rendering_disagreement_spec(spec)
+        if args.schema:
+            _coherence_check_schema(Path(args.schema))
+        if violations:
+            print("Rendering-disagreement spec INVALID:")
+            for v in violations:
+                print(f"  [x] {v}")
+            return 1
+        print("Rendering-disagreement spec VALID.")
+        return 0
+
+    p = Path(args.spec)
+    spec = json.loads(p.read_text())
     if args.answers:
-        answers = json.loads(Path(args.answers).read_text())
+        p2 = Path(args.answers)
+        answers = json.loads(p2.read_text())
         print(render_checklist(spec))
         violations = validate_checklist(spec, answers)
         if violations:
@@ -192,6 +288,21 @@ def main() -> int:
         return 0
     print(render_checklist(spec))
     return 0
+
+
+def _coherence_check_schema(path: Path) -> None:
+    """Cheap coherence check that the schema JSON is well-formed and carries the
+    required field lists the Python validator enforces (keeps the two in sync).)."""
+    schema = json.loads(path.read_text())
+    required_top = {"campaign", "lens_a", "lens_b", "informal_claim", "probes"}
+    if not required_top.issubset(set(schema.get("required", []))):
+        raise SystemExit("schema.json requirements mismatch: required top-level fields must be listed")
+    props = schema.get("properties", {})
+    probe_item = props.get("probes", {}).get("items", {})
+    probe_req = set(probe_item.get("required", []))
+    expected = {"key", "kind", "question", "choices", "expected", "hint"}
+    if not expected.issubset(probe_req):
+        raise SystemExit("schema.json requirements mismatch: probe fields key,kind,question,choices,expected,hint must be listed")
 
 
 if __name__ == "__main__":

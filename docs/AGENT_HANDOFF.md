@@ -9,7 +9,7 @@ conventions; this doc is the "what do I do on day one" summary.
 
 ## How to pick up work (the protocol in one paragraph)
 
-1. **Read this file + `docs/MULTI_AGENT_WORKFLOW.md` + `docs/AGENTS.md`.**
+1. **Read this file + `docs/MULTI_AGENT_WORKFLOW.md` + the repo-root `AGENTS.md`.**
 2. **List the open issues** (GitHub API or `gh issue list`). Tasks labeled
    `status:available` are claimable. **One claim per agent at a time.**
 3. **Sweep first** (per the protocol): check `status:claimed` issues older
@@ -20,8 +20,12 @@ conventions; this doc is the "what do I do on day one" summary.
    atomic API call, self-assign, comment `claimed by <name> run=<run-id> at
    <utc>`. **Generate a run-id** `<YYYYMMDD-HHMM>-<4 chars>` and use it in
    every claim/done/blocker comment.
-6. **Do the work; prove the done:** commit to `dev` (never force-push);
-   include gate evidence in the done comment (gate commands + output); swap
+6. **Do the work; prove the done:** commit to `dev` (never force-push)
+   and **push to `dev` immediately after the commit** — `git push origin dev`
+   — before closing the issue or citing it in the done comment. A commit
+   that exists only locally is invisible to siblings (the system of record is
+   `git log origin/dev`) and counts as undone until pushed. Then include gate
+   evidence in the done comment (gate commands + output); swap
    `status:claimed` → `status:done` and close with the commit link.
 7. **No task available?** Fall through: `Tests:` issues → PR review comments →
    blockers. Only when all are exhausted is the queue empty.
@@ -30,9 +34,9 @@ conventions; this doc is the "what do I do on day one" summary.
 
 - **Working tree:** clean at `main`/`dev` `8939367` (fast-forwarded).
 - **Lean builds:** clean modules green (BarrierCalculus, Oracle substrate,
-  BgsRenderings); `Relativization.lean` + `OracleUpstreamP.lean` fail ONLY on
+  BgsRenderings); `lean/PleaNP/Barriers/Relativization.lean` + `lean/PleaNP/Computability/OracleUpstreamP.lean` fail ONLY on
   their tracked sorries (expected; see SORRY_TRACKER).
-- **Tools (all tested, 51 unit tests):** hygiene/vacuity/model/binder scans,
+- **Tools (all tested; pytest tooling/gates/tests/ tooling/reviews/tests/ — 75 passing at this commit):** hygiene/vacuity/model/binder scans,
   `axiom_check.py` (no sorryAx), `lean_readback.py`, `readback.py` (two
   translators must agree), `dual_render.py` (+`--lemma`), `statement_lint.py`
   (pure-code shape classification), `multi_render.py` (init/render/check/mine),

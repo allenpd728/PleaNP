@@ -13,9 +13,18 @@ is rendered against `P^A`/`NP^A` from `OracleComplexity.lean`. The
 See `docs/STATEMENTS/Relativization.md` (the informal frozen spec) and
 `docs/STATEMENTS/Relativization.lean.spec.md` (the rendering spec).
 
-Status: Rendered (statement only; proof = `sorry` placeholders).
+Status: Rendered (statement/claim file; proof = `sorry` placeholders).
 Both clauses type-check. The `sorry` is honest (Gate 6 catches it in
 render-stage; allowed per the workflow).
+
+File layout (DEC-022 §3.3, issue #66): this file is the **claim root** —
+the two BGS theorem statements with their honest, tracked `sorry`
+placeholders (SORRY_TRACKER #8/#9). The *proof work* lives in
+`RelativizationProof.lean` (barrier-consequence lemmas; A1–A5/D1–D6
+progress lands there), which **this file does not import** — proof
+search edits the proof module, never this statement root (Gate-1 freeze
+discipline). The zero-sorry statement *references* are in
+`Challenges/Relativization.lean` (Comparator-pinned, #64).
 
 Three rendering traps (per the rendering spec):
 - Trap 1 (computability hypothesis): both witnesses carry an explicit

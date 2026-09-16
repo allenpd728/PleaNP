@@ -2,7 +2,7 @@
 
 How OpenHands agents (and external contributors) find, claim, and complete work
 on PleaNP. One task = one GitHub issue. This protocol is adapted from the
-**muse** repo's `TASK_WORKFLOW.md` (2026-09-06), which has been battle-tested
+**muse** repo's `muse/TASK_WORKFLOW.md` (2026-09-06), which has been battle-tested
 for multi-agent coordination under a shared GitHub identity. PleaNP keeps
 muse's core mechanics (run-ids, atomic label claims, blockers, sweeps) and
 adds PleaNP-specific rules: the **integrity gates** are mandatory for any
@@ -61,6 +61,50 @@ Sizing rule: one task = completable in one agent run (well under an hour of
 work). If a task can't be done in one run, it gets decomposed further before
 becoming `available`.
 
+**Multi-run tasks (adopted 2026-09-12, DEC-023 constraint-density
+learnings — see `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §4/§6).** Tasks
+that are honest multi-run epics (parity ∉ AC⁰, Williams transfer, Natural
+Proofs, full proof paths) must NOT be compressed into a single oversized claim.
+Adopt an iterative pass decomposition **at issue-body level before the claim
+starts**: the issue body lists `Pass 1 → Pass n` with the concrete end-state
+and done-evidence for each pass, each pass sized to a run, and the done
+comment records which pass was completed and what the next pass is. This
+mirrors the OpenAI Navier-Stokes pattern — long-horizon targets worked as
+successive sessions with intermediate checkpoints — while keeping PleaNP's
+*claim-sized* agents (DEC-022 anti-pattern: precision over parallelism).
+
+The rule, made airtight (each requirement is a hard DoD of claiming a
+multi-pass issue):
+
+1. **Effort says what it means.** The `**Effort:**` line's max is the number
+   of enumerated `Pass N —` lines in the same body (each pass = one run). If
+   they disagree, fix the Effort line, not the pass list — a claim on an
+   inconsistent issue is void until it is consistent.
+2. **One claim = one pass.** Do NOT claim a multi-pass issue "whole." The
+   claim comment MUST name the pass (`claiming Pass 2 of #NN`). The one-claim
+   rule applies to passes exactly as to issues: a claimed pass is the single
+   `status:claimed` you may hold.
+3. **A pass is done when its end-state is done.** A pass-complete commit is a
+   normal commit on `dev` — it closes only that pass (its own gate evidence
+   in the done comment). The *issue* stays open until its final pass reports
+   the full gate evidence.
+4. **A pass may only land on the issue's own precedents.** A later pass is
+   not claimable until its prerequisite passes have landed (same lineage
+   logic as `Blocked by` — the pass list is a micro-lineage within the issue).
+5. **Pass order is load-bearing.** Working pass 3 before pass 1 is a process
+   violation, just like working a task whose blocker is open.
+6. **Scanner is the backstop.** `tooling/gates/pass_scan.py` (CI-wired unit
+   test, runnable live — and a **mandatory step of the start-of-session sweep**,
+   §Claiming step 1a) enforces: multi-run Effort without a `Passes` block =
+   violation (exit 1); fewer pass lines than the Effort max = under-spec
+   warning. A queue that shows violations or under-spec warnings is
+   *not* ready for claiming — fix the issue body first.
+
+Filing a multi-pass issue is not atomic-till-complete; the issue flips to
+`status:available` once Pass 1 can start. A pass-complete commit closes only
+that pass; the issue stays open until the final pass reports the full gate
+evidence and is `status:done`.
+
 ## Dependencies
 
 Dependencies are expressed as GitHub "blocked by" relationships, forming
@@ -76,7 +120,11 @@ a `Tests:` follow-up, or a blocker-resolution — not just tasks.
 **One claim per agent at a time.** An agent holds **exactly one**
 `status:claimed` label across the entire issue tracker. Finish the claimed
 item (commit + close + unblock dependents) before claiming the next. Parallel
-agents are safe because **each** agent respects this rule.
+agents are safe because **each** agent respects this rule. For a multi-pass
+issue (see §Task definition), a **pass** is the claimed unit: claim comment
+MUST name the pass (`claiming Pass 2 of #NN`), and one claimed pass is the
+single `status:claimed` you may hold — the issue itself stays open until its
+final pass is done.
 
 1. **Sweep stale claims.** Before selecting work, list all `status:claimed`
    issues. For each, if the claim comment is older than **1 hour** with no
@@ -84,11 +132,44 @@ agents are safe because **each** agent respects this rule.
    `status:claimed`, restore the prior label, and comment that the work was
    reclaimed (audit trail). A fresh claim comment carrying a run-id that is not
    yours belongs to a live sibling — leave it alone.
-1a. **Sweep protocol violations.** An issue carrying two status labels at once
+   **Recent-activity guard (DEC-026):** before claiming an `available` item
+   whose subject overlaps a recently-active `claimed` item (same file, same
+   rung, or an adjacent pass), check `git log origin/dev` for sibling commits
+   touching that subject in the last ~1h *even if the claim comment is stale*.
+   An agent can be mid-session on a pass whose claim comment is merely aged;
+   reclaiming it and starting parallel work is the #63-duplicate failure mode.
+   Default: if there is fresh commit/comment evidence of a live sibling on the
+   candidate's subject, prefer a DIFFERENT task; only reclaim if the evidence
+   is absent in both the claim and the git log.
+1a. **Sweep pass-sizing compliance.** Every start-of-session sweep also runs
+   the multi-run pass-sizing scanner (the queue-health backstop for §Task
+   definition rule 6):
+   ```bash
+   python3 tooling/gates/pass_scan.py                    # live (needs GITHUB_TOKEN)
+   python3 tooling/gates/pass_scan.py --json-file issues.json   # offline
+   ```
+   Act on every line of output per the **sweep action table**:
+
+   | Scanner output | Meaning | Sweep action (before the issue is claimable) |
+   |---|---|---|
+   | `[VIOLATION] #NN … Effort claims N-M runs … no '**Passes:**' block` | Multi-run epic without a pass decomposition | The claiming agent adds a `**Passes:**` block (`Pass 1 … Pass n`, one per run) to the issue body — or splits the epic into sub-issues. |
+   | `[warning] #NN … Passes block has only n pass line(s); under-specified` | Pass lines < Effort max | Add the missing `Pass` lines, or tighten the `**Effort:**` range to match the pass list (rule 1 — fix the Effort line, not the pass list, when the Effort overstates). |
+   | `[warning] #NN … no Effort line found` (only with `--warn-no-effort`) | Legacy issue predates the Effort convention | Backfill an `**Effort:**` line (legacy-bulk with the filed issue numbers, or per-claim as the issue is picked up). |
+
+   A queue that shows violations or under-spec warnings is **not** ready for
+   claiming — fix the issue body first (rule 6). Exit code 0 with warnings is
+   still a claimable queue; exit 1 (violations) means fix before claiming.
+   Re-run against the local file (`--json-file`) in the offline sweep
+   environment; the action table is identical, only the fetch source changes.
+   For multi-claim umbrellas (e.g. #76), file one `status:available` sub-issue
+   per enumerated pass (each `Blocked by` the umbrella) — the umbrella itself
+   stays `status:available` with its warning resolved instead of permanent
+   (see action-table row 1).
+1b. **Sweep protocol violations.** An issue carrying two status labels at once
    is in an illegal state. The sweep repairs it: the *older* label wins
    (`blocked-needs-input` outranks `claimed`), the extra label is removed, and
    a comment records the repair.
-1b. **Docs coherence sweep.** Check that `README.md`, `AGENTS.md`,
+1c. **Docs coherence sweep.** Check that `README.md`, `AGENTS.md`,
    `docs/ROADMAP.md`, `docs/decisions/LOG.md`, and `docs/SORRY_TRACKER.md`
    agree with each other: if a recently-closed task changed the design, the
    plan, or the task list, the sibling docs must reflect it in the same
@@ -112,12 +193,21 @@ agents are safe because **each** agent respects this rule.
 4. **Attempt the claim, then verify ownership.** Whatever the work item: swap
    its current label to `status:claimed` **in one atomic edit** — self-assign,
    and post a claim comment (`claimed by <agent-name> run=<run-id> at <UTC
-   timestamp>`). Then re-fetch the issue **and read the latest claim comment**:
-   if its run-id is not yours, a sibling won — back off and pick a different
-   item.
+   timestamp>`). Then re-fetch the issue **and read the latest claim comment**
+   *and the commentary list*: if the latest run-id is not yours OR any sibling
+   claim on the same item landed within the last ~30 minutes with a different
+   run-id, a sibling won the race — back off, restore `status:available`, and
+   pick a different item (see the claim-race rule in §Concurrent-work).
 5. **Do the work; prove the done.** Commit directly to `dev` (no PR — review
-   happens retrospectively on `dev`). Swap `status:claimed` → `status:done` and
-   close the issue with a comment linking the commits. **Tasks with
+   happens retrospectively on `dev`). **The commit is not done until it is
+   pushed**: run `git push origin dev` before closing the issue — the system of
+   record is `git log origin/dev`, and a sibling agent cannot see, review, or
+   build on a commit that exists only in your local clone. A done comment that
+   cites a local-only commit is a stranded claim (and no sweep will resurrect
+   it, because `origin/dev` has no trace of it). Swap
+   `status:claimed` → `status:done` and close the issue with a comment linking
+   the pushed commits (use `git rev-parse HEAD` after pushing, so the link is
+   the sha that actually exists on `origin`). **Tasks with
    known-answer criteria (conformance counts, gate commands, `#barrier_check`
    verdicts) close only when the done comment includes the gate command and its
    output** — a done claim without evidence is how full maps shipped empty and
@@ -125,11 +215,28 @@ agents are safe because **each** agent respects this rule.
 
    **Concurrent-work rules** (agents run in parallel against `dev`):
    - Pull before you start, and again before you push.
+   - **Push every commit immediately after composing it** - before moving
+     onto the next task, before closing the issue, and before commenting "done".
+     A commit that stays local is invisible to every sibling agent and to
+     review; it might as well not exist.
    - On push rejection (non-fast-forward): `git pull --rebase origin dev`,
      resolve conflicts, push again. Repeat as needed.
    - **Rebase revealed a sibling landed the same work?** Compare the two
      implementations: if yours adds nothing, drop it; if yours genuinely
      extends it, merge the two in the rebase. Never push a second copy.
+   - **Claim-race rule (DEC-026):** when two agents claim the same item near
+     simultaneously, the **earlier claim comment wins** (by timestamp), and the
+     later claimant backs off — restores `status:available`, posts a one-line
+     back-off comment, and picks a different item. The back-off comment records
+     the run-ids so the sweep has an audit trail. This beats the old "latest
+     comment wins" reading, which let two agents both believe they owned the
+     item (the #65/#63 race mode).
+   - **Duplicate-work rule (DEC-026):** after a rebase reveals a sibling landed
+     the same pass/statement, **never push a second copy** — either drop yours
+     (if it adds nothing) or, when yours has genuinely distinct content, merge
+     AND reconcile in ONE commit that both agents' evidence can cite. Prefer
+     **not starting** the duplicate in the first place via the recent-activity
+     guard in §Claiming step 1.
    - **Never force-push to `dev`** — it can destroy a sibling agent's committed
      work.
    - A rebase conflict you cannot resolve confidently is a blocker — file it.
@@ -164,7 +271,90 @@ without passing the gates:**
 - **`#barrier_check`:** any P-vs-NP-shaped claim is triaged with the Rung-5
   elaborator; a **DEAD** verdict means the claim cannot resolve P vs NP.
 
+**DEC-022 statement-fidelity (adopted 2026-09-10 from the OpenAI
+NavierStokesAndEuler release — see `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §3):**
+- Every frozen barrier statement ships a **Comparator-style challenge module**
+  + JSON pin (theorem names + `permitted_axioms`), per
+  `docs/STATEMENTS/ComparatorChallenge.template.md`. The proof root must
+  **not** import the challenge module.
+- The statement lives in its own **standalone paper-theorem file** (the
+  "PaperResults" layout) — the claim is frozen as a file, CI-built, and
+  `#print axioms`-checked **before** any proof search attaches.
+- The `formalization.yaml` manifest row (incl. `sorries`, `axioms`,
+  comparator config) updates in the **same commit** as the claim (same rule as
+  `docs/SORRY_TRACKER.md`).
+
+**DEC-023 creativity/authority gates (adopted 2026-09-10 from the same
+releases):**
+- A claimed **barrier/lower-bound proof** whose construction makes substantive
+  *choices* (oracles, machine enumerations, encodings, perturbation scales)
+  must ship a **proof-intuition record**
+  (`docs/STATEMENTS/ProofIntuition.template.md`) plus the
+  **load-bearing-choice audit** (`docs/VALIDATION_SUITE.md`) run alongside
+  Gate 4 — the "internal mechanism, externally-perturbable" standard. A
+  construction whose conclusion is *bought* by an exact choice is flagged, not
+  silently accepted.
+- **Constraint-net cartography** (`docs/CREATIVE_PROTOCOL.md` Phase 2.5):
+  before creative search, enumerate the constraint net and specify a cheap
+  automated rejector per constraint (`#barrier_check`, must-refute lemmas,
+  Comparator refs). Track the rejector trace as evidence, not the raw
+  generation count.
+
 The done comment must include the gate command + output (see §Claiming step 5).
+
+## Rendering-campaign protocol (Gate 3 multi-rendering, N-parallel agents)
+
+How a *single informal claim* gets many **independent** Lean renderings, machine-
+checked against each other,and mined for human review points. This is the
+"N agents x 1 rendering" goal of #17 (today the engine also supports a
+single agent rendering multiple slots — same registration pipeline,no
+isolation between its own renderings).
+
+**Engine.** `python3 tooling/gates/multi_render.py` — a workspace per claim in
+`churn/<claim-slug>/`: `informal.md` (the seed), `renderings/<id>.json` (slot
+registrations: id, module, theorem, created), `matrix.json` (pairwise
+machine-verified equivalence,,and `mined/` (review points for disagreements).
+The pipeline: `init` → (agent) `render` → `check` (+ optional `--lemmas` map
+proving an IFF bridging ambiguity) → `mine`. The equivalence checker is
+`dual_render` (`--lemma` for the proved-IFF path); disagreements become
+`review_inbox` points (one plain-language question each), filed as GitHub
+issues by the `review-issue.yml` workflow (deduped by **inbox id** — the earlier
+double-filing bug #7-#16; see `.github/workflows/review-issue.yml`).
+
+**Claiming a slot.** A rendering slot is claimed like any task in §Claiming:
+one issue(ora comment on the campaign issue) per slot, `status:available` →
+`status:claimed` atomic label swap, run-id in the claim comment. The slot id
+is the `render <slug> <id> <module> <theorem>` id (e.g. `bgs-clause-b-E`). A
+single agent may hold at most one slot at a time (same one-claim rule..
+Slots are numbered/lettered by the campaign's registration (`init` creates the
+workspace; `render` registers each slot's module+theorem). An agent that
+completes its slot swaps its slot issue to `status:done` with the commit link,and
+files its `Tests:` follow-up per §Claiming step 6.
+
+**Isolation guarantee.** Each agent works **without reading any other agent's
+rendering file** (`churn/<slug>/renderings/<id>.lean` or `<id>.json` except its
+own):the only shared inputs are the informal claim (`informal.md`),the licensed
+Mathlib/PleaNP imports,and the repo conventions. A slot is completable in
+isolation — no coordination with the other renderers of the same claim.
+
+Isolation is guaranteed because each rendering lives in its own module/theorem
+named by the slot id,and `check` runs only at merge/registration time (see #25).
+An agent that reads a sibling's rendering before its own is submitted violates the
+campaign (recorded in the slot comment);the merge step's pairwise matrix is the
+enforcement point,not the barrier.
+
+**Slot-diversity discipline (2026-09-07,#27).** Every campaign slot must carry a
+*distinct named lens* (e.g. structure-first / machine-construction /
+witness-predicate / per-length-family),not merely a fresh random seed. All agent
+work uses the same LLM: identical prompts → identical canonical shapes regardless of
+decoding randomness — temperature/entropy cannot force *structural* divergence. A
+lens directs the renderer to a different corner of the statement-shape space;
+disagreements between lenses are the interesting, human-mineable places. If a campaign
+comes back **all EQUIVALENT** (no disagreements),that is itself a measured result —
+the claim is unambiguous across the lenses — and the human still reviews exactly ONE
+confirm probe on the agreed shape + a perturb-control twin (`review_inbox.py perturb`,
+per the fatigue protocol;the control should be FLAGGED,proving the review isn't
+rubber-stamp);there is no "nothing to review" state in a campaign.
 
 ## Blockers
 
@@ -185,6 +375,17 @@ implementation choices, which are the agent's to make. Before writing one,
 confirm: you read the relevant spec/docs and can cite the exact gap; the
 missing information is a *decision*, not a *mechanism*; you state what you
 tried and why it was insufficient.
+
+**Semantic forks vs. notation forks (2026-09-12).** A choice that only *pins
+down syntax* — e.g. whether an interface helper is partial vs. total over a
+definitionally-irrelevant corner, or which spelling of an encoding to commit
+to — is a **notation fork**: the agent picks the more general/cleaner option
+by Occam and moves on; it is neither a blocker nor a review point. A choice
+that would make the claim *differently true* (quantifier direction, subset
+direction, existence bounds) is a **semantic fork** and goes to the human.
+Escalating a notation fork burns the human's attention without changing the
+theorem's truth — treat it as a process violation (see `docs/REVIEW_INBOX.md`
+Rule 0).
 
 **Nested blockers.** Any claimed work item can be blocked, including a `Tests:`
 issue. The exception is blocker-resolution itself: an agent that cannot resolve
@@ -208,6 +409,9 @@ Before finishing, every agent reports (with its run-id):
 - Test specs written (linked `Tests:` issues) and any completed tasks whose test
   follow-up never landed
 - Stale claims reclaimed during the sweep
+- Pass-sizing findings acted on (violations fixed, under-spec claims repaired,
+  sub-issues filed for umbrellas — the `pass_scan.py` output from §Claiming
+  step 1a with the scan exit code)
 - Protocol violations repaired (issues found with two status labels)
 - Duplicate filings closed (twins with lower issue numbers surviving)
 - Work dropped at rebase because a sibling landed it first

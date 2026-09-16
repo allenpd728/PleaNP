@@ -1,4 +1,4 @@
-# Recomposition spec: `Oracle.lean` v2 (against core `TM2ComputableInTime`)
+# Recomposition spec: `lean/PleaNP/Computability/Oracle.lean` v2 (against core `TM2ComputableInTime`)
 
 **Rung:** 2 (local piece) — the recomposition mandated by DEC-010 (Option B chosen: stay on core Mathlib v4.31.0, recompose against `TM2ComputableInTime`'s step-counting machinery, no external dependency, no toolchain change).
 **Status:** Recomposed (v2 against TM2ComputableInTime). Steps 0-2 passed (build green, hygiene clean). Steps 3-5 (model-consistency, read-back, freeze) pending review. See lean/PleaNP/Computability/Oracle.lean.
@@ -9,7 +9,7 @@ This spec *supersedes* the TM1-specific composition guidance in `Oracle.lean.spe
 
 ## 1. Why this recomposition and what changes vs. what stays
 
-The v1 `Oracle.lean` (commit `8d56795`, DEC-008) is built against `Turing.TM1` (core, `PostTuringMachine.lean`), which has **no step counting**. The `StepCount` typeclass is declared but has **no instance** — so `P^A`/`NP^A` cannot be defined, and the relativization statement cannot be rendered. DEC-010 chose Option B: recompose against `Turing.TM2ComputableInTime` (core, `Mathlib/Computability/TuringMachine/Computable.lean`), which *has* step-counting machinery. This unblocks `P^A`/`NP^A` without a toolchain change or external dependency.
+The v1 `lean/PleaNP/Computability/Oracle.lean` (commit `8d56795`, DEC-008) is built against `Turing.TM1` (core, `PostTuringMachine.lean`), which has **no step counting**. The `StepCount` typeclass is declared but has **no instance** — so `P^A`/`NP^A` cannot be defined, and the relativization statement cannot be rendered. DEC-010 chose Option B: recompose against `Turing.TM2ComputableInTime` (core, `Mathlib/Computability/TuringMachine/Computable.lean`), which *has* step-counting machinery. This unblocks `P^A`/`NP^A` without a toolchain change or external dependency.
 
 **What changes (the surgical swap the `StepCount` interface was built for):**
 - The underlying machine model: `TM1` → `TM2` (multi-tape). `Cfg` and `Machine` reference `TM2` types instead of `TM1`.
@@ -86,13 +86,13 @@ With the **empty oracle** (`A := fun _ => false`, or however the empty language 
 
 Per `LOCAL_AGENT_WORKFLOW.md` status convention, v2 progresses:
 - **Substrate confirmed** — `TM2ComputableInTime` / `EvalsToInTime` present in v4.31.0 (verified for this spec; local agent re-confirms with `lake build` of a Mathlib import).
-- **Recomposed, type-checks** — `Oracle.lean` v2 compiles against TM2; `Cfg`/`Machine` reference TM2 types; `StepCount` has a concrete instance against `EvalsToInTime`; zero `sorry` in the recomposition (hygiene scan clean in `--prove-stage`).
+- **Recomposed, type-checks** — `lean/PleaNP/Computability/Oracle.lean` v2 compiles against TM2; `Cfg`/`Machine` reference TM2 types; `StepCount` has a concrete instance against `EvalsToInTime`; zero `sorry` in the recomposition (hygiene scan clean in `--prove-stage`).
 - **Gates 2/4/6 passed** — totality verified (oracle type unchanged, codomain `Bool`); read-back of `Oracle` + the `DecidesInTime` bridge matches §3/§4 trap 1; hygiene clean.
 - **Trap 2 verified** — oracle query = 1 step in `EvalsToInTime` (by construction; documented in-file).
 - **Trap 3 stated** — `P^∅ = P` compatibility lemma rendered (proof may track upstream `P`).
-- **Frozen** — v2 is the canonical `Oracle.lean`; v1 is reachable via the `pre-oracle-prototype` git tag if rollback is needed.
+- **Frozen** — v2 is the canonical `lean/PleaNP/Computability/Oracle.lean`; v1 is reachable via the `pre-oracle-prototype` git tag if rollback is needed.
 
-At that point `P^A`/`NP^A` become definable (in `OracleComplexity.lean` or the same file), and `docs/STATEMENTS/Relativization.md` §2's dependency "Oracle machines — PleaNP-local" flips from *Partial* to *Done*, unblocking the relativization *statement* (Step 1 of its workflow). The *proof* of BGS remains blocked on upstream `P`/`NP` (DEC-003) — the recomposition unblocks the *vocabulary*, not the theorem.
+At that point `P^A`/`NP^A` become definable (in `lean/PleaNP/Computability/OracleComplexity.lean` or the same file), and `docs/STATEMENTS/Relativization.md` §2's dependency "Oracle machines — PleaNP-local" flips from *Partial* to *Done*, unblocking the relativization *statement* (Step 1 of its workflow). The *proof* of BGS remains blocked on upstream `P`/`NP` (DEC-003) — the recomposition unblocks the *vocabulary*, not the theorem.
 
 ---
 
@@ -100,7 +100,7 @@ At that point `P^A`/`NP^A` become definable (in `OracleComplexity.lean` or the s
 
 - **Does not define upstream `P`/`NP`.** Those are still upstream's job (DEC-003). The recomposition defines `P^A`/`NP^A` *relative to* the oracle machine and the `TM2ComputableInPolyTime` substrate; it does not define unrelativized `P`/`NP`.
 - **Does not prove the relativization theorem.** That's Rung 3, gated by the frozen `Relativization.md` statement. The recomposition enables the *statement* to be rendered; the *proof* waits on upstream `P`/`NP` and the diagonalization (Gate 7, Rung 6+).
-- **Does not remove the v1 file or its tag.** `pre-oracle-prototype` stays as the rollback point. v2 edits `Oracle.lean` in place (same namespace, same path); the tag points at v1 for recovery.
+- **Does not remove the v1 file or its tag.** `pre-oracle-prototype` stays as the rollback point. v2 edits `lean/PleaNP/Computability/Oracle.lean` in place (same namespace, same path); the tag points at v1 for recovery.
 
 ---
 

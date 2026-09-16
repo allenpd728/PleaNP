@@ -1,0 +1,11 @@
+{
+  "slug": "marker-funeq",
+  "pairs": [
+    {
+      "a": "atom",
+      "b": "pw",
+      "equivalent": false,
+      "detail": "BLOCKED: the two renderings are not MACHINE-VERIFIED equivalent. Lean could not close the IFF (tried rfl/simpa/simp, and the \u2200-quantified parameterized form) with mechanical tactics. A real equivalenc"
+    }
+  ]
+}

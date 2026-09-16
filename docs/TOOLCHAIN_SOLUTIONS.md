@@ -1,6 +1,6 @@
 # Persistent & cloud toolchain options for Lean 4 + Mathlib
 
-**Status:** 2026-09-06 — Plans A (devcontainer) and B (CI oracle) implemented (see .devcontainer/ and .github/workflows/ci.yml; DEC-013 Active). Activation is blocked on an account-level GitHub billing lock — owner checklist: docs/ACTIVATION_CHECKLIST.md. Plans C and D remain reference options.
+**Status:** 2026-09-13 — Plans A (devcontainer) and B (CI oracle) implemented; Plan E (warm ghcr image + leancheck/elantool tooling) also implemented and VERIFIED live (see §Plan E). The earlier GitHub `ACTIVATION_CHECKLIST.md` billing-lock note is superseded: Actions runs are executing normally (warm-toolchain + review-issue + CI workflows all run on pushes). Plans C and D remain reference options.
 **Audience:** anyone who needs a Lean 4 + Mathlib environment for PleaNP without re-provisioning a toolchain from scratch each session (the pain this solves: `elan install` + Mathlib cache download + full build every new workspace).
 
 The problem statement: *"What could be a free and more persistent way to have access to the Lean toolchain and mathlib corpus without having to connect to the local M4 system or build in the temporary sandbox from scratch every time work is done on the repo?"*
@@ -9,7 +9,7 @@ Verified facts that shape every option below (all confirmed working from this re
 
 - The Lean toolchain ships as a self-contained binary bundle via **elan** (`~/.elan/toolchains/leanprover--lean4---v4.31.0/`).
 - Mathlib serves **precompiled `.olean` caches** via `lake exe cache get` (Azure-backed, hosted by `leanprover-community/mathlib4`; ~8542 files, a few minutes at ~200KB/s, decompressed in place). Cache variants exist per toolchain and per branch/tag.
-- `lean-toolchain` pins the toolchain; `lakefile.lean` pins mathlib `@ "v4.31.0"`.
+- `lean-toolchain` pins the toolchain; `lean/lakefile.lean` pins mathlib `@ "v4.31.0"`.
 - Mathlib's own CI (GitHub Actions + Bors) uploads `.olean` caches so **PR branches get cache hits**.
 - The "globally shared mathlib installation" pattern exists and is documented by the community (multi-project cache sharing).
 
@@ -45,7 +45,7 @@ For an AI agent that works *inside* PleaNP's repo, **the practical answer is Pla
 
 Per-session from-scratch provisioning is expensive mostly because Mathlib is monolithic (~5k+ source modules / 8.5k cached oleans). Options to pull *only what we need*:
 
-1. **Dependency-closure builds (cheap now).** `lake build PleaNP.Import.Path` builds only PleaNP's import closure, not all of Mathlib — the cache still supplies the prebuilt Mathlib oleans, so only `PleaNP.*` gets rebuilt from source. This is already how we iterate (the `#barrier_check` module builds in ~4 s with the cache warm). **For even smaller slices:** keep `BarrierCalculus.lean` import-light (it only needs core `Mathlib`, not the whole `import Mathlib` — worth a follow-up to trim the import) so a fresh checkout can build JUST that module against the cache.
+1. **Dependency-closure builds (cheap now).** `lake build PleaNP.Import.Path` builds only PleaNP's import closure, not all of Mathlib — the cache still supplies the prebuilt Mathlib oleans, so only `PleaNP.*` gets rebuilt from source. This is already how we iterate (the `#barrier_check` module builds in ~4 s with the cache warm). **For even smaller slices:** keep `lean/PleaNP/Calculus/BarrierCalculus.lean` import-light (it only needs core `Mathlib`, not the whole `import Mathlib` — worth a follow-up to trim the import) so a fresh checkout can build JUST that module against the cache.
 2. **Standalone sub-project for the calculus layer.** The `lean/PleaNP/Calculus/` module has zero dependency on the unvalidated `Oracles` substrate; it could be split into its own tiny lake project with its own `lakefile` (still requiring mathlib from cache). This makes the Rung-5 prototype independently extractable and CI-able in isolation (matches DEC-001's "extractable lean/ tree" spirit, one level deeper).
 3. **Fine-grained olean cache sharing.** Mathlib's `lake exe cache` and the "globally shared mathlib installation" wiki pattern let multiple projects share one installed Mathlib. For a small project like PleaNP this mostly matters where many projects share a single runner (e.g. a shared devcontainer for several repos).
 4. **Offline/local mirrors of the cache** (e.g. a repo-scoped self-hosted Actions runner with a warm `~/.elan` + `.lake`): persistent but even-more-infra; only worth it if the free quotas become binding.
@@ -60,7 +60,7 @@ Per-session from-scratch provisioning is expensive mostly because Mathlib is mon
 1. `.devcontainer/devcontainer.json` + `Dockerfile` (elan + mathlib cache get + prebuild `PleaNP.Calculus.BarrierCalculus`) — gives browser-based persistent editing for humans, and a canonical warm image the repo always refers to.
 2. Extend `.github/workflows/ci.yml` to *also* run `lake build PleaNP.Calculus.BarrierCalculus` (or the full tree) with mathlib cache restored — already partly there; ensure a `cache` step for the Mathlib oleans so PRs don't re-download 8.5k files.
 3. Document in `AGENTS.md` the one-line bootstraps: `elan install` → `lake exe cache get` → `lake build <module>` (this is the entire "persistence" story: the cache is the persistence layer; nothing else needs to be stored).
-4. (Follow-up) trim `import Mathlib` in `BarrierCalculus.lean` to the minimal core imports, and note it in the module header — makes single-module fresh builds even faster.
+4. (Follow-up) trim `import Mathlib` in `lean/PleaNP/Calculus/BarrierCalculus.lean` to the minimal core imports, and note it in the module header — makes single-module fresh builds even faster.
 
 None of this requires the M4 machine; any free public runner + the community cache reproduces the environment.
 
@@ -75,3 +75,49 @@ None of this requires the M4 machine; any free public runner + the community cac
 - Lake docs on `cache` and `post_update` hooks (pinning toolchain + cache-get after `lake update`) — lean-lang.org/doc/reference/latest/Build-Tools-and-Distribution/Lake
 
 **Status for the decision log:** this is a *recommendation*, recorded here for a future DEC once the `.devcontainer` + CI-cache landing is scheduled. Not yet a decision — the repo continues to build via the community cache from any environment.
+
+
+---
+
+## Plan E (implemented 2026-09-13) — warm ghcr image + leancheck iteration tool
+
+The two follow-ups from "what to implement" are now in the repo:
+
+### E1. Warm toolchain image (the 'toolchain that persists' for agents, free)
+
+- **.github/workflows/warm-toolchain.yml** — on every push to main,
+  builds the multi-stage warm image and pushes two tags to ghcr.io:
+  ghcr.io/allenpd728/pleanp:main and :lean-<sha>. The image bakes
+  in elan + the pinned Lean toolchain and a warm lean/.lake (Mathlib
+  oleans fetched once at image build). Also adds an actions/cache step for
+  ~/.elan so CI runners restore the toolchain in seconds.
+- **.devcontainer/Dockerfile.warm** — the multi-stage build (builder
+  installs elan + Lean + lake exe cache get; runtime stage copies the warm
+  ~/.elan and lean/.lake).
+- **For agents:** docker pull ghcr.io/allenpd728/pleanp:main then
+  mount the repo — no elan install, no toolchain download, no olean fetch.
+- **Cost:** free for public repos (GHCR + Actions public minutes).
+- **Practical how-to:** docs/TOOLCHAIN_AGENTS.md sec 1.
+
+### E2. Lean iteration tool (leancheck), to speed proof authoring
+
+The edit→typecheck loop was the practical gating cost during the U_B
+machine work. Two stdlib-only tools now compress it:
+
+- **tooling/leancheck.py** — runs lake env lean <file> and prints only
+  the FIRST error (file:line:col + message + compact goal context + a fix
+  hint). --all / --no-context / --json flags; exits 0/1/2.
+- **tooling/watch_leancheck.py** — polls a file until clean, then stops
+  (prints iterations + elapsed); Ctrl-C re-checks for a final picture.
+- Tests: tooling/gates/tests/test_leancheck.py (6 tests, stdlib-only).
+- Practical how-to: docs/TOOLCHAIN_AGENTS.md sec 2.
+
+**Status (2026-09-13, confirmed live):** Plan E implemented and VERIFIED.
+The warm-toolchain workflow runs on [main, dev] pushes — consecutive runs
+completed `success` (26500ba/329cad7/c3916e5/116aaa6) — and
+`ghcr.io/allenpd728/pleanp:dev` + `:main` are both pullable (docker
+manifest inspect returns the OCI index). The `ci-toolchain-cache` job
+caches `~/.elan` for CI runners. `tooling/elantool.sh` is live-verified
+(working-docker-daemon detection + AGENTS.md bootstrap fallback);
+`tooling/leancheck.py`/`watch_leancheck.py` are live-validated against
+Lean v4.31.0 and adopted on real proof work (#37 Pass 1).

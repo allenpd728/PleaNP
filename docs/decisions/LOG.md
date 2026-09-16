@@ -196,13 +196,13 @@ machine is the witness that the gap is real).
 **Status:** Active
 **Scope:** Roadmap expansion — three new target components(priority order: Barrier Calculus, Anchor Object, Lower-Bound Compiler).
 
-**Decision:** Adopt the three components as new rungs of the ladder,with rung numbers in `docs/ROADMAP.md`: **Rung 5 — Barrier Calculus** (`Relativizing` typeclass + `#barrier_check` elaborator + THH unit test —the crown jewel — negative-space specification turned into a typechecking question); **Rung 6 — Anchor Object** (machine-checked P/NP model-equivalence across ≥2 upstream formalizations + Levin universal search rendering `P_eq_NP_iff` as an explicit `#eval`-able term); **Rung 8 — Lower-Bound Compiler** (Williams' transfer theorem as a Lean elaborator emitting verified `NEXP ⊄ C` from a verified CircuitSAT algorithm + runtime bound — lower priority than #1, not blocking — under `PleaNP.Circuits`). Former rungs are renumbered(7 Graded benchmark, 9 AI proof-search loop;,  10 Open problems below P vs NP;,  11 Novel barrier-evasion arguments). Existing out-of-scope boundaries unchanged: still not claiming to resolve P vs NP, still deferring P/NP's base definition to upstream Mathlib. The `lean/` tree stays the sole first-class code artifact.
+**Decision:** Adopt the three components as new rungs of the ladder,with rung numbers in `docs/ROADMAP.md`: **Rung 5 — Barrier Calculus** (`Relativizing` typeclass + `#barrier_check` elaborator + THH unit test —the crown jewel — negative-space specification turned into a typechecking question); **Rung 6 — Anchor Object** (machine-checked P/NP model-equivalence across ≥2 upstream formalizations + Levin universal search rendering `P_eq_NP_iff` as an explicit `#eval`-able term); **Rung 8 — Lower-Bound Compiler** (Williams' transfer theorem as a Lean elaborator emitting verified `NEXP ⊄ C` from a verified CircuitSAT algorithm + runtime bound — lower priority than #1, not blocking — under `PleaNP.Circuits`). Former rungs are renumbered(7 Graded benchmark, 9 AI proof-search loop;, 10 Open problems below P vs NP;, 11 Novel barrier-evasion arguments). Existing out-of-scope boundaries unchanged: still not claiming to resolve P vs NP, still deferring P/NP's base definition to upstream Mathlib. The `lean/` tree stays the sole first-class code artifact.
 
 **Levin-search / decision-gap item(logged as a scoped open lemma, NOT a blocker):** Extending the Anchor Object from the *search* version(Levin universal search,`#eval`-able term)to the *decision* version(`P_eq_NP_iff`)as a decision problem needs **(1) self-reducibility** of the search problem,and **(2) a Hutter-style proof-search wrapper** that turns a bounded search into a decision. Neither is in scope of the current rung's "done" definition; both are formulable as a single scoped,publishable lemma as soon as one base computational model lands upstream. Cite this entry when the search⟶decision gap is discussed,so it isn't glossed over nor silently treated as done.
 
 
 
-**Rationale:** The project's core bet is negative-space specification: formalize the constraints a proof must satisfy,not the proof itself,. Confirmed as a genuine gap — no proof assistant has formalized these barriers; Coq/Isabelle Cook–Levin formalizations(2021/2023) stalled with no barrier follow-through precisely because they had no demand-pull artifact. `#barrier_check` *is* that artifact — every future claimed-proof triage run creates the pull. The three components are independently valuable and prioritized by leverage(5:the demand-pull device itself; 6: robust statement;  8:the widest eventual force-multiplier,but non-blocking).
+**Rationale:** The project's core bet is negative-space specification: formalize the constraints a proof must satisfy,not the proof itself. Confirmed as a genuine gap — no proof assistant has formalized these barriers; Coq/Isabelle Cook–Levin formalizations(2021/2023) stalled with no barrier follow-through precisely because they had no demand-pull artifact. `#barrier_check` *is* that artifact — every future claimed-proof triage run creates the pull. The three components are independently valuable and prioritized by leverage(5:the demand-pull device itself; 6: robust statement; 8:the widest eventual force-multiplier,but non-blocking).
 
 
 ---
@@ -383,3 +383,150 @@ but it is NOT part of PleaNP's architecture and must never be assumed in CI.
 do the work), removes the secret-maintenance burden and the implied external
 dependency, and keeps the two-independence guarantee where it belongs: in the
 agent-pair protocol.
+### DEC-022
+
+**Date:** 2026-09-10
+**Status:** Active
+**Scope:** Lessons from the 2026-09-08 AI-assisted Navier-Stokes/Euler Lean releases (adoption of three statement-fidelity affordances).
+
+**Decision:** Adopt, from OpenAI's `NavierStokesAndEuler` release (and the concurrent `tristanbuckmaster/fluid_lean`), three affordances: **1. Comparator-style machine-checkable statement-equivalence for every frozen PleaNP statement.** An independent, externally-sourced challenge module (`lean/PleaNP/Challenges/`, per the template `docs/STATEMENTS/ComparatorChallenge.template.md`) plus a JSON pin (`lean/ComparatorChallenges/<Name>.json`: theorem names + `permitted_axioms`),machine-checked by `lake exe comparator` when the Comparator lake dependency is available. **2. `formalization.yaml`(v0.4) machine-readable statement manifest** at repo root (declaration ↔ file ↔ sorry_count ↔ axioms ↔ comparator_config ↔ review status; initial manifest committed covers the current green CI surface; add/update rows in the same commit as every proof freeze, same rule as `docs/SORRY_TRACKER.md`). **3. Standalone-paper-theorem-file layout** ("PaperResults pattern"): a frozen claim lives inits own standalone Lean file, imported bya root module,and covered by CI builds + `#print axioms` before any proof search attaches; Gate 1 as file layout,not discipline. Full background: `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md`.
+
+**Why:** The OpenAI release is the first large-scale AI+Lean execution of thee exact statement-fidelity architecture PleaNP mandates: proof root does **not** import the reference problem statement; an independent challenge (Copied from DeepMind's Formal Conjectures) declares it; `lake exe comparator` machine-checks the adaptation; and `#print axioms` + `sorry_count: 0` vouch for hygiene (~2,655 files / ~640K lines, 0 sorries). Moreover its 2026-09-10 push added standalone paper-theorem statement files, proving the "freeze-the-claim-as-a-file" layout scales. PleaNP had two genuine gaps the release spotlighted: a machine-checkable *formal* equivalence layer (dual-render/read-back compare human/agent renderings, not a machine-checked formal reference)and a unified machine-readable statement manifest. Hence these three adoptions. The meta-conclusion(recorded inthe lessons doc): the NS releases validate PleaNP's core negative-space/barrier-scope design at scale; their result is a disproof-of-global-smoothness(a "there is no global smooth solution";the shape of `P ≠ NP`),andthe formalization cost(166 pages → 640K lines) argues for the barrier-library scope. Non-adoptions(also recorded): no "10,000-agent" model (claim-sized agents suffice);precision over parallelism); no "publish raw agent output" pattern (per-claim, human-reviewable commits); no direct P-vs-NP formalization target; no single-Comparator-reference-as-sufficient(keep dual-render),and no vendored inline deps(import upstream, DEC-003). OpenHands remains the model(DEC-021); OpenAI's `formalization.yaml` automation section(`GPT-6 Astra/Codex`)isa *reference format*,not data for PleaNP.
+
+
+
+
+
+**Phasing:**(i) this commit: lessons doc + template + manifest + docs updates(no code,no Lean,no CI change);(ii) next practical step when a barrier statement is next touched: create `lean/PleaNP/Challenges/Relativization.lean` + `lean/ComparatorChallenges/Relativization.json` per the template,and add the `Comparator` lake dependency aspirational,as tracked in `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §3.1;(iii) whenthe Comparator dependency lands,the CI job assertthe comparator configs(as aspirational follow-up). **Sandbox note:** no `lake`/`python-yaml` in every write sandbox, so the repo ships its own stdlib mini-YAML parser (`tooling/galaxy/miniyaml.py`) and `formalization.yaml` is a **checked artifact — parse-valid at commit time** (the Galaxy data layer and CI consume it; any malformation is tracked as a defect, see #43). (See the note in the manifest header and the lessons doc §3.2.)
+
+
+### DEC-023
+
+**Date:** 2026-09-10
+**Status:** Active
+**Scope:** Creativity/authority gates for AI-discovered formal claims — lessons from the 2026-09-08 Navier–Stokes releases (beyond sorry/vacuity).
+
+**Decision:** Beyond DEC-022's three statement-fidelity adoptions, adopt three creativity/authority components from the NS releases (details in `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §3–§5):
+
+1. **Constraint-Net Cartography** — add as `docs/CREATIVE_PROTOCOL.md` Phase 2.5 (the executable-filter step): before creative search on a hard rung, enumerate the full independent-constraint net the construction must satisfy,and specify an automated cheap rejector per constraint,so the search concentrates on residual freedom,not cherry-picking. Stack the existing proto-rejectors (`#barrier_check`, validation must-refute lemmas, Comparator refs (DEC-022), load-bearing-choice audit (below). This turns "creative search" from "generate-then-pick" into "constraint-guided search"; rejection traces are kept as evidence.
+
+
+
+2. **Proof-intuition record** — new template `docs/STATEMENTS/ProofIntuition.template.md`: each AI-discovered formal claim ships a human-legibility record(5-layer plain-words construction, load-bearing audit, perturbation tests, cheap-outs confession, steelman, reviewer checklist -- the "explanation" slot OpenAI filled with its 166-page paper. A claim is not authoritative-ready until humans can testify "I understand this construction and why it is right." "Formally checked but not yet human-legible" is a finding, not a blocker;if no human can fill the record,record that honestly.
+
+
+
+3. **Load-bearing-choice audit** — extend `docs/VALIDATION_SUITE.md` (§"Load-bearing-choice audit")izin binder-lethality from *definitions* to *proofs*: audit which *choices* do the work(oracle, encoding, enumeration-ordering, force-like datum.)— internal mechanism or choice-bought? Meet the "internal mechanism, externally-perturbable" standard (the NS calibration);flag constructions whose conclusion is bought by an exact choice. This is the "chosen-to-work" detector the no-sorry/no-vacuity gates cannot see.
+
+
+
+**Why:** The NS releases' deepest creativity lesson:their scale jump (~100 agents/50h Euler disproof vs ~10,000/88h NS)was **constraint density**,not raw compute -- each dense constraint (smooth force, bounded energy, exact residual cancellation)is a cheap rejector,so the parallel search concentrated on the residual freedom. And authority came from the 166-page paper,not the green build:Buckmaster called the LLM-generated Lean-verified proof "AI slop" and rewrote itfor clarity;OpenAI's own `formalization.yaml` says "self-assessed". A proof can compile, pass vacuity, and still be *creatively dishonest* if a *choice* carries the conclusion rather than an *internal mechanism*(the "define a force after the fact.arrange terms to cancel" move). These gates check *how the construction was found* and *whether humans can own it*,orthogonal to hygiene(Gate 6)and vacuity(Gate 5) -- the authority mechanism at the frontier,the mechanical gates cannot see.
+
+
+
+**Phasing:**(i ) this commit: DEC-023 record + ProofIntuition template + VALIDATION_SUITE audit section + CREATIVE_PROTOCOL Phase 2.5 + docs pointers(no code, no Lean, no CI change).(ii ) apply when a barrier proof is next claimed (#18 BGS or Rung 9/11 output):file the intuition record per template, and run the load-bearing audit alongside Gate 4.(iii ) when creative search on Rung 9/11 begins, run Phase 2.5 first, keeping the rejection traces as evidence. **Sandbox note:** no `lake`/`python-yaml` inthe write sandbox -- docs-only edits, validated by structure/sweep only.
+
+
+
+**Rationale:** CREATIVE_PROTOCOL's Phase 2(constraint cartography)listed constraints as *intellectual context*;Phase 2.5 upgrades them to *executable filters* -- which is what separates compile-time-constrained search from post-hoc-selected construction(turning "synthesize" into auditable work, completing DEC-019's protocol).The proof-intuition record is the missing authority mechanism:Gate 4 reads back the *statement*, nothing yet reads back the *proof's explanation* -- the NS releases show explanation is load-bearing for authority, not cosmetic;`sorry`-freeness and non-vacuity are necessary, not sufficient, for a construction to be authoritative.
+
+### DEC-024
+
+**Date:** 2026-09-11
+**Status:** Active
+**Scope:** Oracle-query substrate direction — word-query repair (Option Ω from the creative protocol solves the #26/#22 Fintype-Query wall).
+
+**Decision:** Adopt **Option Ω — word-query oracle substrate** as the direction for resolving the #26/#22/#27 blockers:rewire the oracle substrate (`lean/PleaNP/Computability/Oracle.lean`) so the query is read from a **tape's content** (a finite word over the machine's own finite alphabet, per the spec's own "oracle tape" model `docs/STATEMENTS/Oracle.lean.spec.md` §2.2), instead of fusing the query type into the input-alphabet slot (`tm'.Γ tm'.k₀ = Q` in `lean/PleaNP/Computability/OracleComplexity.lean`). Recorded options ((a) bounded query family; (c) per-length reindexing) become **unnecessary** — they solved a self-inflicted interface bug by bendingthe theorem;Ω removes the artifact and keeps **every frozen statement unchanged** (`U_B`, `lean/PleaNP/Barriers/BGSDiagonal.lean`, `lean/PleaNP/Barriers/Relativization.lean`: `Query = Σ n, Bits n` stays; cost model (query = exactly 1 step],totality,`P^∅ = P`,andthe BGS counting(2^n vs p(n)) all survive).The cross-domain black-box audit (`docs/STATEMENTS/oracle-word-query-blackbox-audit.md` (pending #39), #39) records the deep invariant every mature black-box model separates infinite query *values* from finite machine *syntax*.
+
+**Why:** The wall existed becausethe v4 encoding made each query a single alphabet symbol — an infinite alphabet on an infinite query type, violatingthe `Fintype (Γ k₀)` requirement. But a machine's alphabet is finite while its *tape contents* are unrestricted — queries written as words over the finite alphabet are the standard oracle-TM model ((the BGS paper's own model,andthe repo's own spec's model). No theorem shape changes;andremove-the-artifact beats bend-the-theorem for the barrier program's credibility (**Workflow output:** #33 (v5 work-order spec),#35 (implementation),#36 (U_B-in-NP machine},#37 (diagonalization D1-D6,#38 (campaign re-scope},#39 (audit},#40 (tests;; #27 still awaits human confirmof the re-scoped lenseson #38.
+
+**Phasing:**(i) this commit: decision record + blocker files updated + design-doc note + issue queue wiring (no code,no Lean,no CI change);(ii) #33 spec written by an agent,then #35 implementation (the substrate re-type/rewire,build green + gates;; (iii) #36/#37/#38 consumethe repaired substratein dependency order; (iv) #39 docs deliverable can land anytime (no block. **Sandbox note:** no `lake`/`python-yaml` inthe write sandbox — docs-only edits, validated by structure/sweep only.
+
+### DEC-026
+
+**Date:** 2026-09-13
+**Status:** Active
+**Scope:** Multi-agent duplicate-work prevention — claim races + parallel-pass collisions + shared-file conflicts.
+
+**Context:** During the 2026-09-13 Rung-4/BGS burst, the parallel-agent protocol produced three avoidable duplicates and repeated shared-file conflicts: (1) **claim races** — two agents claimed #65 within ~80s, and the "latest comment wins" reading let both believe they owned it; (2) **stale-claim-then-return** — a sweep-reclaimed #63 Pass 1 (claim comment >1h old) while the original sibling returned mid-session and landed superior work, forcing the reclaiming agent to drop redundant parallel A2; (3) **shared-file collisions** — every new module lands on the same `ci.yml` + register-check + gate-docs files, causing repeated 4-way rebase conflicts.
+
+**Decision:** Amend `docs/MULTI_AGENT_WORKFLOW.md` with three rules:
+- **Recent-activity guard (§Claiming step 1):** before claiming an `available` item whose subject overlaps a recently-active `claimed` item (same file/rung/adjacent pass), check `git log origin/dev` for sibling commits in the last ~1h *even when the claim comment is stale* — an agent can be mid-session with an aged comment. Default to a DIFFERENT task when fresh evidence exists.
+- **Claim-race rule (§Concurrent-work):** the **earlier** claim comment (by timestamp) wins; the later claimant backs off, restores `status:available`, posts a one-line back-off recording run-ids, and picks different work. Replaces the "latest comment wins" ambiguity.
+- **Duplicate-work rule (§Concurrent-work):** after a rebase reveals a sibling landed the same pass/statement, never push a second copy — drop or merge-and-reconcile in ONE commit, and prefer preventing the duplicate via the recent-activity guard.
+
+**Why:** Parallel agents under a shared identity cannot tell coincident claims apart without run-ids and timestamps; the cost of a duplicate formalization run (elaborate Lean proofs on the same substrate) is the single highest-waste failure in this burst. The recent-activity guard makes the sweep defer to fresh evidence instead of the stale-claim clock; the claim-race rule gives an unambiguous, auditable winner; the duplicate-work rule makes "drop the redundant copy" the default, never-push-twice.
+
+**Workflow output:** the three rules above landed in `docs/MULTI_AGENT_WORKFLOW.md` §Claiming (step 1, step 4) and §Do-the-work (concurrent-work rules). **Phasing:** (i) this commit: DEC + workflow-doc amendments (docs-only); (ii) agents adopt the guard/rules at their next start-of-session sweep (no code/Lean/CI change required).
+
+### DEC-025
+
+**Date:** 2026-09-13
+**Status:** Active
+**Scope:** Rung 4 circuit substrate — dependency direction for `PleaNP.Circuits`.
+
+**Decision:** Reject the complexitylib import for the Rung-4 circuit substrate. Build `PleaNP.Circuits` locally (option (b) of issue #70) instead of vendor-repairing or toolchain-matching complexitylib (option (a)). This closes #70 Pass 1; the local build proceeds under #71.
+
+**Rationale:** The #70 issue was filed when complexitylib pinned Mathlib `v4.30.0` vs PleaNP's `v4.31.0` — a one-minor drift across ~23 modules. That premise has since decayed. At the current head (`6c248df`, 2026-09-08) complexitylib pins **`leanprover/lean4:v4.34.0-rc2`** (an rc prerelease toolchain), pins **Mathlib rev `e06eff5f9537`** (2026-08-31, v4.34-rc2 era), and additionally requires the **`cslib`** dependency (`leanprover/cslib@d9be641`, its own Mathlib rev). PleaNP pins the stable **`v4.31.0`** toolchain/Mathlib — a two-minor + rc gap, not a one-minor drift. Reconciling either direction is a losing trade: pinning PleaNP to v4.34.0-rc2 sacrifices the stable-pin discipline for an rc prerelease; upstreaming complexitylib's ~23 (now likely more) drifting modules fights an upstream that has already moved two versions forward and keeps moving. Importing would also drag in a 1685-file dependency surface (its `Circuits/` tree alone is ~350 files) for the small slice PleaNP needs, and DEC-003 already established the PleaNP-local substrate precedent (oracle machines are local because no upstream effort provides them). Rung 4's need is modest — typed Boolean circuits with size/depth, P/poly shape, natural-property vocabulary — which #71 sizes at 3 runs. The Mathlib-in-namespace discipline that made local sense for oracles extends cleanly to circuits under `PleaNP.Circuits`.
+
+**What happens instead:** #70 stays open only through this Pass-1 record; the DEC-025 decision closes the import-vs-local fork, #71 (Rung 4 substrate build-out) becomes the active path, unblocked (#70 Pass 1 was the posture-setting gate). If a future upstream effort lands circuit machinery in Mathlib proper (or complexitylib reconciles to a stable PleaNP mathlib), revisit via the playbook's import row at that time.
+
+### DEC-027
+
+**Date:** 2026-09-16
+**Status:** Active
+**Scope:** Packaging — how downstream repos consume PleaNP. Closes issue #102.
+
+**Decision:** Adopt **option (A)** from #102: add a root `lakefile.lean` that repoints the package at the existing `lean/` source tree via `srcDir := "lean"`, and restate the library declarations there. Option (B) (move the package to the repo root) and option (C) (publish an extractable sub-package) are **not** taken now — (B) has a large blast radius across CI, the devcontainer, `tooling/elantool.sh`, and `AGENTS.md`, all of which run from `lean/`; (C) remains the better long-term boundary and is deferred, not rejected.
+
+**Why a root lakefile is needed at all:** Lake resolves a *dependency's* package root at the repo root, so a sibling repo cannot `require PleaNP from git ...` while the only lakefile is at `lean/`. The failure is pre-Lean and unambiguous:
+
+    error: PleaNP: no configuration file with a supported extension:
+      .lake/packages/PleaNP/lakefile.lean
+      .lake/packages/PleaNP/lakefile.toml
+
+Requester is the sibling project **Maith**, which needs `PleaNP.Circuits` for its axiom-discovery benchmark corpus (Maith #26 / `docs/experiments/BENCHMARK_CORPUS_PLAN.md`). Both repos pin Lean `v4.31.0` and Mathlib `v4.31.0`, so no toolchain reconciliation is required — the contrast with DEC-025, where the version gap is exactly what killed the `complexitylib` import.
+
+**Why `lean/` stays authoritative:** every build command in the repo operates from `lean/` — CI (`working-directory: lean` on every Lean step), `.devcontainer` `postCreateCommand`/`postStartCommand`, `tooling/elantool.sh`, and the `AGENTS.md` bootstrap. Lake picks the *nearest* lakefile, so `cd lean && lake build ...` continues to read `lean/lakefile.lean`. The root file is additive; it changes no existing command. Verified: with the root file present, `cd lean && lake exe cache get && lake build PleaNP.Circuits.Basic` succeeded (8558 jobs) and `lake build tests` succeeded (8564 jobs).
+
+**The duplication is unavoidable — tested, not assumed.** A minimal root file (`package` + `srcDir` + `require mathlib`, no `lean_lib`) resolves the dependency path but **does not work**: the consumer fails with
+
+    error: Demo/Probe.lean:1:0: unknown module prefix 'PleaNP'
+
+because no library is declared, so the dependency builds nothing and there are no oleans to import. So the root file must restate the `lean_lib`/`lean_exe` declarations. `srcDir` handles the *layout*; it does not handle *target declaration*.
+
+**Mitigation for the duplication:** `tooling/gates/lakefile_sync_check.py` fails (exit 1) if the root shim and `lean/lakefile.lean` disagree on the package name, any `lean_lib` name and its `globs`/`roots`, any `lean_exe` name and its `root`, or the `require mathlib` pin. It normalises whitespace and ignores comments, so a formatting-only reformat is not reported as drift — otherwise people would learn to ignore the guard. Its tests (`tooling/gates/tests/test_lakefile_sync.py`, 5 tests) assert **seven** drift classes are each detected and a matching pair is accepted. Wired into CI after the build steps; it needs no Lean toolchain.
+
+**Verified end-to-end against this commit.** A scratch consumer package:
+
+```lean
+require PleaNP from "../PleaNP"
+```
+
+and importing the circuit substrate:
+
+```
+✔ Built PleaNP.Circuits.Basic (33s)
+✔ Built PleaNP.Circuits.AC0 (4.8s)
+✔ Built Demo.Probe (4.1s)
+info: Demo/Probe.lean: PleaNP.Circuits.BoolGate : ℕ → Type
+info: Demo/Probe.lean: PleaNP.Circuits.parity_notin_AC0 : Prop
+```
+
+Real definitions resolving across the repo boundary, including the AC0 module
+that Maith's first transfer target (parity ∉ AC⁰) depends on.
+
+**Also repaired in the same commit — a pre-existing breakage that #102 would otherwise have inherited.** The `ci.yml` copy on `dev` was **invalid YAML**, so GitHub would have rejected the entire workflow: three step boundaries had been swallowed into the previous scalar or mis-indented —
+
+- line 38: `working-directory: lean      - name: Barrier-check verdict harness (...)` — step boundary inside the previous scalar
+- line 44: a step indented 12 spaces where siblings use 6
+- line 55: `...OracleV5Tests.lean- name: Gate-REVIEW register machine-check (...)` — boundary joined with no separator
+
+This is the **third instance of the same corruption signature** recorded in #101 (content joined across a line boundary; see also `BarrierCalculus.lean`'s doc comments). `main`'s copy is valid YAML but an **older generation** (21 steps, no `Circuits` build), so this is a dev-branch regression that would have broken CI the moment `dev` merged. Repair was surgical: 5 insertions / 3 deletions, and an assertion that content is byte-identical modulo the intended line splits. Consequence: adding a CI step to this file was not possible without fixing it first.
+
+**Consequences recorded for the maintainer:**
+
+- **CI coupling:** once Maith depends on PleaNP, Maith's CI has a hard dependency on PleaNP's `Circuits` closure building green. The warm image at `ghcr.io/allenpd728/pleanp:main` (Plan E) may be the better consumption path than a source build.
+- **Build a target, not the full tree:** PleaNP's full-tree `lake build` still fails on the two documented pending-sorry modules (`OracleUpstreamP`, `Relativization`). Consumers must build the `Circuits` closure specifically.
+- **Import weight:** `PleaNP.Circuits.Basic` begins with `import Mathlib`, so consumers inherit the full Mathlib closure.
+- **CI trigger gap:** `.github/workflows/ci.yml` triggers only on pushes to `main` and PRs to `main`, so **`dev` pushes are not automatically verified**. This change was verified locally (builds + gates + the end-to-end consumer) rather than by CI on `dev`. Worth deciding separately whether `dev` should be in the trigger list — flagged, not changed here, since it is a policy call.

@@ -14,19 +14,23 @@
 |---|---|---|
 | `lean/PleaNP/Computability/Oracle.lean` | 0 (was 1 — vacuous marker removed, see #2) | Substrate (Rung 2) |
 | `lean/PleaNP/Computability/OracleComplexity.lean` | 0 (was 3) | Complexity classes (Rung 2) |
-| `lean/PleaNP/Computability/OracleUpstreamP.lean` | 2 (moved from OracleComplexity) | Upstream-P anchor (Rung 2) |
+| `lean/PleaNP/Computability/OracleUpstreamP.lean` | 1 (was 2 — statement-level sorry #6 resolved, see below) | Upstream-P anchor (Rung 2) |
 | `lean/PleaNP/Barriers/Relativization.lean` | 2 | Barrier statement (Rung 3a) |
-| **Total** | **4 open** (5 resolved, 1 removed) | |
+| **Total** | **3 open** (6 resolved, 1 removed) | |
 
 All remaining sorries are honest pending proofs/compositions. The structural
 self-check `P_A ⊆ NP^A` (#5a/#5b) is now proved in BOTH directions — the v4
 repair is behaviorally verified by the oracle-sensitivity smoke test
-(`OracleSmoke.lean`). The four remaining sorries are: upstream-P-blocked
-(#6, #7 — in the isolated anchor module) and the BGS proofs (#8, #9).
+(`lean/PleaNP/Computability/OracleSmoke.lean`). The three remaining sorries are: upstream-P-blocked
+(#7 — in the isolated anchor module; #6's statement-level sorry was resolved
+by `UpstreamPolyTime`) and the BGS proofs (#8, #9). The #36 U_B-machine
+bridge + assembly (#10/#10b/#11) were RESOLVED 2026-09-13 —
+`DiagonalUB.lean` is zero-sorry.
 
-`lake build` status: `Oracle.lean`, `OracleComplexity.lean`,
-`OracleSmoke.lean` build green. `OracleUpstreamP.lean` (2 tracked sorries)
-and `Relativization.lean` (2 tracked sorries) fail exactly on their tracked
+`lake build` status: `lean/PleaNP/Computability/Oracle.lean`, `lean/PleaNP/Computability/OracleComplexity.lean`,
+`lean/PleaNP/Computability/OracleSmoke.lean` build green. `lean/PleaNP/Computability/OracleUpstreamP.lean` (1 tracked sorry,
+the honest proof #7 — its statement-level sorry #6 was resolved by `UpstreamPolyTime`)
+and `lean/PleaNP/Barriers/Relativization.lean` (2 tracked sorries) fail exactly on their tracked
 sorries — the expected Gate-6-visible state.
 
 Tier-2 axiom check (`#print axioms`) on the new proofs:
@@ -49,8 +53,22 @@ Mathlib-standard set; no `sorryAx`.
 
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 5a | ~~`OracleComplexity.lean`~~ **Resolved** — forward direction proved in the v4-completion pass. | — | — |
-| 5b | ~~`OracleComplexity.lean`~~ **Resolved** — backward direction proved in the v4-completion pass via the new determinism lemma `Oracles.evalsTo_unique_result` (+ `step_none`) in `Oracle.lean`: the accept-run and the decide-run start from the same initial config and both halt, so they share the halted endpoint; the output bit carries over. | — | — |
+| 5a | ~~`lean/PleaNP/Computability/OracleComplexity.lean`~~ **Resolved** — forward direction proved in the v4-completion pass. | — | — |
+| 5b | ~~`lean/PleaNP/Computability/OracleComplexity.lean`~~ **Resolved** — backward direction proved in the v4-completion pass via the new determinism lemma `Oracles.evalsTo_unique_result` (+ `step_none`) in `lean/PleaNP/Computability/Oracle.lean`: the accept-run and the decide-run start from the same initial config and both halt, so they share the halted endpoint; the output bit carries over. | — | — |
+
+### U_B-machine level (DiagonalUB.lean, new isolated module — #36 Pass 1-2)
+
+Isolated module `lean/PleaNP/Barriers/DiagonalUB.lean` (not imported by
+BGSDiagonal) so `warningAsError` does not cascade. Proved zero-sorry:
+certificate encoding roundtrip (`encWord`/`decodeWord_encWord`), the
+guess-query-verify machine (`ubTM`/`ubM`), and its concrete-oracle
+behavior (`accepts_const_true`, `rejects_const_false`). **All three gaps resolved 2026-09-13 — the module is zero-sorry** (see rows #10/#10b/#11 below).
+
+| # | File:Line | What it is | Pending on | Priority |
+|---|---|---|---|---|
+| 10 | ~~`lean/PleaNP/Barriers/DiagonalUB.lean`~~ **Resolved 2026-09-13 (run=20260911-0944-qmzn)** — reject-run identity inside `accepts_true_oracle` proved (the `evals_in_steps` closes via `simp [ubRun, flip, ...]` + `congr 1`). | — | — |
+| 10b | ~~`lean/PleaNP/Barriers/DiagonalUB.lean`~~ **Resolved 2026-09-13** — `accepts_depends_on_answer` proved (query-step routes to yes-branch via `ubRun_halts_yes`; output head true). | — | — |
+| 11 | ~~`lean/PleaNP/Barriers/DiagonalUB.lean`~~ **Resolved 2026-09-13** — `U_B_in_NP` proved zero-sorry: `erw [encWord_length]` closed the polynomial-X bound; assembly via `decodeWord_encWord` + `certBits_encodeList` + `accepts_time_shift`. | — | — |
 
 ### Upstream-P anchor level (OracleUpstreamP.lean, new module)
 
@@ -60,15 +78,91 @@ module is expected to fail the build until upstream P lands.
 
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 6 | `OracleUpstreamP.lean:25` | `P_empty_eq_upstream_P_class` — RHS set comprehension (upstream P as a set). **Statement-level sorry — Gate-5 concern** (the theorem does not yet fully say what it proves). | Upstream P (DEC-003), or an oracle-free recharacterization of the class. | High when unblocked |
-| 7 | `OracleUpstreamP.lean:26` | `P_empty_eq_upstream_P_class` — proof of P^empty = P equality. | #6 + upstream P. | Medium |
+| 6 | ~~`OracleUpstreamP.lean`~~ **Resolved** (run=20260913-1007-fUj8, issue #40) — the statement-level sorry was filled: the RHS is now the oracle-free `UpstreamPolyTime` recharacterization (`TM2ComputableInPolyTime` membership; `lean/PleaNP/Computability/OracleComplexity.lean`), per Trap 3. The theorem now fully renders P^∅ = P; no Gate-5 concern remains. | — | — |
+| 7 | `OracleUpstreamP.lean:31` | `P_empty_eq_upstream_P_class` — proof of P^∅ = P equality (now between fully-rendered sides). | Upstream P (DEC-003), or an oracle-free recharacterization of the class + the no-query-machine equivalence. | Medium |
 
 ### Barrier-statement level (Relativization.lean)
+
+> **File layout (2026-09-13, issue #66):** `Relativization.lean` is the
+> claim root (the two theorem sorries #8/#9 live here as honest
+> placeholders). Proof work proceeds in `RelativizationProof.lean`
+> (barrier-consequence lemmas; A1–A5/D1–D6 land there), which the claim
+> root does not import. When #18/#63 close, these rows flip to "Resolved"
+> and the claim root's sorries are replaced by the assembled proofs.
 
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
 | 8 | `Relativization.lean:80` | BGS clause (a) proof — equalizing oracle existence. | #5 (done) + PSPACE/QBF + upstream P. | Low (Rung 3 Step 6) |
 | 9 | `Relativization.lean:101` | BGS clause (b) proof — separating oracle existence (diagonalization). | #5 (done) + machine enumeration + diagonalization. | Low (Rung 3 Step 6) |
+
+
+### DiagonalAssembly level (DiagonalAssembly.lean, new isolated module - #37 assembly scaffold)
+
+Isolated leaf module (not imported by clean modules) so `warningAsError`
+does not cascade. Proved zero-sorry: `Simulate`, `simulate_returns`
+(bounded enumeration simulation connects to unbounded eval), `PuntsSlow`
+(the punting strategy), `stage_step_exists` (the tournament flip handle).
+One tracked sorry:
+
+| # | File:Line | What it is | Pending on | Priority |
+|---|---|---|---|---|
+| 12 | `lean/PleaNP/Barriers/DiagonalAssembly.lean:72` | `exists_separating_oracle_assembly` - the assembled "exists B, P_A B != NP_A B" (the BGS clause-(b) target #9). Needs the Machine-to-Code bridge (#23/#97 gap: poly-time oracle machines into Partrec.Code) plus the stage/tournament composition of the Diagonal* modules. | #23/#97 gap (Machine-to-Code bridge) + compose stage_step_exists over M_of-indices. | High when the bridge lands |
+
+### Monotone / Rung-4 model level (issue #74 Pass 1, 2026-09-13)
+
+`lean/PleaNP/Circuits/Monotone.lean` lands the **monotone-circuit model**
+zero-sorry: the no-NOT gate basis (`MonotoneGate`), its size/depth measures,
+and the **monotonicity theorem** (`monotone_eval_preserves_order`) — the
+defining structural property the Razborov CLIQUE bound exploits. Pass 2
+(approximation-reducer lemma) and Pass 3 (CLIQUE bound) are open proof work.
+
+### Williams transfer theorem level (issue #90 Pass 3, 2026-09-13)
+
+`lean/PleaNP/Barriers/WilliamsTransfer.lean` freezes the **transfer
+theorem statement** zero-sorry: `SubExpCircuitSATT → NEXP_not_subset_ACC0`
+(`williams_transfer`), plus the asserted classification record
+(`williams_classification_asserted`, non-relativizing/non-natural/
+non-algebrizing marker classes for #73/#91). The PROOF needs the tracked
+sub-exponential ACC⁰-CircuitSAT bound (#89 gap: `acc0SatSubExpBound`,
+Shah–Shetty Good-SAT) + the NTIME-to-CircuitSAT encoding — a decomposed
+sub-lemma follow-up (no sorry).
+
+### Williams transfer assembly level (issue #91 Pass 4, 2026-09-13)
+
+`lean/PleaNP/Barriers/WilliamsAssembly.lean` assembles the four passes
+into the final `NEXP ⊄ ACC⁰` statement (`final_NEXP_not_subset_ACC0`)
++ the transfer closure + the classification record; the classification
+note is `docs/STATEMENTS/WilliamsTransfer.classification.md`. The full
+zero-sorry PROOF is blocked on the tracked sub-exponential bound
+(#89 gap / #98 follow-up) — never a sorry, per #76 DoD fallback.
+
+### Williams / Rung-4 statement level (issues #72/#88, 2026-09-13)
+
+`lean/PleaNP/Circuits/AC0.lean` (#72 Pass 1) renders the **parity ∉ AC⁰**
+lower-bound statement zero-sorry as a `def` target (`parity_notin_AC0`); the
+switching-lemma proof is #72 Pass 2. `lean/PleaNP/Barriers/Williams.lean`
+(#88 Pass 1) freezes the **Williams-transfer statement anchors** —
+`CircuitSAT`, `IsACC0`, `NEXP_membership` — zero-sorry (`statement-rendered`);
+the CircuitSAT algorithm and the transfer theorem are #89/#90/#91.
+
+### Williams Pass 2 tracked gap (issue #89, 2026-09-13)
+
+`lean/PleaNP/Barriers/WilliamsSat.lean` delivers the **verified CircuitSAT
+decider** + runtime baseline zero-sorry (`acc0SatBrute_correct`,
+`acc0SatSteps_eq` = `2^n`). The **sub-exponential** bound the transfer needs
+(`acc0SatSubExpBound`, `∃ c, steps ≤ 2^(n^c)`) is rendered as a tracked goal
+(a `def`, NOT a `sorry`): it needs the ACC⁰-structure packing argument
+(Shah–Shetty-style Good-SAT) — the actual research content, tracked so the
+Pass-3 transfer contract is pinned without pretending the improvement landed.
+
+### Algebrization statement level (issue #69 Pass 1, 2026-09-13)
+
+`lean/PleaNP/Barriers/Algebrization.lean` renders the **AW09 v1 statement**
+zero-sorry (Gate 1 anchor; builds green in the clean module set). The two
+clause *statements* are `def`s (`algebrizing_separation_statement`,
+`algebrizing_equalization_statement`). The clause *proofs* (AZ5:
+diagonalization for (a), PSPACE sandwich for (b)) are not yet claimed; when
+proof work starts, the theorem claims land with honest placeholders here.
 
 ---
 
@@ -81,6 +175,7 @@ module is expected to fail the build until upstream P lands.
 | 4 | `NP_A` verifier condition | `bc344ab` then v4 `a223b12` | Now composes `@AcceptsInTime` on pair (x, y) with reachability. |
 | 5a, 5b | `P_A_subset_NP_A` — both directions | v4-completion pass (on dev) | Forward: same machine/endpoint, empty certificate, output bit from outputEncodesChi. Backward: determinism via `evalsTo_unique_result`. |
 | 10 | Certificate bound equivalence (Gate 4) | `4584d90` | Bound changed to direct `p.eval(ea(x,[])).length` (polynomial in input size). |
+| 6 | P^∅ = P statement-level sorry (RHS was `{ L | sorry }`) | issue #40 (v5-word-query tests) | RHS filled by the oracle-free `UpstreamPolyTime` recharacterization (`TM2ComputableInPolyTime` membership) in `OracleComplexity.lean`; the theorem now fully renders P^∅ = P (Trap 3). Proof (#7) still tracks upstream P. |
 
 ## Removed (not resolved)
 
@@ -103,23 +198,23 @@ module is expected to fail the build until upstream P lands.
   (never compiled).
 - **Relativization.lean arg names.** `P_A (α := …)` → `P_A (alpha := …)`
   (never compiled against the class signature).
-- **Smoke test (v4 acceptance item).** `OracleSmoke.lean`: one machine
+- **Smoke test (v4 acceptance item).** `lean/PleaNP/Computability/OracleSmoke.lean`: one machine
   program, two oracle instantiations — `smoke_accepts_true` (accept, by
   evaluation) and `smoke_rejects_false` (reject, by determinism +
   evaluation). The executable check that Flaw B stays fixed.
 - **Determinism lemma.** `evalsTo_unique_result` + `step_none` in
-  `Oracle.lean` — the lemma #5b needed and the reject-side of the smoke
+  `lean/PleaNP/Computability/Oracle.lean` — the lemma #5b needed and the reject-side of the smoke
   test uses.
 
 ---
 
 ## Remaining tasks
 
-1. **#6: fill the statement-level sorry** in `P_empty_eq_upstream_P_class`
-   with the upstream-P set — needs Mathlib's P (DEC-003) or an
-   oracle-free recharacterization (machine-transformation formalization).
-   **Gate-5 concern, first in line when unblocked.**
-2. **#7: prove the equality** — pending #6.
+1. **#6 (resolved):** the statement-level sorry in `P_empty_eq_upstream_P_class`
+   was filled by the `UpstreamPolyTime` recharacterization (issue #40); no
+   Gate-5 concern remains.
+2. **#7: prove the equality** — between fully-rendered sides now; still
+   pending upstream P / an oracle-free no-query-machine equivalence.
 3. **#8, #9: BGS proofs** — blocked on PSPACE/QBF + machine enumeration +
    upstream P (Rung 3 Step 6).
 
@@ -131,7 +226,7 @@ The BGS statement (`∃ A, Computable A ∧ P^A = NP^A` / `∃ B, Computable B �
 
 
 ```
-#6 (statement) → #7 (proof)            [upstream P, DEC-003]
+#6 (DONE, statement rendered via UpstreamPolyTime) → #7 (proof)  [upstream P, DEC-003]
 #8/#9 (BGS)    ← needs {PSPACE/QBF, machine enumeration}  + upstream P
 ```
 
