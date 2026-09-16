@@ -102,23 +102,21 @@ ASCII.
 
 What it scans: Lean **comments** and Lean **string-literal contents** (the
 `#barrier_check` verdict templates are machine-authored prose inside `m!"..."`
-literals, and they carried the signature too); markdown prose. Code is never
-flagged. Before matching it blanks inline code spans and space-free bracketed
-groups, so legitimate Lean tuple notation (`⟨n,x⟩`, `(true,true)`) is not
-mistaken for a fused comma.
+literals, and they carried the signature too); markdown prose (including
+`docs/` and `blockers/`). Code is never flagged. Before matching it blanks
+inline code spans and space-free bracketed groups, so legitimate Lean tuple
+notation (`⟨n,x⟩`, `(true,true)`) is not mistaken for a fused comma; on
+markdown it also skips fenced code blocks (file-level: fences span lines), and
+masks links, URLs (`ghcr.io/...:tag`), and the legitimate `status:available` /
+`File:Line` label tokens. The doubled-period rule requires whitespace after the
+`..`, so it excludes ellipsis (`...`) and path/range forms (`../x`, `Pass 1..n`,
+`U+200E..U+200F`) while still catching #101's canonical `rationale.. Issue` case.
 
-Run: `python3 tooling/gates/prose_scan.py lean/PleaNP` — exit 0 clean, 1
-violations, 2 usage error. `--allow-file <path>` is the audited escape hatch.
-CI runs it on `lean/PleaNP` (scan + unit tests); the unit tests pin the
-false-positive class so a future loosening that started flagging tuples would be
-a test failure.
-
-**Scope note (honest):** the same signature is also present in `docs/` (~184
-hits) and `tooling/` prose (~14 hits). Those are *not* in the CI scope yet: the
-colon/fusion rules are reliable on Lean prose but produce legitimate hits in
-markdown (path refs `../x`, `file:line:col`, `priority:high`, hex ranges
-`U+200E..U+200F`). Cleaning the docs is a separate, larger pass — tracked as a
-follow-up rather than silently enabled as a red gate.
+Run: `python3 tooling/gates/prose_scan.py .` — exit 0 clean, 1 violations,
+2 usage error. `--allow-file <path>` is the audited escape hatch. CI runs it on
+the whole tree (scan + unit tests); the unit tests pin the false-positive
+classes (tuples, code spans, ellipsis, ranges, markdown paths/URLs/labels) so a
+future loosening is a test failure.
 
 ## Gate: workflow-file integrity scanner (`workflow_scan.py`, 2026-09-16)
 
@@ -161,14 +159,14 @@ shape." Pipeline (`init` → `render` → `check` → `mine`): independent Lean
 renderings of one informal claim are registered in `churn/<slug>/renderings/`,
 pairwise machine-verified equivalent via `dual_render`,ford disagreements
 become **review points** in the review inbox (`review_inbox.py`; one plain-
-language question each),filed as GitHub issues by `review-issue.yml`.
+language question each), filed as GitHub issues by `review-issue.yml`.
 
 **Merge/registration step (`merge <slug>`; 2026-09-07,#25).** Pulls each
 contributor's submission manifest (`churn/<slug>/submissions/<slot>.json`) into
 `renderings/`,then re-runs `check`(+ `churn/<slug>/lemmas.json` if present)
 and `mine` on the merged set. **Idempotent**: re-running is harmless — re-
 registration overwrites the same `<id>.json`,check rewrites `matrix.json`,and
-`mine` dedupes review points by stable key (`run` + `decl` pair),so no
+`mine` dedupes review points by stable key (`run` + `decl` pair), so no
 duplicate pending points nor GitHub issues are filed (the #7-#16 double-
 filing bug class; see `review-issue.yml`'s inbox-id dedupe).
 
@@ -228,12 +226,12 @@ Asserts the four `#barrier_check` verdicts logged by
   - `nonRelativizingControl`  -> "Inconclusive"
 
 The elaborator's verdict print via `logInfo`;CI's build step `tee`s its output
-to a log file,then the harness runs on that log and fails if any expected
+to a log file, then the harness runs on that log and fails if any expected
 verdict segment is missing or wrong - so a regression (a DEAD flipping to
 Inconclusive, an instance that stops synthesizing, a message rewrite) kills
 the build mechanically. Dash-family chars are folded before matching
 (terminal/encoding-tolerant). Unit tests: `tests/test_barrier_check_test.py`
-(stdlib, no Lean,no secrets).
+(stdlib, no Lean, no secrets).
 
 Usage: `python3 barrier_check_test.py <build-log>` (or `--run-lake [MODULE]`
 to build locally first). See `docs/STATEMENTS/BarrierCheckVerdicts.spec.md`.

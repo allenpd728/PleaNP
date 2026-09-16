@@ -76,21 +76,87 @@ def comment_lines(path: Path) -> list[tuple[int, str]]:
 _CODE_SPAN_RE = re.compile(r"`[^`]*`")
 _SPACELESS_GROUP_RE = re.compile(r"⟨[^⟩\s]*⟩|<[^>\s]*>|\([^)\s]*\)")
 
+# Markdown structure that legitimately contains `word:word` and therefore must
+# be masked before the colon/fusion rules run. Each of these was an observed
+# false positive class on docs/ (the reason the scanner was originally scoped
+# to lean/ only):
+#   - markdown links and images: [text](url), ![alt](url)
+#   - autolinks and URLs:        https://... , ghcr.io/owner/image:tag
+#   - fenced code blocks:        ``` ... ```
+_MD_LINK_RE = re.compile(r"!?\[[^\]]*\]\([^)]*\)")
+_MD_URL_RE = re.compile(r"(?:https?://|ghcr\.io/)\S+")
+# Label/value and path contexts observed as LEGITIMATE `word:word` in docs/:
+#   status:available, priority:high, review:pending, File:Line, file:line:col
+# Kept deliberately narrow: anything broader risks masking genuine corruption
+# (the scanner's whole job), and the residue is inspected by hand.
+_LABEL_TOKEN_RE = re.compile(
+    r"\b(?:status|priority|review|File|file|line|col):[A-Za-z0-9]+")
+
 
 def _decorate(text: str) -> str:
     return _SPACELESS_GROUP_RE.sub(
         _blank_match, _CODE_SPAN_RE.sub(_blank_match, text))
 
 
+def _decorate_md(text: str) -> str:
+    """Lean decoration plus markdown-structure masking (see the REs above).
+    Fenced code blocks are excluded at the file level, not here."""
+    text = _MD_LINK_RE.sub(_blank_match, text)
+    text = _MD_URL_RE.sub(_blank_match, text)
+    text = _LABEL_TOKEN_RE.sub(_blank_match, text)
+    return _decorate(text)
+
+
+_MD_MASK_RES = (
+    _MD_LINK_RE, _MD_URL_RE, _LABEL_TOKEN_RE,
+    _CODE_SPAN_RE, _SPACELESS_GROUP_RE,
+)
+_LEAN_MASK_RES = (_CODE_SPAN_RE, _SPACELESS_GROUP_RE)
+
+
+def excluded_spans(text: str, kind: str) -> list[tuple[int, int]]:
+    """Character spans that must NOT be rewritten (code, links, labels, tuples).
+
+    Shared by the scanner and the fixer so the two can never drift: what the
+    scanner ignores is exactly what the fixer leaves alone. Fenced code blocks
+    span multiple lines, so they are excluded at the FILE level (see
+    `fenced_lines`), not here.
+    """
+    res = _MD_MASK_RES if kind == "md" else _LEAN_MASK_RES
+    spans: list[tuple[int, int]] = []
+    for r in res:
+        spans += [(m.start(), m.end()) for m in r.finditer(text)]
+    return spans
+
+
+def fenced_lines(text: str) -> set[int]:
+    """1-based line numbers inside ``` fenced code blocks (markdown).
+
+    Fences span lines, so this cannot be done per line — which is exactly the
+    bug that let a `"../PleaNP"` path inside a fenced `lean` example get
+    "fixed" to `"./PleaNP"`.
+    """
+    inside: set[int] = set()
+    in_fence = False
+    for i, ln in enumerate(text.split("\n"), start=1):
+        if ln.lstrip().startswith("```"):
+            in_fence = not in_fence
+            inside.add(i)
+            continue
+        if in_fence:
+            inside.add(i)
+    return inside
+
+
 CORRUPTION_PATTERNS: list[tuple[str, re.Pattern]] = [
     ("doubled comma", re.compile(r",,")),
     ("doubled semicolon", re.compile(r";;")),
-    # `..` is corruption when a letter/paren precedes it (a sentence-ending
-    # period doubled), it is not part of `...` (ellipsis), and it is not a path
-    # or numeric/hex range: `../foo`, `Pass 1..n`, `U+200E..U+200F`. A leading
-    # `/`, digit, or `+` rules those out. Issue #101's canonical example,
-    # "rationale.. Issue #1", has a letter before the `..` and is caught.
-    ("doubled period", re.compile(r"(?<=[A-Za-z)\"`])\.\.(?!\.)")),
+    # `..` is corruption when a letter/paren precedes it AND whitespace or the line
+    # end follows (a sentence period was doubled). That excludes the legitimate
+    # `..` in paths (`../x`, `"../PleaNP"` — space/quote before), hex/numeric
+    # ranges (`U+200E..U+200F`, `Pass 1..n` — a letter/digit follows), and
+    # ellipsis (`...`). Issue #101's canonical "rationale.. Issue #1" is caught.
+    ("doubled period", re.compile(r"(?<=[A-Za-z)])\.\.(?=\s|$)")),
     ("colon absorbed space", re.compile(r"[A-Za-z)]:[A-Za-z]")),
     ("semicolon absorbed space", re.compile(r"[a-z];[A-Za-z]")),
     ("paren fused to word", re.compile(r"[A-Za-z]\),?[A-Za-z]")),
@@ -139,10 +205,17 @@ def scan_file(path: Path, allowed: bool) -> list[str]:
     if path.suffix == ".lean":
         raw = path.read_text(encoding="utf-8", errors="replace")
         spans = comment_lines(path) + _string_literal_lines(raw)
+        decorate = _decorate
+        skip: set[int] = set()
     else:
+        raw = path.read_text(encoding="utf-8", errors="replace")
         spans = comment_lines(path)
+        decorate = _decorate_md
+        skip = fenced_lines(raw)
     for lineno, text in spans:
-        clean = _decorate(text)
+        if lineno in skip:
+            continue
+        clean = decorate(text)
         for name, pat in CORRUPTION_PATTERNS:
             m = pat.search(clean)
             if m:
@@ -161,7 +234,7 @@ def scan(paths: list[Path], allow_files: set[str]) -> list[str]:
     for p in paths:
         files = sorted(list(p.rglob("*.lean")) + list(p.rglob("*.md"))) if p.is_dir() else [p]
         for f in files:
-            if ".lake" in f.parts:
+            if ".lake" in f.parts or ".git" in f.parts or ".pytest_cache" in f.parts:
                 continue
             findings.extend(scan_file(f, str(f) in allow_files))
     return findings

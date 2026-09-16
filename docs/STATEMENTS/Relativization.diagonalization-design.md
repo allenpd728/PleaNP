@@ -43,7 +43,7 @@ uninhabitable (`Nat` injects via all-false length-tagged strings). See
 
 **#22 inherits the same wall.** The separating oracle `B` in the BGS stage
 construction also lives over `Sigma n : Nat, Bits n` (a query about an n-bit
-string tagged by length),and `P_A (alpha := Nat) B` quantifies a
+string tagged by length), and `P_A (alpha := Nat) B` quantifies a
 machine with the same bundled-Fintype constraint - so any stage-machine
 simulation/tournament against `B` hits the same `Fintype Query` wall. The
 diagonalization cannot be completed against the *current* substrate as stated;
@@ -69,10 +69,10 @@ The BGS clause-(b) strategy (per `Relativization.proof-strategy.md` §2):
 > decide `U_B` on some input `1^n`: run `M_i` with "no" answers for
 > fresh queries; if it accepts, leave B empty on length-n; if it
 > rejects, add an unqueried n-bit string to B. Then `U_B in NP^B`
-> (universal, #21) and `U_B notin P^B` (by the tournament),so `P^B != NP^B`.
+> (universal, #21) and `U_B notin P^B` (by the tournament), so `P^B != NP^B`.
 
 
-### 3.1 Decomposition (each a one-run sub-task;gates per
+### 3.1 Decomposition (each a one-run sub-task; gates per
 `docs/MULTI_AGENT_WORKFLOW.md` §Gates:
 
 | # | Sub-task | Lean obligation | Blocked by |
@@ -84,7 +84,7 @@ The BGS clause-(b) strategy (per `Relativization.proof-strategy.md` §2):
 | D5 | **Tournament lemma**: forall code i, stage i gives `M_i^B(1^n) != U_B(1^n)` via the unqueried-string choice | combines D1, D4 | D1-D4 |
 | D6 | **Assembly**: `U_B notin P^B`, then `exists B, P_A B != NP_A B` in `lean/PleaNP/Barriers/Relativization.lean` | composition + #23's job (sub-task 3) | D3-D5, #21 |
 
-### 3.2 Mathlib hooks (verified present,u v4.31.0)
+### 3.2 Mathlib hooks (verified present, u v4.31.0)
 
 - **`2^n` growth:** `Nat.two_pow_*` family; `pow_lt_pow_right0`
   (`Algebra/Order/GroupWithZero/Basic.lean:568`)(`1 < a -> m < n -> a^m < a^n`);
@@ -115,7 +115,7 @@ The BGS clause-(b) strategy (per `Relativization.proof-strategy.md` §2):
 - **BGS sandwich/PSPACE (clause (a):** not needed for (b):
 
 ## 4. What is missing (gaps to file as sub-tasks when the design is
-approved)besides D1-D6:
+approved) besides D1-D6:
 
 - **Fintype Query decision** (#27): **RESOLVED (DEC-024, 2026-09-11)** — Option Ω (word-query oracle substrate,:the query is read from a tape's content over the machine's own finite alphabet, per the spec's "oracle tape" model (`Oracle.lean.spec.md` §2.2);recorded options ((a) finite query family,(c) per-length reindexing) become unnecessary;`Query = Σ n, Bits n` and **all frozen statements stay unchanged**;the fix is substrate-wiring-only (#33 work order,#35 implementation). D2's "finite-query-family reindex" row below is **no longer needed**;D3–D6 proceed over the repaired substrate in dependency order.
 
@@ -135,13 +135,13 @@ approved)besides D1-D6:
 
 ## 5. Recommendation scope for the next session
 
-1. **D1 (counting lemma** can start immediately,u naffected by #27:
+1. **D1 (counting lemma** can start immediately, u naffected by #27:
    prove `forall p : Polynomial Nat, exists n, p.eval n < 2^n` (or the per-stage
-   `exists n, p.eval n < 2^n` bound)in a new `Combinatorics` module -
-   pure Nat/Polynomial,no oracle substrate. Gate-evidence: build + hygiene.
+   `exists n, p.eval n < 2^n` bound) in a new `Combinatorics` module -
+   pure Nat/Polynomial, no oracle substrate. Gate-evidence: build + hygiene.
 
 
 2. **File #22's substrate blocker** afresh when the claim is swept: #22 inherits
-   #27's human decision;the design above is written to route every option.
+   #27's human decision; the design above is written to route every option.
 
-3. **After #27 lands:** execute D2-D6 in dependency order,one sub-task per run.
+3. **After #27 lands:** execute D2-D6 in dependency order, one sub-task per run.

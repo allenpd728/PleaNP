@@ -6,9 +6,9 @@
 
 ## 1. The one root case (what v4 did wrong)
 
-v4 fused the **query type** into the **input-tape alphabet slot**:`P_A`/`NP_A` quantify a machine `tm' : FinTM2` with the constraint `hΓ : tm'.Γ tm'.k₀ = Q` — i.e. the input tape's alphabet must *be* the queryspace. But Mathlib's `FinTM2` bundles `[Γk₀Fin : Fintype (Γ k₀)]` (the input alphabet is REQUIRED finite),and for `Q = Σ n, Bits n` (infinite),`Fintype Q` is provably uninhabitable (`Nat` injects via all-false length-tagged strings; verified in Lean v4.31.0). So the query type is asked to be *both* an infinite value-space *and* a finite alphabet — a type-level contradiction.
+v4 fused the **query type** into the **input-tape alphabet slot**:`P_A`/`NP_A` quantify a machine `tm' : FinTM2` with the constraint `hΓ : tm'.Γ tm'.k₀ = Q` — i.e. the input tape's alphabet must *be* the queryspace. But Mathlib's `FinTM2` bundles `[Γk₀Fin : Fintype (Γ k₀)]` (the input alphabet is REQUIRED finite), and for `Q = Σ n, Bits n` (infinite),`Fintype Q` is provably uninhabitable (`Nat` injects via all-false length-tagged strings; verified in Lean v4.31.0). So the query type is asked to be *both* an infinite value-space *and* a finite alphabet — a type-level contradiction.
 
-The repo's own spec (`Oracle.lean.spec.md` §2.2) never asked for this:it says the oracle machine has a dedicated **oracle tape**,and "the string currently on the oracle tape is treated as a query q". A *word on a tape* over a finite alphabet is infinite-valued but alphabet-finite — the standard reconciliation. v4 implemented the shortcut (reuse input-tape-head-as-query, which forced the alphabet fusion; v5 removes that shortcut).
+The repo's own spec (`Oracle.lean.spec.md` §2.2) never asked for this: it says the oracle machine has a dedicated **oracle tape**,and "the string currently on the oracle tape is treated as a query q". A *word on a tape* over a finite alphabet is infinite-valued but alphabet-finite — the standard reconciliation. v4 implemented the shortcut (reuse input-tape-head-as-query, which forced the alphabet fusion; v5 removes that shortcut).
 
 
 
@@ -36,9 +36,9 @@ def P_A {Q alpha : Type} (A : Oracle Q) : Set (Set alpha) :=
          { M with oracle := A  -- or keep M construction as-is via helper
        L (fun n => p.eval n) }
 ```
-  — *the local agent picks the cleanest concrete rendering* (e.g. `Machine` parameterized by the query *value* type `Q` straightforwardly,with the step function reading tape `kq` and decoding; the sketched signature above is the *shape*, not a gospel copy. The invariants that matter are listed in §4.
-  - `NP_A`: same re-typing,and `AcceptsInTime` applied to `(x, y)` stays (Flaw C fix kept; the certificate `y` bounds via `p.eval`, unchanged).
-  - **`M.oracle = A`** (or `= h.symm ▸ A` as v4 did,depending on how `Machine Q` is parameterized):the oracle is now tied to the machine by **type** (`Machine`'s `Q` field), not by the input-alphabet equality. Keep the totality discipline (`Oracle Q`, not `RecursiveIn`).
+  — *the local agent picks the cleanest concrete rendering* (e.g. `Machine` parameterized by the query *value* type `Q` straightforwardly, with the step function reading tape `kq` and decoding; the sketched signature above is the *shape*, not a gospel copy. The invariants that matter are listed in §4.
+  - `NP_A`: same re-typing, and `AcceptsInTime` applied to `(x, y)` stays (Flaw C fix kept; the certificate `y` bounds via `p.eval`, unchanged).
+  - **`M.oracle = A`** (or `= h.symm ▸ A` as v4 did, depending on how `Machine Q` is parameterized): the oracle is now tied to the machine by **type** (`Machine`'s `Q` field), not by the input-alphabet equality. Keep the totality discipline (`Oracle Q`, not `RecursiveIn`).
 
 
 
@@ -47,8 +47,8 @@ def P_A {Q alpha : Type} (A : Oracle Q) : Set (Set alpha) :=
 ### 3.1 The U_B-query path (what #36's machine will do)
 
 - Input: `1^n` maps alpha = `Nat`; the machine's *ordinary input* is n (the unary length); the tape `k₀` holds n's encoding.
-- The guessed witness `x : Bits n` is written,bit-by-bit,onto tape `kq` —a word of length n over `Γ kq` (which must have at least a two-symbol alphabet, e.g. the base `Fin 2` —the local agent confirms a `FinTM2` instance or a private `Fin 2`-alphabet machine exists in the substrate.
-- The decode function maps that n-symbol word to `⟨n, x⟩ : Q` — length-tagged,exactly `U_B`'s query shape. *Every* `x : Bits n` must be encodable (surjectivity onto the n-fiber of Q: the all-false assignment is just `x ≡ false`) — so the BGS "2^n strings" counting is *faithful*: the query-word space per length n has exactly 2^n words, one per x. (This is the point where the old (a)-option "bounded query family" would have *broken* BGS faithfulness — capping n; v5 keeps all lengths.)
+- The guessed witness `x : Bits n` is written, bit-by-bit, onto tape `kq` —a word of length n over `Γ kq` (which must have at least a two-symbol alphabet, e.g. the base `Fin 2` —the local agent confirms a `FinTM2` instance or a private `Fin 2`-alphabet machine exists in the substrate.
+- The decode function maps that n-symbol word to `⟨n, x⟩ : Q` — length-tagged, exactly `U_B`'s query shape. *Every* `x : Bits n` must be encodable (surjectivity onto the n-fiber of Q: the all-false assignment is just `x ≡ false`) — so the BGS "2^n strings" counting is *faithful*: the query-word space per length n has exactly 2^n words, one per x. (This is the point where the old (a)-option "bounded query family" would have *broken* BGS faithfulness — capping n; v5 keeps all lengths.)
 - Cost: writing the word = n steps (counted normally; fine, polynomial). The consultation = exactly 1 step.
 
 ### 3.2 The diagonalization-facing requirement (#37's tournament
@@ -80,16 +80,16 @@ structure Machine (Q : Type) (tm : FinTM2) [DecidableEq tm.Λ] where
 ### 4.2 `lean/PleaNP/Computability/OracleComplexity.lean` — re-type `P_A` / `NP_A` data
 
 1. Delete the `hΓ : tm'.Γ tm'.k₀ = Q` bindersin `P_A` and `NP_A`;
-2. Add the machine-side witness data for the query channel (decode + word-writer,per §2's shape;
+2. Add the machine-side witness data for the query channel (decode + word-writer, per §2's shape;
 3. Keep `AcceptsInTime` applied to `(x,y)` (Flaw C fix); keep `P_A ⊆ NP_A` theorem (re-prove under the new shape via the same determinism argument; `evalsTo_unique_result` is untouched).
-4. `P^∅ = P` compatibility (Trap 3,:state as:with the empty oracle `A := fun _ => false`,the classes reduce to no-oracle poly-time TM2 machines —the query tape simply stays empty/never queried. Re-render the statement-only compatibility anchor if the old one (`OracleUpstreamP.lean`) referenced the v4 hΓ-shape.) .
+4. `P^∅ = P` compatibility (Trap 3,:state as: with the empty oracle `A := fun _ => false`,the classes reduce to no-oracle poly-time TM2 machines —the query tape simply stays empty/never queried. Re-render the statement-only compatibility anchor if the old one (`OracleUpstreamP.lean`) referenced the v4 hΓ-shape.) .
 
 ### 4.3 The invariants (gate checklist — these are what "fixed" means
 
-1. **Totality:** `Oracle Q := Q → Bool`,codomain `Bool` — cosmetically untouched;scan/read-back must confirm.
-2. **Query = exactly 1 step:** the query transition appears in `tm.step` as one application,and `EvalsToInTime` counts it as one step (no simulation, no 0-cost, no amortization); an explicit note/example in the module per `OracleTM2Recompose.spec.md` §4 trap 2.
-3. **No `Fintype`-on-query:** no `hΓ`-style equality forcing the query value-space into a `Fintype` slot;the query tape's *alphabet*`Γ kq` stays finite (that's a real physical constraint,unweakened);the query *value-space* `Q` stays arbitrary (infinite for BGS)).
-4. **Frozen statements untouched:** `BGSDiagonal.lean` (`Query`,`Bits`,`U_B`,`IsWitness`,`U_B_iff_witness`),`Relativization.lean` — *zero edits*;the spec/read-back's Gate-4 statements unchanged..
+1. **Totality:** `Oracle Q := Q → Bool`,codomain `Bool` — cosmetically untouched; scan/read-back must confirm.
+2. **Query = exactly 1 step:** the query transition appears in `tm.step` as one application, and `EvalsToInTime` counts it as one step (no simulation, no 0-cost, no amortization); an explicit note/example in the module per `OracleTM2Recompose.spec.md` §4 trap 2.
+3. **No `Fintype`-on-query:** no `hΓ`-style equality forcing the query value-space into a `Fintype` slot; the query tape's *alphabet*`Γ kq` stays finite (that's a real physical constraint, unweakened);the query *value-space* `Q` stays arbitrary (infinite for BGS)).
+4. **Frozen statements untouched:** `BGSDiagonal.lean` (`Query`,`Bits`,`U_B`,`IsWitness`,`U_B_iff_witness`),`Relativization.lean` — *zero edits*;the spec/read-back's Gate-4 statements unchanged.
 5. **Surjective-enough decode:** for BGS,the decode maps n-symbol words bijectively onto the n-fiber of Q (so 2^n query-words per length); filed as a comment/proof-obligation note in `lean/PleaNP/Computability/OracleComplexity.lean`, not necessarily a separate lemma — the machine construction (#36) will need it.
 6. **`P_A ⊆ NP_A` still holds** (re-proved; the structural self-check is the v4 repair's behavioral witness).
 7. **`P^∅ = P` (empty oracle) compatibility re-stated** (per §4.2(4) — statement-level, proof may wait on upstream P, per `OracleUpstreamP.lean`'s existing sorry-tracking; the *statement* must not regress).
