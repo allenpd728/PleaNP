@@ -92,6 +92,27 @@ Gate 5 Tier 1 (the vacuity scanner) should be added to CI alongside the hygiene 
 
 Note: this enforces Tier 1 (grep/AST-scannable patterns) only. Tier 2 (`#print axioms`; semantic vacuity) is still the local agent's separate job. "CI green" is necessary, not sufficient, for "Gate 5/6 passed."
 
+## Gate: workflow-file integrity scanner (`workflow_scan.py`, 2026-09-16)
+
+`workflow_scan.py` asserts that every `.github/workflows/*.yml` (a) parses
+under `tooling/galaxy/miniyaml.py` (the repo's stdlib parser — no PyYAML), (b)
+has the structure GitHub requires (non-empty `jobs` mapping; `steps` a list of
+mappings; each step carrying exactly one of `uses`/`run`; no unknown step
+keys), and (c) is free of the **#101 corruption signature** — a step-boundary
+token (`- name:`/`- uses:`/`- run:`/…) that does not begin its line, i.e. a
+step swallowed into the preceding scalar.
+
+This exists because that signature reached `.github/workflows/ci.yml` on `dev`
+and three swallowed step boundaries would have made GitHub **reject the whole
+workflow** — a silent failure nothing in the repo caught until a human diffed
+it (`1037101` repaired it; #101 recorded the pattern, #110 landed this guard).
+The unit tests (`tests/test_workflow_scan.py`) include the pre-`1037101`
+corruption as a regression fixture, so a guard that stopped detecting it would
+be a test failure.
+
+Run: `python3 tooling/gates/workflow_scan.py` — exit 0 clean, 1 violations,
+2 usage error. Wired into CI (scan + unit tests).
+
 ## Gate 7 (Tier 1): binder usage / lethality scanner (2026-08-18)
 
 `binder_usage_scan.py` checks that every named parameter, field, and
