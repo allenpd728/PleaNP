@@ -470,3 +470,63 @@ agent-pair protocol.
 **Rationale:** The #70 issue was filed when complexitylib pinned Mathlib `v4.30.0` vs PleaNP's `v4.31.0` — a one-minor drift across ~23 modules. That premise has since decayed. At the current head (`6c248df`, 2026-09-08) complexitylib pins **`leanprover/lean4:v4.34.0-rc2`** (an rc prerelease toolchain), pins **Mathlib rev `e06eff5f9537`** (2026-08-31, v4.34-rc2 era), and additionally requires the **`cslib`** dependency (`leanprover/cslib@d9be641`, its own Mathlib rev). PleaNP pins the stable **`v4.31.0`** toolchain/Mathlib — a two-minor + rc gap, not a one-minor drift. Reconciling either direction is a losing trade: pinning PleaNP to v4.34.0-rc2 sacrifices the stable-pin discipline for an rc prerelease; upstreaming complexitylib's ~23 (now likely more) drifting modules fights an upstream that has already moved two versions forward and keeps moving. Importing would also drag in a 1685-file dependency surface (its `Circuits/` tree alone is ~350 files) for the small slice PleaNP needs, and DEC-003 already established the PleaNP-local substrate precedent (oracle machines are local because no upstream effort provides them). Rung 4's need is modest — typed Boolean circuits with size/depth, P/poly shape, natural-property vocabulary — which #71 sizes at 3 runs. The Mathlib-in-namespace discipline that made local sense for oracles extends cleanly to circuits under `PleaNP.Circuits`.
 
 **What happens instead:** #70 stays open only through this Pass-1 record; the DEC-025 decision closes the import-vs-local fork, #71 (Rung 4 substrate build-out) becomes the active path, unblocked (#70 Pass 1 was the posture-setting gate). If a future upstream effort lands circuit machinery in Mathlib proper (or complexitylib reconciles to a stable PleaNP mathlib), revisit via the playbook's import row at that time.
+
+### DEC-027
+
+**Date:** 2026-09-16
+**Status:** Active
+**Scope:** Packaging — how downstream repos consume PleaNP. Closes issue #102.
+
+**Decision:** Adopt **option (A)** from #102: add a root `lakefile.lean` that repoints the package at the existing `lean/` source tree via `srcDir := "lean"`, and restate the library declarations there. Option (B) (move the package to the repo root) and option (C) (publish an extractable sub-package) are **not** taken now — (B) has a large blast radius across CI, the devcontainer, `tooling/elantool.sh`, and `AGENTS.md`, all of which run from `lean/`; (C) remains the better long-term boundary and is deferred, not rejected.
+
+**Why a root lakefile is needed at all:** Lake resolves a *dependency's* package root at the repo root, so a sibling repo cannot `require PleaNP from git ...` while the only lakefile is at `lean/`. The failure is pre-Lean and unambiguous:
+
+    error: PleaNP: no configuration file with a supported extension:
+      .lake/packages/PleaNP/lakefile.lean
+      .lake/packages/PleaNP/lakefile.toml
+
+Requester is the sibling project **Maith**, which needs `PleaNP.Circuits` for its axiom-discovery benchmark corpus (Maith #26 / `docs/experiments/BENCHMARK_CORPUS_PLAN.md`). Both repos pin Lean `v4.31.0` and Mathlib `v4.31.0`, so no toolchain reconciliation is required — the contrast with DEC-025, where the version gap is exactly what killed the `complexitylib` import.
+
+**Why `lean/` stays authoritative:** every build command in the repo operates from `lean/` — CI (`working-directory: lean` on every Lean step), `.devcontainer` `postCreateCommand`/`postStartCommand`, `tooling/elantool.sh`, and the `AGENTS.md` bootstrap. Lake picks the *nearest* lakefile, so `cd lean && lake build ...` continues to read `lean/lakefile.lean`. The root file is additive; it changes no existing command. Verified: with the root file present, `cd lean && lake exe cache get && lake build PleaNP.Circuits.Basic` succeeded (8558 jobs) and `lake build tests` succeeded (8564 jobs).
+
+**The duplication is unavoidable — tested, not assumed.** A minimal root file (`package` + `srcDir` + `require mathlib`, no `lean_lib`) resolves the dependency path but **does not work**: the consumer fails with
+
+    error: Demo/Probe.lean:1:0: unknown module prefix 'PleaNP'
+
+because no library is declared, so the dependency builds nothing and there are no oleans to import. So the root file must restate the `lean_lib`/`lean_exe` declarations. `srcDir` handles the *layout*; it does not handle *target declaration*.
+
+**Mitigation for the duplication:** `tooling/gates/lakefile_sync_check.py` fails (exit 1) if the root shim and `lean/lakefile.lean` disagree on the package name, any `lean_lib` name and its `globs`/`roots`, any `lean_exe` name and its `root`, or the `require mathlib` pin. It normalises whitespace and ignores comments, so a formatting-only reformat is not reported as drift — otherwise people would learn to ignore the guard. Its tests (`tooling/gates/tests/test_lakefile_sync.py`, 5 tests) assert **seven** drift classes are each detected and a matching pair is accepted. Wired into CI after the build steps; it needs no Lean toolchain.
+
+**Verified end-to-end against this commit.** A scratch consumer package:
+
+```lean
+require PleaNP from "../PleaNP"
+```
+
+and importing the circuit substrate:
+
+```
+✔ Built PleaNP.Circuits.Basic (33s)
+✔ Built PleaNP.Circuits.AC0 (4.8s)
+✔ Built Demo.Probe (4.1s)
+info: Demo/Probe.lean: PleaNP.Circuits.BoolGate : ℕ → Type
+info: Demo/Probe.lean: PleaNP.Circuits.parity_notin_AC0 : Prop
+```
+
+Real definitions resolving across the repo boundary, including the AC0 module
+that Maith's first transfer target (parity ∉ AC⁰) depends on.
+
+**Also repaired in the same commit — a pre-existing breakage that #102 would otherwise have inherited.** The `ci.yml` copy on `dev` was **invalid YAML**, so GitHub would have rejected the entire workflow: three step boundaries had been swallowed into the previous scalar or mis-indented —
+
+- line 38: `working-directory: lean      - name: Barrier-check verdict harness (...)` — step boundary inside the previous scalar
+- line 44: a step indented 12 spaces where siblings use 6
+- line 55: `...OracleV5Tests.lean- name: Gate-REVIEW register machine-check (...)` — boundary joined with no separator
+
+This is the **third instance of the same corruption signature** recorded in #101 (content joined across a line boundary; see also `BarrierCalculus.lean`'s doc comments). `main`'s copy is valid YAML but an **older generation** (21 steps, no `Circuits` build), so this is a dev-branch regression that would have broken CI the moment `dev` merged. Repair was surgical: 5 insertions / 3 deletions, and an assertion that content is byte-identical modulo the intended line splits. Consequence: adding a CI step to this file was not possible without fixing it first.
+
+**Consequences recorded for the maintainer:**
+
+- **CI coupling:** once Maith depends on PleaNP, Maith's CI has a hard dependency on PleaNP's `Circuits` closure building green. The warm image at `ghcr.io/allenpd728/pleanp:main` (Plan E) may be the better consumption path than a source build.
+- **Build a target, not the full tree:** PleaNP's full-tree `lake build` still fails on the two documented pending-sorry modules (`OracleUpstreamP`, `Relativization`). Consumers must build the `Circuits` closure specifically.
+- **Import weight:** `PleaNP.Circuits.Basic` begins with `import Mathlib`, so consumers inherit the full Mathlib closure.
+- **CI trigger gap:** `.github/workflows/ci.yml` triggers only on pushes to `main` and PRs to `main`, so **`dev` pushes are not automatically verified**. This change was verified locally (builds + gates + the end-to-end consumer) rather than by CI on `dev`. Worth deciding separately whether `dev` should be in the trigger list — flagged, not changed here, since it is a policy call.
