@@ -155,6 +155,18 @@ decider** + runtime baseline zero-sorry (`acc0SatBrute_correct`,
 (Shah–Shetty-style Good-SAT) — the actual research content, tracked so the
 Pass-3 transfer contract is pinned without pretending the improvement landed.
 
+### Lower-Bound Compiler level (issue #80 Pass 2, 2026-09-16)
+
+`lean/PleaNP/Barriers/LowerBoundCompiler.lean` is **zero-sorry**: the
+`#lower_bound_compile` elaborator skeleton emits a named claim and reports
+its dependency/axiom closures, and its contract guards reject a wrong-shape,
+`sorryAx`-carried, missing, or shadowing contract (pinned by `#guard_msgs` in
+`lean/tests/LowerBoundCompilerGuards.lean`). The compiler depends on the
+tracked `acc0SatSubExpBound` gap above: the **full** contract emission needs a
+proved `SubExpCircuitSATT` (#98), so the module's example uses the conditional
+form. **No new `sorry`** — the `tests` module's decoy contract carries the
+only placeholder, and it is a test fixture, not a proof debt.
+
 ### Algebrization statement level (issue #69 Pass 1, 2026-09-13)
 
 `lean/PleaNP/Barriers/Algebrization.lean` renders the **AW09 v1 statement**

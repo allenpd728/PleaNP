@@ -134,10 +134,17 @@ PleaNP imports whichever lands upstream, rather than picking a side. Our only lo
 **Status:** Design note written (issue #80 Pass 1, 2026-09-13) —
 `docs/STATEMENTS/LowerBoundCompiler.design.md` pins the elaborator's
 input contract (a verified CircuitSAT algorithm + *verified* runtime
-bound, per #76's pass chain) and emission contract. Elaborator skeleton
-(#80 Pass 2) waits on the #76 transfer theorem (#90). Not blocking;
-depends on Rung 4 (circuit library) + a verified CircuitSAT algorithm
-(harvested from Rung 7 benchmark work).
+bound, per #76's pass chain) and emission contract.
+**Elaborator skeleton landed** (issue #80 Pass 2, 2026-09-16) —
+`lean/PleaNP/Barriers/LowerBoundCompiler.lean` ships `#lower_bound_compile`
+(the guarded full path) + `#lower_bound_compile_cond` (the conditional
+emission available while the contract's sub-exponential half is the tracked
+#98 gap), the contract guards (wrong shape / `sorryAx` / missing /
+shadowing), and dependency-closure + axiom reporting at the emission site;
+the guard rejections are pinned in `lean/tests/LowerBoundCompilerGuards.lean`.
+The **full** contract emission (a proved `SubExpCircuitSATT`) waits on the
+#98 sub-lemma. Not blocking; depends on Rung 4 (circuit library) + that
+verified CircuitSAT algorithm.
 
 ---
 
