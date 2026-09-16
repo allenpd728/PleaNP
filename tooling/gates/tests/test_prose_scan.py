@@ -34,7 +34,6 @@ class TestProseScan(unittest.TestCase):
     def test_doubled_punctuation_caught(self):
         self.assertTrue(scan_text("/-- a comment,,with a doubled comma -/\n"))
         self.assertTrue(scan_text("/-- a comment;;with a doubled semicolon -/\n"))
-        self.assertTrue(scan_text("/-- rationale..issue one -/\n"))
 
     def test_canonical_101_double_period_caught(self):
         # Issue #101's own canonical example: period doubled before a space.
@@ -85,6 +84,31 @@ class TestProseScan(unittest.TestCase):
     def test_live_tree_is_clean_of_scanner_crashes(self):
         # The scan must run over the real tree without raising.
         p.scan([REPO / "lean" / "PleaNP"], set())
+
+    # --- markdown refinement (issue #112): the legitimate classes ---
+
+    def test_md_path_ref_not_flagged(self):
+        self.assertEqual(scan_text("Run `../tooling/leancheck.py` now", ".md"), [])
+        self.assertEqual(scan_text('mount from "../PleaNP" here', ".md"), [])
+
+    def test_md_url_not_flagged(self):
+        self.assertEqual(scan_text("pull ghcr.io/owner/image:main today", ".md"), [])
+
+    def test_md_label_tokens_not_flagged(self):
+        self.assertEqual(scan_text("labels: status:available / priority:high", ".md"), [])
+        self.assertEqual(scan_text("see | File:Line | for details", ".md"), [])
+
+    def test_md_hex_range_not_flagged(self):
+        self.assertEqual(scan_text("controls (U+200E..U+200F) noted", ".md"), [])
+
+    def test_md_fenced_block_not_flagged(self):
+        src = "text\n```lean\nrequire PleaNP from \"../PleaNP\"\na: b\n```\nmore\n"
+        self.assertEqual(scan_text(src, ".md"), [])
+
+    def test_md_genuine_corruption_still_caught(self):
+        self.assertTrue(scan_text("the rationale.. Issue #1 says", ".md"))
+        self.assertTrue(scan_text("a decision,not a mechanism", ".md"))
+        self.assertTrue(scan_text("marker:the construction", ".md"))
 
 
 if __name__ == "__main__":

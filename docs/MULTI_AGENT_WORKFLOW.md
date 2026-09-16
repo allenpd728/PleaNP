@@ -305,15 +305,15 @@ The done comment must include the gate command + output (see §Claiming step 5).
 ## Rendering-campaign protocol (Gate 3 multi-rendering, N-parallel agents)
 
 How a *single informal claim* gets many **independent** Lean renderings, machine-
-checked against each other,and mined for human review points. This is the
+checked against each other, and mined for human review points. This is the
 "N agents x 1 rendering" goal of #17 (today the engine also supports a
-single agent rendering multiple slots — same registration pipeline,no
+single agent rendering multiple slots — same registration pipeline, no
 isolation between its own renderings).
 
 **Engine.** `python3 tooling/gates/multi_render.py` — a workspace per claim in
 `churn/<claim-slug>/`: `informal.md` (the seed), `renderings/<id>.json` (slot
 registrations: id, module, theorem, created), `matrix.json` (pairwise
-machine-verified equivalence,,and `mined/` (review points for disagreements).
+machine-verified equivalence, and `mined/` (review points for disagreements).
 The pipeline: `init` → (agent) `render` → `check` (+ optional `--lemmas` map
 proving an IFF bridging ambiguity) → `mine`. The equivalence checker is
 `dual_render` (`--lemma` for the proved-IFF path); disagreements become
@@ -325,35 +325,35 @@ double-filing bug #7-#16; see `.github/workflows/review-issue.yml`).
 one issue(ora comment on the campaign issue) per slot, `status:available` →
 `status:claimed` atomic label swap, run-id in the claim comment. The slot id
 is the `render <slug> <id> <module> <theorem>` id (e.g. `bgs-clause-b-E`). A
-single agent may hold at most one slot at a time (same one-claim rule..
+single agent may hold at most one slot at a time (same one-claim rule.
 Slots are numbered/lettered by the campaign's registration (`init` creates the
 workspace; `render` registers each slot's module+theorem). An agent that
-completes its slot swaps its slot issue to `status:done` with the commit link,and
+completes its slot swaps its slot issue to `status:done` with the commit link, and
 files its `Tests:` follow-up per §Claiming step 6.
 
 **Isolation guarantee.** Each agent works **without reading any other agent's
 rendering file** (`churn/<slug>/renderings/<id>.lean` or `<id>.json` except its
-own):the only shared inputs are the informal claim (`informal.md`),the licensed
-Mathlib/PleaNP imports,and the repo conventions. A slot is completable in
+own): the only shared inputs are the informal claim (`informal.md`),the licensed
+Mathlib/PleaNP imports, and the repo conventions. A slot is completable in
 isolation — no coordination with the other renderers of the same claim.
 
 Isolation is guaranteed because each rendering lives in its own module/theorem
-named by the slot id,and `check` runs only at merge/registration time (see #25).
+named by the slot id, and `check` runs only at merge/registration time (see #25).
 An agent that reads a sibling's rendering before its own is submitted violates the
 campaign (recorded in the slot comment);the merge step's pairwise matrix is the
-enforcement point,not the barrier.
+enforcement point, not the barrier.
 
 **Slot-diversity discipline (2026-09-07,#27).** Every campaign slot must carry a
 *distinct named lens* (e.g. structure-first / machine-construction /
-witness-predicate / per-length-family),not merely a fresh random seed. All agent
+witness-predicate / per-length-family), not merely a fresh random seed. All agent
 work uses the same LLM: identical prompts → identical canonical shapes regardless of
 decoding randomness — temperature/entropy cannot force *structural* divergence. A
 lens directs the renderer to a different corner of the statement-shape space;
 disagreements between lenses are the interesting, human-mineable places. If a campaign
-comes back **all EQUIVALENT** (no disagreements),that is itself a measured result —
+comes back **all EQUIVALENT** (no disagreements), that is itself a measured result —
 the claim is unambiguous across the lenses — and the human still reviews exactly ONE
 confirm probe on the agreed shape + a perturb-control twin (`review_inbox.py perturb`,
-per the fatigue protocol;the control should be FLAGGED,proving the review isn't
+per the fatigue protocol; the control should be FLAGGED,proving the review isn't
 rubber-stamp);there is no "nothing to review" state in a campaign.
 
 ## Blockers

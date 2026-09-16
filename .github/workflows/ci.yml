@@ -62,8 +62,8 @@ jobs:
         run: python3 tooling/gates/workflow_scan.py
       - name: Workflow-YAML scan unit tests (regression fixture is the pre-1037101 corruption; #110)
         run: python3 tooling/gates/tests/test_workflow_scan.py
-      - name: Prose-corruption scan (the #101 signature in comments + string literals; #101)
-        run: python3 tooling/gates/prose_scan.py lean/PleaNP
+      - name: Prose-corruption scan (the #101 signature; comments, string literals, docs; #101/#112)
+        run: python3 tooling/gates/prose_scan.py .
       - name: Prose-corruption scan unit tests (doubles, fusions, tuple false-positives; #101)
         run: python3 tooling/gates/tests/test_prose_scan.py
       - name: Hygiene scan (Gate 6 Tier 1)
