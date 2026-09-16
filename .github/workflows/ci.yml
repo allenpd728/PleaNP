@@ -62,6 +62,10 @@ jobs:
         run: python3 tooling/gates/workflow_scan.py
       - name: Workflow-YAML scan unit tests (regression fixture is the pre-1037101 corruption; #110)
         run: python3 tooling/gates/tests/test_workflow_scan.py
+      - name: Prose-corruption scan (the #101 signature in comments + string literals; #101)
+        run: python3 tooling/gates/prose_scan.py lean/PleaNP
+      - name: Prose-corruption scan unit tests (doubles, fusions, tuple false-positives; #101)
+        run: python3 tooling/gates/tests/test_prose_scan.py
       - name: Hygiene scan (Gate 6 Tier 1)
         run: python3 tooling/gates/hygiene_scan.py --prove-stage lean/PleaNP/Calculus lean/PleaNP/Basic.lean lean/PleaNP/Barriers/RelativizationProof.lean lean/PleaNP/Barriers/Algebrization.lean lean/PleaNP/Barriers/Williams.lean lean/PleaNP/Barriers/WilliamsTransfer.lean lean/PleaNP/Barriers/WilliamsAssembly.lean lean/PleaNP/Barriers/WilliamsSat.lean lean/PleaNP/Benchmark/Closure.lean lean/PleaNP/ProofComplexity/Resolution.lean lean/PleaNP/Challenges/Relativization.lean lean/PleaNP/Circuits/Basic.lean lean/PleaNP/Circuits/AC0.lean lean/PleaNP/Circuits/MustRefute.lean lean/PleaNP/Computability/Oracle.lean lean/PleaNP/Computability/OracleComplexity.lean lean/PleaNP/Computability/OracleSmoke.lean lean/PleaNP/Computability/OracleV5Tests.lean lean/PleaNP/Barriers/LowerBoundCompiler.lean
       - name: Unicode-hygiene scan (Gate 8 Tier 1 — stray/fullwidth/CJK/invisible chars)

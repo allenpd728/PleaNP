@@ -92,6 +92,34 @@ Gate 5 Tier 1 (the vacuity scanner) should be added to CI alongside the hygiene 
 
 Note: this enforces Tier 1 (grep/AST-scannable patterns) only. Tier 2 (`#print axioms`; semantic vacuity) is still the local agent's separate job. "CI green" is necessary, not sufficient, for "Gate 5/6 passed."
 
+## Gate: prose-corruption scanner (`prose_scan.py`, 2026-09-16)
+
+`prose_scan.py` catches the **#101 signature** — words fused where punctuation
+absorbed the following space, and punctuation doubled (`,,`, `;;`, `..`,
+`word:joined`, `word,joined`, `word;joined`, `word)joined`). It is the general
+guard for the case the unicode scanner cannot see: the corruption is plain
+ASCII.
+
+What it scans: Lean **comments** and Lean **string-literal contents** (the
+`#barrier_check` verdict templates are machine-authored prose inside `m!"..."`
+literals, and they carried the signature too); markdown prose. Code is never
+flagged. Before matching it blanks inline code spans and space-free bracketed
+groups, so legitimate Lean tuple notation (`⟨n,x⟩`, `(true,true)`) is not
+mistaken for a fused comma.
+
+Run: `python3 tooling/gates/prose_scan.py lean/PleaNP` — exit 0 clean, 1
+violations, 2 usage error. `--allow-file <path>` is the audited escape hatch.
+CI runs it on `lean/PleaNP` (scan + unit tests); the unit tests pin the
+false-positive class so a future loosening that started flagging tuples would be
+a test failure.
+
+**Scope note (honest):** the same signature is also present in `docs/` (~184
+hits) and `tooling/` prose (~14 hits). Those are *not* in the CI scope yet: the
+colon/fusion rules are reliable on Lean prose but produce legitimate hits in
+markdown (path refs `../x`, `file:line:col`, `priority:high`, hex ranges
+`U+200E..U+200F`). Cleaning the docs is a separate, larger pass — tracked as a
+follow-up rather than silently enabled as a red gate.
+
 ## Gate: workflow-file integrity scanner (`workflow_scan.py`, 2026-09-16)
 
 `workflow_scan.py` asserts that every `.github/workflows/*.yml` (a) parses

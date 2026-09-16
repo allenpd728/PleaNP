@@ -54,47 +54,47 @@ open PleaNP.Calculus
   proposition relativizes. -/
 class MarkerPW (α : Sort u) : Prop where
 
-/-- Seed instance:oracle-relative atom relativizes (pointwise reading). -/
+/-- Seed instance: oracle-relative atom relativizes (pointwise reading). -/
 instance MarkerPW.relAtom {O : Type} {A : AbstOracle O} :
     MarkerPW ( RelAtom O A) := ⟨⟩
 
-/-- Seed instance:oracle-relative language atom. -/
+/-- Seed instance: oracle-relative language atom. -/
 instance MarkerPW.langAtom {O : Type} {A : AbstOracle O} {L : O → Prop} :
     MarkerPW ( LangAtom O A L) := ⟨⟩
 
-/-- Propagation:conjunction. -/
+/-- Propagation: conjunction. -/
 instance MarkerPW.and {p q : Prop} [MarkerPW p] [MarkerPW q] :
     MarkerPW ( p ∧ q) := ⟨⟩
 
-/-- Propagation:disjunction. -/
+/-- Propagation: disjunction. -/
 instance MarkerPW.or {p q : Prop} [MarkerPW p] [MarkerPW q] :
     MarkerPW ( p ∨ q) := ⟨⟩
 
-/-- Propagation:implication. -/
+/-- Propagation: implication. -/
 instance MarkerPW.imp {p q : Prop} [MarkerPW p] [MarkerPW q] :
     MarkerPW ( p → q) := ⟨⟩
 
-/-- Propagation:iff. -/
+/-- Propagation: iff. -/
 instance MarkerPW.iff {p q : Prop} [MarkerPW p] [MarkerPW q] :
     MarkerPW ( p ↔ q) := ⟨⟩
 
-/-- Propagation:negation. -/
+/-- Propagation: negation. -/
 instance MarkerPW.not {p : Prop} [MarkerPW p] :
     MarkerPW ( ¬ p) := ⟨⟩
 
-/-- Propagation:universal quantification. -/
+/-- Propagation: universal quantification. -/
 instance MarkerPW.forall {α : Sort u} {p : α → Prop}
     [_h : (a : α) → MarkerPW (p a)] : MarkerPW (∀ a, p a) := ⟨⟩
 
-/-- Propagation:existential quantification. -/
+/-- Propagation: existential quantification. -/
 instance MarkerPW.exists {α : Sort u} {p : α → Prop}
     [_h : (a : α) → MarkerPW (p a)] : MarkerPW (∃ a, p a) := ⟨⟩
 
-/-- Propagation:propositional equality. -/
+/-- Propagation: propositional equality. -/
 instance MarkerPW.eq {p q : Prop} [MarkerPW p] [MarkerPW q] :
     MarkerPW ( p = q) := ⟨⟩
 
-/-- Propagation:propositional inequality. -/
+/-- Propagation: propositional inequality. -/
 instance MarkerPW.ne {p q : Prop} [MarkerPW p] [MarkerPW q] :
     MarkerPW ( p ≠ q) := ⟨⟩
 
@@ -113,7 +113,7 @@ instance MarkerPW.funne {α : Sort u} {p q : α → Prop}
     [_hp : (x : α) → MarkerPW (p x)] [_hq : (x : α) → MarkerPW (q x)] :
     MarkerPW ( p ≠ q) := ⟨⟩
 
-/-- The shape statement under the **pointwise** reading:for any oracle A, if
+/-- The shape statement under the **pointwise** reading: for any oracle A, if
   the witness languages `L1 L2 : O → Prop` are pointwise-marked (every fiber
   `L1 x` / `L2 x` carries the marker), then the disjunction of the
   function-level equality and inequality relativizes.

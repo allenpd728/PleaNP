@@ -51,53 +51,53 @@ open PleaNP.Calculus
   are declared unconditionally (no per-fiber hypotheses). -/
 class MarkerAtom (α : Sort u) : Prop where
 
-/-- Seed instance:oracle-relative atom relativizes (shared with the
+/-- Seed instance: oracle-relative atom relativizes (shared with the
   as-implemented calculus). -/
 instance MarkerAtom.relAtom {O : Type} {A : AbstOracle O} :
     MarkerAtom ( RelAtom O A) := ⟨⟩
 
-/-- Seed instance:oracle-relative language atom. -/
+/-- Seed instance: oracle-relative language atom. -/
 instance MarkerAtom.langAtom {O : Type} {A : AbstOracle O} {L : O → Prop} :
     MarkerAtom ( LangAtom O A L) := ⟨⟩
 
-/-- Propagation:conjunction. -/
+/-- Propagation: conjunction. -/
 instance MarkerAtom.and {p q : Prop} [MarkerAtom p] [MarkerAtom q] :
     MarkerAtom ( p ∧ q) := ⟨⟩
 
-/-- Propagation:disjunction. -/
+/-- Propagation: disjunction. -/
 instance MarkerAtom.or {p q : Prop} [MarkerAtom p] [MarkerAtom q] :
     MarkerAtom ( p ∨ q) := ⟨⟩
 
-/-- Propagation:implication. -/
+/-- Propagation: implication. -/
 instance MarkerAtom.imp {p q : Prop} [MarkerAtom p] [MarkerAtom q] :
     MarkerAtom ( p → q) := ⟨⟩
 
-/-- Propagation:iff. -/
+/-- Propagation: iff. -/
 instance MarkerAtom.iff {p q : Prop} [MarkerAtom p] [MarkerAtom q] :
     MarkerAtom ( p ↔ q) := ⟨⟩
 
-/-- Propagation:negation. -/
+/-- Propagation: negation. -/
 instance MarkerAtom.not {p : Prop} [MarkerAtom p] :
     MarkerAtom ( ¬ p) := ⟨⟩
 
-/-- Propagation:universal quantification. -/
+/-- Propagation: universal quantification. -/
 instance MarkerAtom.forall {α : Sort u} {p : α → Prop}
     [_h : (a : α) → MarkerAtom (p a)] : MarkerAtom (∀ a, p a) := ⟨⟩
 
-/-- Propagation:existential quantification. -/
+/-- Propagation: existential quantification. -/
 instance MarkerAtom.exists {α : Sort u} {p : α → Prop}
     [_h : (a : α) → MarkerAtom (p a)] : MarkerAtom (∃ a, p a) := ⟨⟩
 
-/-- Propagation:propositional equality. -/
+/-- Propagation: propositional equality. -/
 instance MarkerAtom.eq {p q : Prop} [MarkerAtom p] [MarkerAtom q] :
     MarkerAtom ( p = q) := ⟨⟩
 
-/-- Propagation:propositional inequality. -/
+/-- Propagation: propositional inequality. -/
 instance MarkerAtom.ne {p q : Prop} [MarkerAtom p] [MarkerAtom q] :
     MarkerAtom ( p ≠ q) := ⟨⟩
 
 /-- **The as-implemented unconditional atom instances.** The equality of two
-  FIXED predicates is oracle-oblivious:it reports on the functions
+  FIXED predicates is oracle-oblivious: it reports on the functions
   themselves, not on any oracle query — so it relativizes unconditionally,
   with NO pointwise/marker hypothesis. This mirrors exactly
   `PleaNP.Calculus.Relativizing.funeq` / `.funne` (BarrierCalculus.lean
@@ -109,7 +109,7 @@ instance MarkerAtom.funeq {α : Sort u} {p q : α → Prop} :
 instance MarkerAtom.funne {α : Sort u} {p q : α → Prop} :
     MarkerAtom ( p ≠ q) := ⟨⟩
 
-/-- The shape statement under the **atom** reading:for any oracle A and
+/-- The shape statement under the **atom** reading: for any oracle A and
   oracle-relative witness languages L1 L2, the disjunction of the
   function-level equality and inequality relativizes *unconditionally*.
   Instance synthesis discharges it purely from the unconditional
