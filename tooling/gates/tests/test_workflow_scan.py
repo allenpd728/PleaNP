@@ -76,9 +76,37 @@ def findings_for(text, label="wf.yml"):
     return w._violations_for_text(text, label)
 
 
+# A `run:` block whose comment line lost its `#` (the #101 signature) — the real
+# bug that broke review-issue.yml's `respond` job (#115). YAML/structure checks
+# pass on this; only the shell-syntax check catches it.
+BAD_SHELL = """name: CI
+on:
+  push:
+    branches: [main]
+jobs:
+  respond:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Handle comment
+        run: |
+          set -euo pipefail
+          # a comment line
+          # another comment line
+          (this lost its hash), and breaks the shell
+          echo done
+"""
+
+
 class TestWorkflowScan(unittest.TestCase):
     def test_clean_workflow_passes(self):
         self.assertEqual(findings_for(CLEAN), [])
+
+    def test_shell_syntax_error_caught(self):
+        fs = findings_for(BAD_SHELL)
+        self.assertTrue(
+            any("not valid bash" in f for f in fs),
+            f"expected the shell-syntax violation, got {fs}",
+        )
 
     def test_swallowed_step_boundary_is_caught(self):
         fs = findings_for(SWALLOWED)

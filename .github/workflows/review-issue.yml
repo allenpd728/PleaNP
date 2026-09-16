@@ -216,7 +216,7 @@ jobs:
               # fatigue signal -> re-file the ORIGINAL claim as a fresh issue so
               # no sweep is needed. Single source of truth: review_inbox.py
               # requeue <orig-id> re-files the confirmed original from the repo
-              (we have a checkout), then we push so sync-pending files it.
+              # (we have a checkout), then we push so sync-pending files it.
               control_of=$(echo "$body" | sed -n 's/.*control_of: *\([a-z0-9-]*\).*/\1/p' | head -1)
               if [ "$control_of" != "none" ] && [ -n "$control_of" ]; then
                 echo "confirmed a recheck-control (control_of=$control_of): auto-re-queueing original."
