@@ -75,6 +75,7 @@ jobs:
           set -euo pipefail
           existing=$(gh issue list --repo "$REPO" --label "review:pending,review:flagged" \
                      --state open --limit 100 --json title,body 2>/dev/null || echo '[]')
+          printf '%s' "$existing" > /tmp/existing.json
           for f in reviews/pending/*.yaml; do
             [ -e "$f" ] || continue
             # Inbox id = the unique review-point id (the filename minus .yaml).
@@ -97,8 +98,12 @@ jobs:
             fi
             # Dedupe by inbox id (unique per point), not decl (shared by
             # mined/churned points — the earlier bug that doubled issues
-            # #7-#16). The issue body carries '(inbox id: <id>)'.
-            if echo "$existing" | grep -q "inbox id: *${inbox_id}"; then
+            # #7-#16). The matcher is `tooling/reviews/sync_pending.py` (issue
+            # #115): an inline grep here searched for the BARE id while the body
+            # writes the `reviews/pending/<id>` path form, so it never matched
+            # and refiled every point on each touch of reviews/pending/.
+            if python3 tooling/reviews/sync_pending.py already-filed \
+                 /tmp/existing.json "$inbox_id" >/dev/null 2>&1; then
               echo "already filed for ${inbox_id}; skipping"
               continue
             fi

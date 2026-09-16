@@ -128,6 +128,8 @@ jobs:
         working-directory: lean
       - name: Review-inbox unit tests (non-blocking human review surface)
         run: python3 tooling/reviews/tests/test_review_inbox.py
+      - name: sync-pending dedupe tests (review-issue.yml idempotency; #115)
+        run: python3 tooling/reviews/tests/test_sync_pending.py
       - name: Gate 3 multi-rendering unit tests (AI-multi-rendering → human-mine driver)
         run: python3 tooling/gates/tests/test_multi_render.py
       - name: Gate 8 Unicode-hygiene scanner unit tests (stray-character authoring-hygiene gate)
