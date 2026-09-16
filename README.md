@@ -4,6 +4,16 @@ A Lean 4 / Mathlib project formalizing the **barrier landscape** of computationa
 
 > "Plea" — because this is the road we're building toward P vs NP, not the claim we've reached it.
 
+## At a glance
+
+- **Formalizing proofs that no one has machine-checked yet**: the P vs NP barrier theorems (relativization, natural proofs, algebrization) have no formal proof in any proof assistant — this project builds the missing machine-grounded infrastructure.
+- **A "barrier calculus"**: a `Relativizing` typeclass + `#barrier_check` elaborator that turns "does this proof relativize?" from human judgment into a typechecking question — unit-tested against the time hierarchy theorem.
+- **A lower-bound compiler**: Williams' transfer theorem as a Lean elaborator (verify an algorithm + runtime bound → get a circuit lower bound), plus the supporting circuit- and proof-complexity library.
+
+> Full background below, or jump to [scope & non-scope](#scope-and-non-scope).
+>> **Built with agentic AI tooling.** The author specified the architecture and validated the machine-checked proofs; agent-based coding workflows produced and iterated on the Lean formalizations. See commit history.
+
+
 ## Why this project exists
 
 The P vs NP problem has three decades of known **barriers**:
