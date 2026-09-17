@@ -148,6 +148,8 @@ jobs:
         run: python3 tooling/galaxy/tests/test_galaxy_data.py
       - name: Galaxy renderer unit tests (issue #87; self-contained galaxy.html invariants, stdlib)
         run: python3 tooling/galaxy/tests/test_galaxy_render.py
+      - name: pre-push check unit tests (galaxy staleness detector; #118)
+        run: python3 tooling/tests/test_pre_push_check.py
       - name: Galaxy regen smoke (committed galaxy.html stays up to date with repo artifacts)
         run: |
           python3 tooling/galaxy/galaxy.py --repo . --out /tmp/galaxy-ci.html >/dev/null

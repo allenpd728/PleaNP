@@ -29,6 +29,16 @@ conventions; this doc is the "what do I do on day one" summary.
    `status:claimed` → `status:done` and close with the commit link.
 7. **No task available?** Fall through: `Tests:` issues → PR review comments →
    blockers. Only when all are exhausted is the queue empty.
+8. **Before pushing, run the local CI-equivalents.** The Tier-1 scanners and
+   `pytest` do not cover every CI step. In particular the **Galaxy regen
+   smoke** (the committed `tooling/galaxy/galaxy.html` must match a fresh
+   regeneration) has bitten two sessions (#112, #118) because
+   `docs/SORRY_TRACKER.md`, `docs/ROADMAP.md`, `formalization.yaml` and the
+   review points are all embedded in that page. Run:
+   ```bash
+   python3 tooling/pre_push_check.py         # exit 1 if galaxy.html is stale
+   python3 tooling/pre_push_check.py --fix   # regenerate in place, then git add it
+   ```
 
 ## Current state (2026-09-16, run=20260916-1622-p8k2)
 
