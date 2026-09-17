@@ -44,24 +44,41 @@ namespace DiagonalBridge
 
 open PleaNP.Oracles
 open Turing
+open Cardinal
 
-/-- The Cantor fact, recorded precisely: the *bundled* `Machine Q tm` type
-  carries an oracle `Q → Bool` — uncountable for infinite Q (Cantor: a
-  countable enumeration would miss the diagonal-flip function) — and a decode
-  `List (Γ k₀) → Q`, an infinite-domain function space even for finite Q.
+/-- **The Cantor fact, now proved** (#120). The oracle space over an infinite
+  query type is uncountable: `#(A → Bool) = 2 ^ #A` and `ℵ₀ < 2 ^ #A` whenever
+  `ℵ₀ ≤ #A`.
 
-  So the bundled `Machine` type is not countable. **But** this is about the
-  bundled type, NOT about the `P_A`/`NP_A` witnesses the tournament
-  enumerates: those pin `oracle = A` (see `DiagonalSyntax`), so they do not
-  range over the `oracle` factor at all. The earlier reading of this fact as
-  "the bridge is impossible" was wrong for the statement at hand (#118). -/
-def BridgeObstacle : Prop :=
-  ∀ (A : Type) (_ : Countable (Oracle A))
-    (_ : Infinite A), False
-  -- (theorem-shaped documentation marker: the oracle function space over
-  --  an infinite query type is NOT countable (Cantor); recorded so no
-  --  fake countable-machines claim slips in. The Cantor proof itself is
-  --  classical set theory, left to the bridge milestone.)
+  This replaces an earlier *unproved* `def BridgeObstacle : Prop` "documentation
+  marker" (whose bound `A` did not occur in its body, so it asserted nothing —
+  `binder_usage_scan` flagged it `vacuous_forall`). It is a real theorem. -/
+theorem oracle_uncountable {A : Type} (h : Infinite A) :
+    ¬ Countable (Oracle A) := by
+  intro hc
+  have hc' : Countable (A → Bool) := hc
+  rw [← mk_le_aleph0_iff] at hc'
+  have hinf : ℵ₀ ≤ #A := aleph0_le_mk_iff.mpr h
+  have harrow : #(A → Bool) = 2 ^ #A := by
+    simp
+  rw [harrow] at hc'
+  have hlt : ℵ₀ < 2 ^ #A := by
+    calc ℵ₀ < 2 ^ ℵ₀ := cantor ℵ₀
+      _ ≤ 2 ^ #A := power_le_power_left (by norm_num : (2 : Cardinal) ≠ 0) hinf
+  exact absurd hc' (not_le.mpr hlt)
+
+/-- The `BridgeObstacle` statement — *proved*, not asserted (#120): if the
+  oracle space over `A` is countable then `A` is not infinite. This is the fact
+  the module originally carried as an unproved marker.
+
+  **Scope (per #118).** It is about the *bundled* oracle/`Machine` type, and is
+  **not** the obstruction to enumerating the `P_A`/`NP_A` witnesses the
+  tournament diagonalizes over: those pin `oracle = A` (see `DiagonalSyntax`),
+  so they do not range over the oracle factor at all. -/
+theorem BridgeObstacle :
+    ∀ (A : Type) (_ : Countable (Oracle A))
+      (_ : Infinite A), False :=
+  fun _ hc hinf => oracle_uncountable hinf hc
 
 /-- The positive, provable half the tournament DOES have: the program
   universe `Nat.Partrec.Code` is countable (Denumerable), and its
