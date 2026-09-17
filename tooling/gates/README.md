@@ -92,6 +92,53 @@ Gate 5 Tier 1 (the vacuity scanner) should be added to CI alongside the hygiene 
 
 Note: this enforces Tier 1 (grep/AST-scannable patterns) only. Tier 2 (`#print axioms`; semantic vacuity) is still the local agent's separate job. "CI green" is necessary, not sufficient, for "Gate 5/6 passed."
 
+## Gate: prose-corruption scanner (`prose_scan.py`, 2026-09-16)
+
+`prose_scan.py` catches the **#101 signature** — words fused where punctuation
+absorbed the following space, and punctuation doubled (`,,`, `;;`, `..`,
+`word:joined`, `word,joined`, `word;joined`, `word)joined`). It is the general
+guard for the case the unicode scanner cannot see: the corruption is plain
+ASCII.
+
+What it scans: Lean **comments** and Lean **string-literal contents** (the
+`#barrier_check` verdict templates are machine-authored prose inside `m!"..."`
+literals, and they carried the signature too); markdown prose (including
+`docs/` and `blockers/`). Code is never flagged. Before matching it blanks
+inline code spans and space-free bracketed groups, so legitimate Lean tuple
+notation (`⟨n,x⟩`, `(true,true)`) is not mistaken for a fused comma; on
+markdown it also skips fenced code blocks (file-level: fences span lines), and
+masks links, URLs (`ghcr.io/...:tag`), and the legitimate `status:available` /
+`File:Line` label tokens. The doubled-period rule requires whitespace after the
+`..`, so it excludes ellipsis (`...`) and path/range forms (`../x`, `Pass 1..n`,
+`U+200E..U+200F`) while still catching #101's canonical `rationale.. Issue` case.
+
+Run: `python3 tooling/gates/prose_scan.py .` — exit 0 clean, 1 violations,
+2 usage error. `--allow-file <path>` is the audited escape hatch. CI runs it on
+the whole tree (scan + unit tests); the unit tests pin the false-positive
+classes (tuples, code spans, ellipsis, ranges, markdown paths/URLs/labels) so a
+future loosening is a test failure.
+
+## Gate: workflow-file integrity scanner (`workflow_scan.py`, 2026-09-16)
+
+`workflow_scan.py` asserts that every `.github/workflows/*.yml` (a) parses
+under `tooling/galaxy/miniyaml.py` (the repo's stdlib parser — no PyYAML), (b)
+has the structure GitHub requires (non-empty `jobs` mapping; `steps` a list of
+mappings; each step carrying exactly one of `uses`/`run`; no unknown step
+keys), and (c) is free of the **#101 corruption signature** — a step-boundary
+token (`- name:`/`- uses:`/`- run:`/…) that does not begin its line, i.e. a
+step swallowed into the preceding scalar.
+
+This exists because that signature reached `.github/workflows/ci.yml` on `dev`
+and three swallowed step boundaries would have made GitHub **reject the whole
+workflow** — a silent failure nothing in the repo caught until a human diffed
+it (`1037101` repaired it; #101 recorded the pattern, #110 landed this guard).
+The unit tests (`tests/test_workflow_scan.py`) include the pre-`1037101`
+corruption as a regression fixture, so a guard that stopped detecting it would
+be a test failure.
+
+Run: `python3 tooling/gates/workflow_scan.py` — exit 0 clean, 1 violations,
+2 usage error. Wired into CI (scan + unit tests).
+
 ## Gate 7 (Tier 1): binder usage / lethality scanner (2026-08-18)
 
 `binder_usage_scan.py` checks that every named parameter, field, and
@@ -112,14 +159,14 @@ shape." Pipeline (`init` → `render` → `check` → `mine`): independent Lean
 renderings of one informal claim are registered in `churn/<slug>/renderings/`,
 pairwise machine-verified equivalent via `dual_render`,ford disagreements
 become **review points** in the review inbox (`review_inbox.py`; one plain-
-language question each),filed as GitHub issues by `review-issue.yml`.
+language question each), filed as GitHub issues by `review-issue.yml`.
 
 **Merge/registration step (`merge <slug>`; 2026-09-07,#25).** Pulls each
 contributor's submission manifest (`churn/<slug>/submissions/<slot>.json`) into
 `renderings/`,then re-runs `check`(+ `churn/<slug>/lemmas.json` if present)
 and `mine` on the merged set. **Idempotent**: re-running is harmless — re-
 registration overwrites the same `<id>.json`,check rewrites `matrix.json`,and
-`mine` dedupes review points by stable key (`run` + `decl` pair),so no
+`mine` dedupes review points by stable key (`run` + `decl` pair), so no
 duplicate pending points nor GitHub issues are filed (the #7-#16 double-
 filing bug class; see `review-issue.yml`'s inbox-id dedupe).
 
@@ -179,12 +226,12 @@ Asserts the four `#barrier_check` verdicts logged by
   - `nonRelativizingControl`  -> "Inconclusive"
 
 The elaborator's verdict print via `logInfo`;CI's build step `tee`s its output
-to a log file,then the harness runs on that log and fails if any expected
+to a log file, then the harness runs on that log and fails if any expected
 verdict segment is missing or wrong - so a regression (a DEAD flipping to
 Inconclusive, an instance that stops synthesizing, a message rewrite) kills
 the build mechanically. Dash-family chars are folded before matching
 (terminal/encoding-tolerant). Unit tests: `tests/test_barrier_check_test.py`
-(stdlib, no Lean,no secrets).
+(stdlib, no Lean, no secrets).
 
 Usage: `python3 barrier_check_test.py <build-log>` (or `--run-lake [MODULE]`
 to build locally first). See `docs/STATEMENTS/BarrierCheckVerdicts.spec.md`.

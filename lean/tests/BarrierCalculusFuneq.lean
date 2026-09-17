@@ -18,7 +18,7 @@ The in-module `example`s already assert the Relativizing synthesis at build time
 public API so a regression kills the build (CI runs `lake build` over `lean/`).
 -/
 
-/-- The `funeq` atom relativizes:two fixed predicates' equality is
+/-- The `funeq` atom relativizes: two fixed predicates' equality is
   oracle-oblivious regardless of how their fibers are marked. -/
 example (O : Type) (_A : PleaNP.Calculus.AbstOracle O) (L1 L2 : O → Prop) :
     PleaNP.Calculus.Relativizing ( L1 = L2) :=by

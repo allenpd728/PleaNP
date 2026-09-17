@@ -102,7 +102,7 @@ monomial witnesses 1 there. The reducer rewrites a gate's *witness set*:
 - `or a b` -> `smOr (approximate a) (approximate b)`;
 - `and a b` -> `smAnd (approximate a) (approximate b)`.
 
-The load-bearing structural lemmas (proven v1):the sm-OR membershp
+The load-bearing structural lemmas (proven v1): the sm-OR membershp
 identity (union semantics), the sm-AND membership identity (pairwise
 union form), and the reducibility lemma (the approximation's size is at
 most the circuit's sizeembedded in the product/union expressions).

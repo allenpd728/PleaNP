@@ -153,13 +153,13 @@ from the Lean renderings, each with:
 
 The contract is the same one-wrong-ao-blocked rule as every probe check: one wrong
 answer = the claim is wrong. The batch narrative (if present) recaps why two
-renderings diverged,so you never need to reassemble the disagreement from
+renderings diverged, so you never need to reassemble the disagreement from
 scattered labels.
 
 **Rule:** any disagreement that cannot be decomposed into >= 3 concrete probes
 returns to the agents as 'not yet reviewable' - no intent-ratification anywhere.
 
-The probes appear inside the review issue body (and in `reviews/INBOX.md`),so
+The probes appear inside the review issue body (and in `reviews/INBOX.md`), so
 you answer them the same way: `confirm` when every answer matches your reading;
 `flag <reason>` otherwise (the claim reopens). Nothing else changes.
 

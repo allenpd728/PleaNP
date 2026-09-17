@@ -133,9 +133,9 @@ tiny, independent, single-choice probes, derived mechanically from the Lean
 renderings, each with a concrete `question`, labeled `choices`, a `hint` / inline `gloss`,
 and the machine-derived `expected` answer (from the Lean, not the informal wish).
 
-The one-wrong-ao-blocked contract applies unchanged:one wrong answer = the
+The one-wrong-ao-blocked contract applies unchanged: one wrong answer = the
 claim is wrong. The `batch_narrative` (if present) recaps why the renderings
-diverged,so you never reassemble the disagreement from scattered labels.
+diverged, so you never reassemble the disagreement from scattered labels.
 
 **Rule:** any disagreement that cannot be decomposed into >= 3 concrete probes
 returns to the agents as 'not yet reviewable' - no intent-ratification anywhere.
