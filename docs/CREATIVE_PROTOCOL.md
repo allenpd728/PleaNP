@@ -51,19 +51,19 @@ absurdity.
 
 ### Phase 2.5 — Constraint-Net Cartography (the executable-filter step, DEC-023)
 
-**Where this comes from:** the 2026-09-08 Navier-Stokes releases' deepest creativity-strategy lesson(`docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §3/§5): OpenAI's scale jump between their Euler disproof (~100 agents/50h)and the NS proof(~10,000/88h)was NOT "bigger compute" — it was **constraint density**:NS's smooth-forcing + finite-energy + exact-residual-cancellation net is much denser — each constraint is a cheap filter that rejects most candidates — so the parallel search could concentrate on the residual freedom.
+**Where this comes from:** the 2026-09-08 Navier-Stokes releases' deepest creativity-strategy lesson(`docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §3/§5): OpenAI's scale jump between their Euler disproof (~100 agents/50h) and the NS proof(~10,000/88h)was NOT "bigger compute" — it was **constraint density**:NS's smooth-forcing + finite-energy + exact-residual-cancellation net is much denser — each constraint is a cheap filter that rejects most candidates — so the parallel search could concentrate on the residual freedom.
 
-The engineering:**compile the independent constraint net into cheap machine-checkable rejectors *before/during* creative search**,so the space of genuinely-hard candidates shrinks to something searchable. A green Lean build is an *late* rejector(checking only the final candidate);the point here is to make the constraints *early* rejectors,each one executable against partial candidates as cheaply as possible.
+The engineering:**compile the independent constraint net into cheap machine-checkable rejectors *before/during* creative search**,so the space of genuinely-hard candidates shrinks to something searchable. A green Lean build is an *late* rejector(checking only the final candidate);the point here is to make the constraints *early* rejectors, each one executable against partial candidates as cheaply as possible.
 
 
 
-**Procedure:**for each hard,rung-9/11-shaped creative task:
+**Procedure:**for each hard, rung-9/11-shaped creative task:
 
 1. **Enumerate the full independent-constraint net** the construction must satisfy (the analogues of "smooth force","bounded energy","exact residual cancellation","periodic-or-whole-space","computable oracle","set-extensional equality".).
-2. **For each constraint,specify an automated rejector** — a cheap,machine-checkable test that runs *before/during* creative search and rejects most candidates(where a constraint can't yet be automated,write it down as a PRIMARY automation target for the rung — the rejector is the deliverable,not a side-effect).
-3. **PleaNP-owned proto-rejectors to reuse/stack:**`#barrier_check`(a relativizing proof-is DEAD),the validation suite's must-refute lemmas,the Comparator references(DEC-022),and soon:the load-bearing-choice audit(DEC-023,`docs/VALIDATION_SUITE.md` §"Load-bearing-choice audit")— each is one more cheap filter.
+2. **For each constraint, specify an automated rejector** — a cheap, machine-checkable test that runs *before/during* creative search and rejects most candidates(where a constraint can't yet be automated, write it down as a PRIMARY automation target for the rung — the rejector is the deliverable, not a side-effect).
+3. **PleaNP-owned proto-rejectors to reuse/stack:**`#barrier_check`(a relativizing proof-is DEAD), the validation suite's must-refute lemmas, the Comparator references(DEC-022),and soon: the load-bearing-choice audit(DEC-023,`docs/VALIDATION_SUITE.md` §"Load-bearing-choice audit")— each is one more cheap filter.
 
-4. **Only the residual freedom goes to creative search**(the agentic/protocol-driven search of Phases 3–5)—with the rejection traces kept as evidence thatthe search was constraint-guided,not free-form(that is what separates "compile-time-constrained search" from "post-hoc-selected construction";see `docs/STATEMENTS/ProofIntuition.template.md` §3–§4).
+4. **Only the residual freedom goes to creative search**(the agentic/protocol-driven search of Phases 3–5)—with the rejection traces kept as evidence thatthe search was constraint-guided, not free-form(that is what separates "compile-time-constrained search" from "post-hoc-selected construction";see `docs/STATEMENTS/ProofIntuition.template.md` §3–§4).
 
 
 **Output:**the constraint-net map + one automated rejector spec per constraint + the residual-freedom description(what the creative search may still choose -- and what it may NOT,which is equally load-bearing).

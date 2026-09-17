@@ -37,7 +37,8 @@ lean_lib «PleaNP» where
   builds the suite; the runnable `test` exe (root `tests.Basic`,
   depends on this lib) links it. -/
 lean_lib tests where
-  roots := #[`tests.OracleV5, `tests.BarrierCalculusFuneq]
+  roots := #[`tests.OracleV5, `tests.BarrierCalculusFuneq,
+    `tests.LowerBoundCompilerGuards]
 
 lean_exe test where
   root := `tests.Basic

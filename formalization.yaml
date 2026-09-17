@@ -159,6 +159,19 @@ status:
      - "Classical.choice"
      - "Quot.sound"
    status: "validated-in-ci"
+ - description: >-
+     Lower-Bound Compiler (Rung 8, issue #80 Pass 2): the #lower_bound_compile
+     elaborator skeleton over the Williams transfer — contract shape/sorryAx
+     guards + dependency-closure and axiom reporting + the conditional emission
+     (clean, green in CI; the full contract emission waits on the #98 sub-lemma)
+   declaration: "PleaNP.Barriers.Williams.williams_lower_bound_compiled"
+   file: "lean/PleaNP/Barriers/LowerBoundCompiler.lean"
+   sorry_count: 0
+   axioms:
+     - "propext"
+     - "Classical.choice"
+     - "Quot.sound"
+   status: "validated-in-ci"
 
 automation:
  methods:

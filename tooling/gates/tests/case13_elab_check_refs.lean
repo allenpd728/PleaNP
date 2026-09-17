@@ -8,7 +8,7 @@
 -- (which the old split put inside `checkedDecl`'s OWN block → hidden).
 --
 -- Expected with the #2-aware split: ZERO findings (the two pseudo-blocks act as
--- reference sources;and `elab`/`check` pseudo-kinds are never flagged themselves),
+-- reference sources; and `elab`/`check` pseudo-kinds are never flagged themselves),
 -- exit  0, even without --allow-unreferenced.
 
 namespace PleaNP.Mock
@@ -17,7 +17,7 @@ namespace PleaNP.Mock
 def helperStatic (q : Nat) (oracle : Nat → Bool) : Nat :=
   if oracle q = true then q else 0
 
-/-- Scripted check target:referenced only by the `#barrier_check` line below. -/
+/-- Scripted check target: referenced only by the `#barrier_check` line below. -/
 theorem checkedDecl : ∀ x : Nat, x ≤ x +  1 :=by
   intro x
   omega

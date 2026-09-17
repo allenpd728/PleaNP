@@ -9,7 +9,7 @@ set_option warningAsError true
 `n` with `p.eval n < 2 ^ n`. This fuels the BGS tournament's
 "unqueried n-bit string exists" step.
 
-Pure arithmetic — no oracle substrate involved,so this module stays
+Pure arithmetic — no oracle substrate involved, so this module stays
 substrate-free.
 -/
 

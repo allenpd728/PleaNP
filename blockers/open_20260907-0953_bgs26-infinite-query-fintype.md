@@ -38,9 +38,9 @@ So any machine witnessing #26 forces, by transport along `hΓ`,
   Fintype (Bits n) := by infer_instance` compiles`..
 - `Fintype Query` synthesis fails, and can never exist: `Nat` injects into `Query`
   via the all-false strings `n ↦ ⟨n, fun _ => false⟩` (pairwise-distinct length
-  tags),so `Query` hosts an infinite family — `Infinite Query` (infinitude
+  tags), so `Query` hosts an infinite family — `Infinite Query` (infinitude
   argument per `Data/Finite/Defs.lean` / `Data/Set/Finite/Basic.lean`;the direct
-  synthesis refusal was observed in Lean v4.31.0/Mathlib v4.31.0)..
+  synthesis refusal was observed in Lean v4.31.0/Mathlib v4.31.0).
 
 ```
 

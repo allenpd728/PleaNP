@@ -25,15 +25,15 @@ human judgment into a typechecking question (Baker--Gill--Solovay, BGS 1975).
 
   Function-level equality/inequality (`p = q`, `p ≠ q` for
     `p q : α → Prop`) are treated as oracle-oblivious atoms(unconditional
-    `Relativizing.funeq` / `Relativizing.funne`):the equality of two FIXED
-    predicates reports on the functions themselves,not on any oracle query. A
-    pointwise-propagation design(`(x : α) → Relativizing (p x)`):is
-    not viable for the abstract binders:under `∃ L`,the per-fiber goal
+    `Relativizing.funeq` / `Relativizing.funne`): the equality of two FIXED
+    predicates reports on the functions themselves, not on any oracle query. A
+    pointwise-propagation design(`(x : α) → Relativizing (p x)`): is
+    not viable for the abstract binders: under `∃ L`,the per-fiber goal
     `Relativizing (L x)` would leave the witness-oracle `A` unconstrained
-    (absent from the goal),so instance synthesis could never discharge it.
+    (absent from the goal), so instance synthesis could never discharge it.
     The `funeq`/`funne` instances are deliberately unconditional (see their
-    inline notes below for the full rationale.. Issue #1 requested pointwise
-    propagation phrasing,but the unconditional form is what makes the DEAD
+    inline notes below for the full rationale. Issue #1 requested pointwise
+    propagation phrasing, but the unconditional form is what makes the DEAD
     verdict synthesize on the restored `abstractPVsNP` statement — the
     restoration of `L1 = L2 ∨ L1 ≠ L2`,which is the issue's core DoD.
 
@@ -58,7 +58,7 @@ all four `#barrier_check` unit tests produce the intended verdicts. The two
 false positives — both are referenced from inside the elaborator command /
 `#barrier_check` invocation. As of #2 (2026-09-07), the `binder_usage_scan`
 now treats `elab_rules` bodies and `#barrier_check <id>` invocations as
-reference sources,so these two REVIEW items are gone — see
+reference sources, so these two REVIEW items are gone — see
 `tooling/gates/binder_usage_scan.py` and `tooling/gates/tests/case13_elab_check_refs.lean`.
 -/
 
@@ -66,56 +66,56 @@ namespace PleaNP
 
 namespace Calculus
 
-/-- Abstract oracle:total function from queries to yes/no(one step,,and step-counting
+/-- Abstract oracle: total function from queries to yes/no(one step, and step-counting
   of the machine is oracle-oblivious — the relativization-relevant property).
   Stand-in for the concrete `Oracles.Oracle` of `Oracle.lean` (which is v3,
-  typed but not yet validated;keep this file buildable standalone,. -/
+  typed but not yet validated; keep this file buildable standalone,. -/
 abbrev AbstOracle (Q : Type) : Type := Q → Bool
 
-/-- An oracle-relative atom:the oracle answers every query"yes."Nontrivial
-  (constrains A),not vacuous;;and uniform in the oracle by construction. -/
+/-- An oracle-relative atom: the oracle answers every query"yes."Nontrivial
+  (constrains A), not vacuous; and uniform in the oracle by construction. -/
 def RelAtom ( O : Type) (A : AbstOracle O) : Prop :=
   ∀ q : O, A q = true
 
 /-- An oracle-relative language atom (stand-in for membership of an
-  oracle-relative class:the language L at point x is the oracle's answer..
+  oracle-relative class: the language L at point x is the oracle's answer.
   This is the abstract seed shape of `P^A`/`NP^A` membership statements. -/
 def LangAtom ( O : Type) (A : AbstOracle O) (L : O → Prop) : Prop :=
   ∀ x : O, (L x ↔ A x = true)
 
-/-- Prop-carrying marker:the construction relativizes — i.e. its proof/definition
-  is uniform in the oracle,and its step-counting never inspects the oracle. -/
+/-- Prop-carrying marker: the construction relativizes — i.e. its proof/definition
+  is uniform in the oracle, and its step-counting never inspects the oracle. -/
 class Relativizing (α : Sort u) : Prop where
 
-/-- Seed instance:relativizing oracle atom. -/
+/-- Seed instance: relativizing oracle atom. -/
 instance Relativizing.relAtom {O : Type} {A : AbstOracle O} :
     Relativizing ( RelAtom O A) := ⟨⟩
 
-/-- Seed instance:relativizing language atom. -/
+/-- Seed instance: relativizing language atom. -/
 instance Relativizing.langAtom {O : Type} {A : AbstOracle O} {L : O → Prop} :
     Relativizing ( LangAtom O A L) := ⟨⟩
 
-/-- Propagation:conjunction. -/
+/-- Propagation: conjunction. -/
 instance Relativizing.and {p q : Prop} [Relativizing p] [Relativizing q] :
     Relativizing ( p ∧ q) := ⟨⟩
 
-/-- Propagation:disjunction. -/
+/-- Propagation: disjunction. -/
 instance Relativizing.or {p q : Prop} [Relativizing p] [Relativizing q] :
     Relativizing ( p ∨ q) := ⟨⟩
 
-/-- Propagation:implication. -/
+/-- Propagation: implication. -/
 instance Relativizing.imp {p q : Prop} [Relativizing p] [Relativizing q] :
     Relativizing ( p → q) := ⟨⟩
 
-/-- Propagation:iff. -/
+/-- Propagation: iff. -/
 instance Relativizing.iff {p q : Prop} [Relativizing p] [Relativizing q] :
     Relativizing ( p ↔ q) := ⟨⟩
 
-/-- Propagation:negation. -/
+/-- Propagation: negation. -/
 instance Relativizing.not {p : Prop} [Relativizing p] :
     Relativizing ( ¬ p) := ⟨⟩
 
-/-- Propagation:universal quantification.(The instance binder is itself
+/-- Propagation: universal quantification.(The instance binder is itself
   a typeclass-family over the bound variable;,so instance search recursively
   checks each fiber `p a`. -/
 instance Relativizing.forall {α : Sort u} {p : α → Prop}
@@ -123,69 +123,69 @@ instance Relativizing.forall {α : Sort u} {p : α → Prop}
 
 
 
-/-- Propagation:existential quantification. -/
+/-- Propagation: existential quantification. -/
 instance Relativizing.exists {α : Sort u} {p : α → Prop}
     [_h : (a : α) → Relativizing (p a)] : Relativizing (∃ a, p a) := ⟨⟩
 
 
 
-/-- Propagation:equality of relativizing propositions. -/
+/-- Propagation: equality of relativizing propositions. -/
 instance Relativizing.eq {p q : Prop} [Relativizing p] [Relativizing q] :
     Relativizing ( p = q) := ⟨⟩
 
 
 
-/-- Propagation:inequality of relativizing propositions. -/
+/-- Propagation: inequality of relativizing propositions. -/
 instance Relativizing.ne {p q : Prop} [Relativizing p] [Relativizing q] :
     Relativizing ( p ≠ q) := ⟨⟩
 
 
 
-/-- Propagation:equality of functions into `Prop`. The equality of two
-  FIXED predicates is oracle-oblivious:itreports on the functions themselves,
+/-- Propagation: equality of functions into `Prop`. The equality of two
+  FIXED predicates is oracle-oblivious: itreports on the functions themselves,
   not on any oracle query — soit is relativizing unconditionally. Pointwise
-  `Relativizing (p x)` hypotheses cannot be required here:for the abstract
-  oracle-relative binders (`L : O → Prop` under `∃ L`),the per-fiber goal
+  `Relativizing (p x)` hypotheses cannot be required here: for the abstract
+  oracle-relative binders (`L : O → Prop` under `∃ L`), the per-fiber goal
   `Relativizing (L x)` would leave the witness-oracle `A` unconstrained
-  (it does not occur in the goal),so instance synthesis could never
+  (it does not occur in the goal), so instance synthesis could never
   discharge it. The seed marker discipline already marks whole atom statements
   (e.g. `LangAtom O A L`) as relativizing without decomposing into
-  fibers;the function-equality claim is uniformly oracle-oblivious and gets
+  fibers; the function-equality claim is uniformly oracle-oblivious and gets
   the marker unconditionally. -/
 instance Relativizing.funeq {α : Sort u} {p q : α → Prop} :
     Relativizing ( p = q) := ⟨⟩
 
 
 
-/-- Propagation:inequality of functions into `Prop` (same oracle-oblivious
+/-- Propagation: inequality of functions into `Prop` (same oracle-oblivious
   rationale as `funeq`). -/
 instance Relativizing.funne {α : Sort u} {p q : α → Prop} :
     Relativizing ( p ≠ q) := ⟨⟩
 
 
 
-/-- P-vs-NP shape marker:the proposition `p` claims equality or inequality of
+/-- P-vs-NP shape marker: the proposition `p` claims equality or inequality of
   the (abstract) oracle-relative classes — the shape a BGS barrier applies to.
   Concrete `P^A = NP^A`/`P^B ≠ NP^B` statements obtain this marker when
-  rendered;the abstract unit tests below mark example shapes. -/
+  rendered; the abstract unit tests below mark example shapes. -/
 class PVsNPShaped (p : Prop) : Prop where
 
-/-- The time hierarchy theorem stand-in (unit-test target):the construction is
-  genuinely relativizing — THH holds relative to any oracle with the same proof,so
+/-- The time hierarchy theorem stand-in (unit-test target): the construction is
+  genuinely relativizing — THH holds relative to any oracle with the same proof, so
   instance search must synthesize `Relativizing thhStatement` purely from the
-  propagation instances above(no per-theorem annotation.. It is NOT
+  propagation instances above(no per-theorem annotation. It is NOT
   P-vs-NP-shaped(THH doesn't separate P from NP;,so `#barrier_check` must
-  answer "relativizes;not P-vs-NP-shaped → Inconclusive". -/
+  answer "relativizes; not P-vs-NP-shaped → Inconclusive". -/
 @[reducible] def thhStatement : Prop :=
   ∀ (O : Type) (A : AbstOracle O),
     ∃ L : O → Prop, LangAtom O A L
 
-/-- The abstract P-vs-NP-shaped claim(DEAD case:tehis a relativizing,
+/-- The abstract P-vs-NP-shaped claim(DEAD case: tehis a relativizing,
   P-vs-NP-shaped statement — `#barrier_check` must answer "DEAD:.this proof
   relativizes". The conclusion claims class-scale equality/inequality of the
   two oracle-relative languages `L1 L2 : O → Prop` (function-level
-  `=`,`≠`,not propositional):the `Relativizing.funeq`/`funne` instances
-  propagate throughthe shape,andevery leaf relativizes. The marker comes
+  `=`,`≠`,not propositional): the `Relativizing.funeq`/`funne` instances
+  propagate throughthe shape, andevery leaf relativizes. The marker comes
   from the explicit `PVsNPShaped` instance declared below(not from the body,. -/
 @[reducible] def abstractPVsNP : Prop :=
   ∀ (O : Type) (A : AbstOracle O),
@@ -203,26 +203,26 @@ instance : PVsNPShaped abstractPVsNP := ⟨⟩
 @[reducible] def plainRelHeuristic : Prop :=
   ∀ (O : Type) (A : AbstOracle O), RelAtom O A
 
-/-- Sanity:the THH stand-in relativizes(auto-synthesized.. -/
+/-- Sanity: the THH stand-in relativizes(auto-synthesized. -/
 example : Relativizing thhStatement := by
   infer_instance
 
 
 
-/-- Sanity:the P-vs-NP-shaped claim relativizes(and is marked shaped.. -/
+/-- Sanity: the P-vs-NP-shaped claim relativizes(and is marked shaped. -/
 example : Relativizing abstractPVsNP := by
   infer_instance
 
 
 
-/-- Sanity:the plain heuristic relativizes. -/
+/-- Sanity: the plain heuristic relativizes. -/
 example : Relativizing plainRelHeuristic :=by
   infer_instance
 
 
 
-/-- Sanity:function-level equality/inequality of oracle-relative predicates
-  relativizes:the `Relativizing.funeq`/`funne` instances carry the marker
+/-- Sanity: function-level equality/inequality of oracle-relative predicates
+  relativizes: the `Relativizing.funeq`/`funne` instances carry the marker
   through the `=`,`≠` atoms unconditionally(the oracle-oblivious rationale above),
   so no pointwise fiber markers are needed for the disjunction to synthesize. -/
 example (O : Type) (_A : AbstOracle O) (L1 L2 : O → Prop) :
@@ -233,16 +233,16 @@ example (O : Type) (_A : AbstOracle O) (L1 L2 : O → Prop) :
 
 open Lean Elab Command Meta
 
-/-- The target expression for a `#barrier_check`ed declaration:for a definition
-  (the three unit-test statements are `def`s),the *body* is the proposition to
-  check;fallback to the declared type(theorem-valued constants store no body.. -/
+/-- The target expression for a `#barrier_check`ed declaration: for a definition
+  (the three unit-test statements are `def`s), the *body* is the proposition to
+  check; fallback to the declared type(theorem-valued constants store no body. -/
 def checkTarget (cinfo : ConstantInfo) : Expr :=
   match cinfo with
   | .defnInfo v => v.value
   | _ => cinfo.type
 
 /-- Try to synthesizea typeclass instance for `classNm` applied to `t`;
-  returns whether synthesis succeeded(in `MetaM`,no throw.. -/
+  returns whether synthesis succeeded(in `MetaM`,no throw. -/
 def hasInstance (classNm : Name) (numLevels : Nat) (t : Expr) : MetaM Bool := do
   let levels := (List.finRange numLevels).map (fun _ => Lean.Level.zero)
   let type := mkApp (mkConst classNm levels) t
@@ -256,8 +256,8 @@ def hasInstance (classNm : Name) (numLevels : Nat) (t : Expr) : MetaM Bool := do
 
 /-- The `#barrier_check` elaborator command. Walks the statement's dependence
   graph via typeclass instance synthesis(no manual closure walk needed — the
-  kernel's instance search *is* the walk,,propagating `Relativizing` through the
-  composition/quantification instances above.. -/
+  kernel's instance search *is* the walk, propagating `Relativizing` through the
+  composition/quantification instances above. -/
 syntax "#barrier_check " ident : command
 
 elab_rules : command
@@ -273,13 +273,13 @@ elab_rules : command
       pure (n, rel, shaped)
     if rel then
       if shaped then
-        logInfo m!"#barrier_check {n}: DEAD — this proof relativizes, and concludes a P-vs-NP-shaped claim;so BGS rules it out."
+        logInfo m!"#barrier_check {n}: DEAD — this proof relativizes, and concludes a P-vs-NP-shaped claim; so BGS rules it out."
       else
         logInfo m!"#barrier_check {n}: relativizes, not P-vs-NP-shaped → Inconclusive as a P-vs-NP blocker."
     else
-      logInfo m!"#barrier_check {n}: Inconclusive — no Relativizing instance on this statement;so it is not ruled out by BGS."
+      logInfo m!"#barrier_check {n}: Inconclusive — no Relativizing instance on this statement; so it is not ruled out by BGS."
 
-/- Unit-test invocations(the local agent runs these;the elaborator must log:
+/- Unit-test invocations(the local agent runs these; the elaborator must log:
   `#barrier_check thhStatement`        → "relativizes(;not P-vs-NP-shaped"
   `#barrier_check abstractPVsNP`        → "DEAD — this proof relativizes"
   `#barrier_check plainRelHeuristic`    → "relativizes(;not P-vs-NP-shaped"
@@ -288,9 +288,9 @@ elab_rules : command
 #barrier_check abstractPVsNP
 #barrier_check plainRelHeuristic
 
-/-- A non-relativizing control:an arbitrary arithmetical statement with no
+/-- A non-relativizing control: an arbitrary arithmetical statement with no
   `Relativizing` instance — `#barrier_check` must answer "Inconclusive"
-  (it contains no oracle-relative atoms,,so instance search finds nothing.). -/
+  (it contains no oracle-relative atoms, so instance search finds nothing.). -/
 theorem nonRelativizingControl : ∀ x : Nat, x ≤ x +  1 :=by
   intro x
   omega
