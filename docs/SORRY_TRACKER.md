@@ -106,7 +106,18 @@ One tracked sorry:
 
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 12 | `lean/PleaNP/Barriers/DiagonalAssembly.lean:72` | `exists_separating_oracle_assembly` - the assembled "exists B, P_A B != NP_A B" (the BGS clause-(b) target #9). Needs the Machine-to-Code bridge (#23/#97 gap: poly-time oracle machines into Partrec.Code) plus the stage/tournament composition of the Diagonal* modules. | #23/#97 gap (Machine-to-Code bridge) + compose stage_step_exists over M_of-indices. | High when the bridge lands |
+| 12 | `lean/PleaNP/Barriers/DiagonalAssembly.lean:72` | `exists_separating_oracle_assembly` - the assembled "exists B, P_A B != NP_A B" (the BGS clause-(b) target #9). Needs the Machine-to-Code bridge (#23/#97 gap: poly-time oracle machines into Partrec.Code) plus the stage/tournament composition of the Diagonal* modules. **Re-scoped by #118**: the `DiagonalBridge` note that the bridge was blocked by the uncountability of the oracle space is misplaced — `P_A`/`NP_A` witnesses **pin** `M.oracle = A` (proved: `DiagonalSyntax.mem_P_A_oracle_pinned`), and `DiagonalSyntax.machineEquiv` localizes the uncountable content in the `oracle`/`decode` factors while the program factor is finite (`Fintype` proved). What remains is the routine modeling step: fix a concrete machine family + canonical `decode`, then enumerate. | Concrete machine family + canonical `decode` (modeling step, #118) + compose stage_step_exists over the enumeration. | High |
+
+### Machine-syntax factorization (DiagonalSyntax.lean, new — #118)
+
+`lean/PleaNP/Barriers/DiagonalSyntax.lean` is **zero-sorry** and records the
+corrected BGS-bridge analysis: `MachineSyntax tm` (the machine's label triple)
+is `Fintype` (proved), `machineEquiv` factors
+`Machine Q tm ≃ MachineSyntax tm × Oracle Q × (List (Γ k₀) → Q)` — localizing
+the uncountable content in the `oracle`/`decode` factors — and
+`mem_P_A_oracle_pinned` / `mem_NP_A_oracle_pinned` prove that a `P_A`/`NP_A`
+witness carries `M.oracle = A` (so the oracle is not a degree of freedom in the
+diagonalization's enumeration). No `sorry`; no proof debt.
 
 ### Monotone / Rung-4 model level (issue #74 Pass 1, 2026-09-13)
 
