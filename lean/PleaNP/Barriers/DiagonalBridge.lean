@@ -4,24 +4,36 @@ import PleaNP.Computability.Oracle
 set_option warningAsError true
 
 /-!
-# BGS (b): the Machine-to-Code bridge — the honest obstacle
+# BGS (b): the Machine-to-Code bridge — the obstacle, localized (issue #118)
 
-A faithful `Machine → Code` compiler is the tournament's last gap. But
-there is a genuine mathematical obstruction worth making precise BEFORE
-any compiler work: **the oracle function space `Oracle Q = Q → Bool` is
-NOT countable when `Q` is infinite** (Cantor's diagonal: `2^Q` is
-uncountable). Hence the raw `Machine Q tm` type is not countable either
-— a machine carries an arbitrary oracle function.
+A faithful `Machine → Code` compiler is the tournament's last gap. This module
+used to record the obstruction as "*the raw `Machine Q tm` type carries an
+arbitrary oracle `Q → Bool`, uncountable for infinite `Q`, so a faithful
+bijective `Machine → Code` is IMPOSSIBLE and 'detect P or punt' is REQUIRED*".
 
-This is exactly why the design doc §3.2 says the `Partrec.Code` bridge
-"must detect `P` or punt": you cannot enumerate ALL oracle machines as
-`Code`s (there are uncountably many); you enumerate only what the
-diagonalization needs (poly-time machines with a fixed, queried oracle),
-or you weaken to the `M_of`-indexed partial-recursive programs and PUNT
-the rest.
+**That analysis is misplaced for the statement the tournament needs**, and
+`DiagonalSyntax` (#118) records the correction with proofs:
 
-This module pins the obstacle with a Cantor-style uncountability proof,
-so nobody can substitute a fake "machine set is countable" claim.
+- The witnesses of `P_A A` / `NP_A A` pin the oracle by an explicit conjunct
+  (`M.oracle = A` in `OracleComplexity.lean`), so the oracle is **not** a
+  degree of freedom when the diagonalization quantifies over "every poly-time
+  machine with oracle `B`" (which is what `U_B ∉ P_A B` means). Its
+  uncountability cannot be the obstruction to enumerating *those* witnesses.
+- `DiagonalSyntax.machineEquiv` factors a machine as
+  `Machine Q tm ≃ MachineSyntax tm × Oracle Q × (List (Γ k₀) → Q)`. This
+  **localizes** the (possibly uncountable) content in the `oracle`/`decode`
+  factors; the `MachineSyntax` factor is finite (`Fintype` proved).
+- `DiagonalSyntax.mem_P_A_oracle_pinned` makes the pinning explicit.
+
+What actually remains is a *routine modeling step*, not an impossibility: the
+witnesses also carry `tm' : FinTM2` (whose fields include types `Λ`, `σ`, `K`,
+`Γ`, so `FinTM2` is not itself a set to enumerate) plus `decode`, `ea`, `oa`.
+Enumerating those means **fixing a concrete machine family and a canonical
+`decode`** — a modeling choice with a routine resolution. "Punt slow codes" is
+one option among several, not a requirement.
+
+(Historical note: the Cantor fact below is still true about the *bundled*
+`Machine` type; it is simply not the obstruction it was recorded as being.)
 -/
 
 namespace PleaNP
@@ -33,17 +45,16 @@ namespace DiagonalBridge
 open PleaNP.Oracles
 open Turing
 
-/-- The honest obstacle, recorded precisely: `Machine tm Q` is NOT
-  countable in the settings the tournament needs. It carries
-  (a) an oracle `Q → Bool` — uncountable for infinite Q (Cantor: a
-      countable enumeration would miss the diagonal-flip function), and
-  (b) a decode `List (Γ k₀) → Q` — an infinite-domain function space even
-      for finite Q.
-  Hence a faithful bijective `Machine → Code` (for BGS's infinite
-  `Q = Σ n, Bits n`) is IMPOSSIBLE; the design doc §3.2's "detect P or
-  punt" reduction (enumerate `Code`s and index only the needed
-  poly-time machines, punting the rest) is REQUIRED, not optional. This
-  is the exact obstacle the #23/#97 bridge must overcome. -/
+/-- The Cantor fact, recorded precisely: the *bundled* `Machine Q tm` type
+  carries an oracle `Q → Bool` — uncountable for infinite Q (Cantor: a
+  countable enumeration would miss the diagonal-flip function) — and a decode
+  `List (Γ k₀) → Q`, an infinite-domain function space even for finite Q.
+
+  So the bundled `Machine` type is not countable. **But** this is about the
+  bundled type, NOT about the `P_A`/`NP_A` witnesses the tournament
+  enumerates: those pin `oracle = A` (see `DiagonalSyntax`), so they do not
+  range over the `oracle` factor at all. The earlier reading of this fact as
+  "the bridge is impossible" was wrong for the statement at hand (#118). -/
 def BridgeObstacle : Prop :=
   ∀ (A : Type) (_ : Countable (Oracle A))
     (_ : Infinite A), False
