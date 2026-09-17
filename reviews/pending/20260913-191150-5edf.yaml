@@ -10,3 +10,4 @@ module: atom,pw
 question: On the concrete oracle-varied example, the equality L1 = L2 still relativizes without marking the individual fibers L1 x, L2 x. Was the marker intended to be an unconditional oracle-oblivious atom (as implemented), or to require pointwise propagation from the fibers (as originally requested in #1)? Reply confirm for the as-implemented unconditional-atom reading, or flag <reason> if the pointwise reading was intended.
 run: multi-rendering-marker-funeq
 status: pending
+control_of: none
