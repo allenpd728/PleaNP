@@ -81,5 +81,44 @@ class TestSyncPending(unittest.TestCase):
         self.assertEqual(sp.inbox_id_of("/a/b/x-1.yaml"), "x-1")
 
 
+class TestWorkflowQuery(unittest.TestCase):
+    """The dedupe is only as good as the issue list fed to it (#115 regression).
+
+    The workflow originally collected the "already filed" set with
+    `gh issue list --label "review:pending,review:flagged"`. `gh` treats a
+    comma list (and repeated `--label` flags) as an **AND**, and no issue
+    carries both labels — so it returned `[]`, the matcher saw an empty list,
+    and every push refiled every pending point (#123/#124). These tests pin the
+    query form so a silent regression fails the build.
+    """
+
+    WF = (REPO / ".github" / "workflows" / "review-issue.yml")
+
+    def test_workflow_uses_an_or_search_not_a_comma_label(self):
+        text = self.WF.read_text(encoding="utf-8")
+        self.assertIn("label:review:pending OR label:review:flagged", text,
+                      "the sync-pending job must query both labels with an explicit OR")
+        self.assertNotIn('--label "review:pending,review:flagged"', text,
+                         "a comma --label is an AND and returns [] — the #115 regression")
+
+    def test_gh_label_comma_is_and(self):
+        """Document the semantics the fix depends on (skipped if gh is absent)."""
+        import shutil
+        import subprocess
+        if shutil.which("gh") is None:
+            self.skipTest("gh not installed")
+        # A comma list of two labels no issue carries both of must be empty.
+        r = subprocess.run(
+            ["gh", "issue", "list", "--repo", "allenpd728/PleaNP",
+             "--label", "review:pending,review:flagged", "--state", "open",
+             "--limit", "5", "--json", "number"],
+            capture_output=True, text=True, timeout=60)
+        if r.returncode != 0:
+            self.skipTest(f"gh unavailable/unauth: {r.stderr.strip()[:80]}")
+        self.assertEqual(r.stdout.strip(), "[]",
+                         "gh comma-label is expected to be AND (empty here); "
+                         "if gh changed to OR, this guard needs revisiting")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -73,8 +73,15 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          existing=$(gh issue list --repo "$REPO" --label "review:pending,review:flagged" \
-                     --state open --limit 100 --json title,body 2>/dev/null || echo '[]')
+          # Collect issues under EITHER review label. NOTE: `gh issue list
+          # --label a,b` (and repeated --label flags) is an AND, and no issue
+          # carries both labels, so it returns [] — which silently emptied the
+          # "already filed" set and made the dedupe below a no-op. That is the
+          # #115 regression found via #123/#124; `--search` with an explicit OR
+          # is the correct query.
+          existing=$(gh issue list --repo "$REPO" \
+                       --search 'label:review:pending OR label:review:flagged' \
+                       --state open --limit 100 --json title,body 2>/dev/null || echo '[]')
           printf '%s' "$existing" > /tmp/existing.json
           for f in reviews/pending/*.yaml; do
             [ -e "$f" ] || continue
