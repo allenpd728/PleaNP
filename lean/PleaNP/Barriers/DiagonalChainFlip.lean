@@ -65,6 +65,39 @@ lemma reject_step_flip (B : Oracle Query) (n : Nat) (x : Bits n)
     stepStage B (some ⟨n, x⟩) q = B q := by
   simpa [stepStage] using addPoint_agree_other B n x q hneq
 
+/-! ## The reject-side flip over the whole chain (issue #37, D5 permanence)
+
+`flip_at_step` and `witness_permanent` are the per-step forms. The
+tournament's D5 needs the *chain* form: once the reject step at stage `k`
+flips `U_B` true at `n`, it stays true at every later stage. That is the
+"diagonalization at stage `k` is not undone" guarantee, lifted from the
+one-step `stageChain_monotone` (DiagonalChain) into `U_B`-membership terms
+— the shape the tournament's `M_i^B` disagreement argument consumes. -/
+
+/-- **Reject flip is permanent over the chain.** If the stage oracle
+  `stageChain choices k` is all-false at length `n` and the chain's k-th
+  choice adds the unqueried `⟨n, x⟩`, then `n ∉ U_B` at stage `k` and
+  `n ∈ U_B` at *every* later stage `j ≥ k+1` — the witness `x` persists by
+  the concrete chain's monotonicity. This is the D5 maturity lemma the
+  tournament iterates. -/
+lemma flip_persists_over_chain (choices : List (Option Query)) (n : Nat)
+    (x : Bits n) (k j : Nat) (hchoice : choices.getD k none = some ⟨n, x⟩)
+    (hB : ∀ y : Bits n, stageChain choices k ⟨n, y⟩ = false)
+    (hkj : k + 1 ≤ j) :
+    n ∉ U_B (stageChain choices k) ∧ n ∈ U_B (stageChain choices j) := by
+  have hflip := flip_at_step (stageChain choices k) n x hB
+    (choices.getD k none) hchoice
+  refine ⟨hflip.1, ?_⟩
+  have hk1 : n ∈ U_B (stageChain choices (k + 1)) := by
+    have hstep : stageChain choices (k + 1)
+        = stepStage (stageChain choices k) (choices.getD k none) := rfl
+    rw [hstep]
+    exact hflip.2
+  -- `U_B` is an existential over a witness; the witness persists because
+  -- the concrete chain is monotone (`stageChain_mem_persist`).
+  rcases hk1 with ⟨y, hy⟩
+  exact ⟨y, stageChain_mem_persist choices hkj ⟨n, y⟩ hy⟩
+
 end DiagonalChainFlip
 
 end Barriers
