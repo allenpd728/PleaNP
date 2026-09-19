@@ -68,3 +68,15 @@ So any machine witnessing #26 forces, by transport along `hΓ`,
 ## Resolution (2026-09-11, DEC-024)
 
 **Chosen direction:** **Option Ω — word-query oracle substrate** (see `docs/decisions/LOG.md` DEC-024; work order #33, implementation #35`. The query is read from a **tape's content** (a finite word over the machine's own finite alphabet, per the spec's own "oracle tape" model — `docs/STATEMENTS/Oracle.lean.spec.md` §2.2), instead of fusing the query type into the input-alphabet slot. `Query = Σ n, Bits n` **stays unchanged**; no frozen statement changes shape; cost model (query = exactly 1 step), totality, `P^∅ = P`, andthe BGS counting all survive. Recorded options ((a) finite query family,and (c) per-length reindexing) become **unnecessary** — they solved the interface bug by bending the theorem. **Next:** #33 (v5 work-order spec,#35 (implementation,#36 (U_B-in-NP,#37 (diagonalization,#38 (campaign re-scope,#39 (audit,#40 (tests. This blocker file stays `status:blocked-needs-input` until #35 lands (the human decision is recorded;the substrate fix is agent work now).
+
+---
+
+## Closure (2026-09-19, run=20260919-0858-dup2)
+
+**Resolved — closed.** This blocker awaited the DEC-024 substrate fix; it landed:
+#35 (v5 word-query implementation) is `status:done`, and the consuming issue #26
+is `status:done`/closed. `lean/PleaNP/Computability/Oracle.lean` is v5 — the query
+is the input tape's content, decoded into the arbitrary value-space `Q`; the
+`hΓ : tm'.Γ tm'.k₀ = Q` fusion and the `Fintype Query` wall it caused are gone
+(`OracleComplexity.lean` v5 header). `Fintype Query` is no longer required by any
+witness. Renamed `open_*` → `closed_*` per `docs/MULTI_AGENT_WORKFLOW.md` §Blockers.
