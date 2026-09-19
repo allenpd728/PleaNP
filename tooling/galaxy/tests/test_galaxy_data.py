@@ -81,6 +81,18 @@ class TestBlockers(unittest.TestCase):
         # Radius deterministic from filename date.
         self.assertGreater(asts[0]["radius"], 1.0)
 
+    def test_skips_closed_blockers(self):
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "open_20260907-0953_x.md").write_text(
+                "# Blocker: still open\n\n## What information is missing\nA decision.\n",
+                encoding="utf-8")
+            (Path(d) / "closed_20260907-2110_y.md").write_text(
+                "# Blocker: resolved\n\n## Resolution\nDone.\n",
+                encoding="utf-8")
+            asts = galaxy_data.parse_blockers(Path(d))
+        self.assertEqual(len(asts), 1)
+        self.assertIn("still open", asts[0]["label"])
+
 
 class TestSorries(unittest.TestCase):
     def test_parses_tracker_rows(self):

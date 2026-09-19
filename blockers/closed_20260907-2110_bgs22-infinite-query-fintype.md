@@ -83,3 +83,16 @@ the combinatorial core D1-D5 survives each option). I file this and
 move on, leaving #22 at`status:blocked-needs-input` (with this file linked
 in the claim comment; the design doc records the recommendation scope for the
 next session: D1 first, then D2-D6 in dependency order after #27 lands).
+
+---
+
+## Closure (2026-09-19, run=20260919-0858-dup2)
+
+**Resolved — closed.** The DEC-024 word-query fix landed (#35 `status:done`);
+issue #22 itself is `status:done`/closed, and the diagonalization work moved to
+the #37 D1–D6 chain (which runs over the repaired v5 substrate). The failure
+analyzed here — `NP_A`/`P_A` witnesses forcing `tm'.Γ tm'.k₀ = Query` and hence
+`Fintype Query` — no longer exists: v5 removes the `hΓ` alphabet-equality
+constraint (`OracleComplexity.lean` v5 header), so `Query = Σ n, Bits n` can stay
+infinite with no `Fintype` requirement. No human decision is outstanding.
+Renamed `open_*` → `closed_*` per `docs/MULTI_AGENT_WORKFLOW.md` §Blockers.

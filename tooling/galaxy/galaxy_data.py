@@ -213,11 +213,19 @@ def parse_matrix(matrix_json: dict) -> list[dict]:
 
 
 def parse_blockers(blockers_dir: Path) -> list[dict]:
-    """From blockers/*.md → asteroids (spec-level gaps; gate=model)."""
+    """From blockers/*.md → asteroids (spec-level gaps; gate=model).
+
+    Files renamed to `closed_*` per the workflow's blocker-resolution step
+    (`docs/MULTI_AGENT_WORKFLOW.md` §Blockers) are resolved and are NOT
+    rendered — otherwise the front page keeps showing a gap the record has
+    already closed. Only `open_*` (and any unprefixed) files become asteroids.
+    """
     asteroids = []
     if not blockers_dir.is_dir():
         return asteroids
     for f in sorted(blockers_dir.glob("*.md")):
+        if f.name.startswith("closed_"):
+            continue
         text = f.read_text(encoding="utf-8")
         m = re.search(r"^#\s+Blocker:\s*([^\n]+)", text, re.MULTILINE)
         label = m.group(1).strip() if m else f.name
