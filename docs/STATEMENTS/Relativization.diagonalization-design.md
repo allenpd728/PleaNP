@@ -84,6 +84,30 @@ The BGS clause-(b) strategy (per `Relativization.proof-strategy.md` §2):
 | D5 | **Tournament lemma**: forall code i, stage i gives `M_i^B(1^n) != U_B(1^n)` via the unqueried-string choice | combines D1, D4 | D1-D4 |
 | D6 | **Assembly**: `U_B notin P^B`, then `exists B, P_A B != NP_A B` in `lean/PleaNP/Barriers/Relativization.lean` | composition + #23's job (sub-task 3) | D3-D5, #21 |
 
+> **Landed status (2026-09-19, run=20260919-0920-p8k2).**
+> - **D1** ✅ `DiagonalCounting.poly_lt_two_pow` (+ the `2^n` growth lemmas).
+> - **D2** — no longer needed under the DEC-024 word-query substrate (the full
+>   infinite `Query` stays); row is historical.
+> - **D3** ✅ `DiagonalEnum` (`M_of`, encode roundtrips, `evaln` bounded
+>   simulation); the `Machine → Code` step is now precisely characterized — the
+>   oracle is *pinned* by the `P_A`/`NP_A` witnesses (`DiagonalSyntax`/#118), so
+>   only the finite program factor is enumerated; what remains is the routine
+>   "fix a concrete machine family + canonical `decode`" modeling step.
+> - **D4** ✅ `DiagonalStages` (abstract `MonotoneChain` + `mem_mono_of`) and,
+>   as of `b9cf909`, the **concrete** chain invariant:
+>   `DiagonalChain.stageChain_step_mono` / `stageChain_monotone` /
+>   `stageChain_mem_persist` / `stageChain_added_persist` /
+>   `stageChain_tail_agree` — the construction provably satisfies the
+>   "diagonalization not undone" invariant.
+> - **D5** ✅ the per-length decision (`DiagonalDecision`) and, as of
+>   `1040e94`, the **chain-lifted** reject flip
+>   (`DiagonalChainFlip.flip_persists_over_chain`): once stage `k` flips `U_B`
+>   true at `n`, it stays true at every later stage. The remaining D5 gap is
+>   the machine-behaviour half (that `M_i^B` cannot answer `U_B` at the flipped
+>   length) — which needs the D3 machine-embedding, not more combinatorics.
+> - **D6** — open; the single tracked `sorry` is
+>   `DiagonalAssembly.exists_separating_oracle_assembly` (SORRY_TRACKER #12).
+
 ### 3.2 Mathlib hooks (verified present, u v4.31.0)
 
 - **`2^n` growth:** `Nat.two_pow_*` family; `pow_lt_pow_right0`
