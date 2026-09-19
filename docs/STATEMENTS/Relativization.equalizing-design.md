@@ -130,7 +130,7 @@ below) — the design explicitly does NOT depend on upstream P/NP (DEC-003).
 `P_A`/`NP_A` (v4) quantify a machine `tm'` with `hΓ : tm'.Γ tm'.k₀ = Q`.
 `FinTM2` bundles `[Γk₀Fin : Fintype (Γ k₀)]` — the input alphabet is required
 finite. For `Q = List Bool` (infinite), `Fintype Q` is uninhabitable (the
-`Fintype Q` wall, `blockers/open_20260907-0953_bgs26-infinite-query-fintype.md`,
+`Fintype Q` wall, `blockers/closed_20260907-0953_bgs26-infinite-query-fintype.md`,
 resolved by DEC-024). The **console-oracle machine** (A3's simulation) needs to
 query the console oracle `A` — exactly the word-query path v5 provides (query
 read from tape `kq`'s content over a finite alphabet, decoded to `Q`). So the

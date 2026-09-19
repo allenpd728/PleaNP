@@ -39,7 +39,7 @@ witness-core, #21 done).
 `tm'.Gamma tm'.k0` to equal `Query = Sigma n : Nat, Bits n`, but `FinTM2`
 bundles `[Gammak0Fin : Fintype ( Gamma k0)]` and `Fintype Query` is provably
 uninhabitable (`Nat` injects via all-false length-tagged strings). See
-`blockers/open_20260907-0953_bgs26-infinite-query-fintype.md`.
+`blockers/closed_20260907-0953_bgs26-infinite-query-fintype.md`.
 
 **#22 inherits the same wall.** The separating oracle `B` in the BGS stage
 construction also lives over `Sigma n : Nat, Bits n` (a query about an n-bit
