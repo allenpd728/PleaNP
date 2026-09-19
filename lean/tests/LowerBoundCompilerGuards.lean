@@ -14,6 +14,11 @@ asserts the exact error, and a changed (or missing) error is a build error.
 The module lives in the `tests` lib, not the clean build set: the
 `sorry`-carried decoy contract below is a genuine `sorry`, and the clean
 modules are scanned with `hygiene_scan.py --prove-stage`.
+
+The **accept** path (a valid, `sorry`-free contract → emission) is specified
+separately in `docs/STATEMENTS/LowerBoundCompilerAcceptPath.spec.md`
+(issue #109); it is unreachable until #98 supplies a `SubExpCircuitSATT`
+proof, so its spec — not a runnable test — is the deliverable today.
 -/
 
 namespace PleaNP

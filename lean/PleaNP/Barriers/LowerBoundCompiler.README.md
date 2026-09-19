@@ -76,3 +76,9 @@ carrier in the contract; it is recorded as a design requirement (design note
 - `lean/tests/LowerBoundCompilerGuards.lean` — the four contract-rejection
   guards (wrong shape, `sorryAx`, missing, shadowing), each pinned with
   `#guard_msgs`.
+- `docs/STATEMENTS/LowerBoundCompilerAcceptPath.spec.md` — the **accept-path**
+  test spec (issue #109): the frozen shape of the `[full]` emission log lines
+  and the exact `#guard_msgs` test to land, with `lean/tests/LowerBoundCompilerAcceptPath.lean`,
+  once #98 supplies a `sorry`-free `SubExpCircuitSATT` proof. The accept path is
+  unreachable today by design (no such proof exists; asserting it would need the
+  dishonest contract the compiler rejects), so the spec is the deliverable.

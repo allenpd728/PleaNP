@@ -1,6 +1,6 @@
 # Repair spec: `lean/PleaNP/Computability/Oracle.lean` / `lean/PleaNP/Computability/OracleComplexity.lean` v5 (word-query substrate)
 
-**Rung:** 2 (local piece). **Status:** Work-order spec (DEC-024, 2026-09-11, run=20260911-0944-qmzn) — the direction chosen by the Option Ω creative-protocol run; implementation is #35. **Supersedes:** the v4 `hΓ : tm'.Γ tm'.k₀ = Q` wiring (the Fintype-Query wall; the v4-repair spec's §4.1–4.4 stays valid except where overridden here). **Read first:** `docs/STATEMENTS/Oracle.lean.spec.md` §2.2 (the "oracle tape" model this restores); `docs/STATEMENTS/OracleTM2Recompose.spec.md` §4 (the three traps); `blockers/open_20260907-0953_bgs26-infinite-query-fintype.md` (the wall this fixes); `docs/decisions/LOG.md` DEC-024 (the decision record).
+**Rung:** 2 (local piece). **Status:** Work-order spec (DEC-024, 2026-09-11, run=20260911-0944-qmzn) — the direction chosen by the Option Ω creative-protocol run; implementation is #35. **Supersedes:** the v4 `hΓ : tm'.Γ tm'.k₀ = Q` wiring (the Fintype-Query wall; the v4-repair spec's §4.1–4.4 stays valid except where overridden here). **Read first:** `docs/STATEMENTS/Oracle.lean.spec.md` §2.2 (the "oracle tape" model this restores); `docs/STATEMENTS/OracleTM2Recompose.spec.md` §4 (the three traps); `blockers/closed_20260907-0953_bgs26-infinite-query-fintype.md` (the wall this fixes); `docs/decisions/LOG.md` DEC-024 (the decision record).
 
 ---
 

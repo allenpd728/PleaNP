@@ -20,7 +20,7 @@ poly-time oracle machine in `P_A (alpha := Nat) B` quantifies via
 transportably equal to `Query`. `Fintype Query` is Lean-proved
 uninhabitable ( `Nat` injects via all-false length-tagged strings) and
 `Fintype (Bits n)` synthesizes for every fixed n, so the dichotomy is
-exact (see `blockers/open_20260907-0953_bgs26-infinite-query-fintype.md`
+exact (see `blockers/closed_20260907-0953_bgs26-infinite-query-fintype.md`
 for the full verified argument). The diagonalization's *tournament*
 (∃ n per machine with an unqueried-string choice) cannot run against
 machines that cannot exist — and the class-inequality target
@@ -55,7 +55,7 @@ under the wall, so no separation.
 
 ## Resolution (2026-09-11, DEC-024): Option Ω — word-query oracle substrate
 
-**Chosen direction:** same as #26's blocker resolution (see `blockers/open_20260907-0953_bgs26-infinite-query-fintype.md` — rewire the oracle substrate so the query is read from a **tape's content** over the machine's own finite alphabet, per the spec's "oracle tape" model. `Query = Σ n, Bits n` stays unchanged; no frozen statement changes shape; cost model (query = exactly 1 step), totality, `P^∅ = P` survive. Recorded options ((a)/(c) become unnecessary. **Next:** #33 → #35 → #37 (this issue's D1-D6 diagonalization work moves to #37, blocked-by #35. We keep this issue `status:blocked-needs-input` until #35 lands.
+**Chosen direction:** same as #26's blocker resolution (see `blockers/closed_20260907-0953_bgs26-infinite-query-fintype.md` — rewire the oracle substrate so the query is read from a **tape's content** over the machine's own finite alphabet, per the spec's "oracle tape" model. `Query = Σ n, Bits n` stays unchanged; no frozen statement changes shape; cost model (query = exactly 1 step), totality, `P^∅ = P` survive. Recorded options ((a)/(c) become unnecessary. **Next:** #33 → #35 → #37 (this issue's D1-D6 diagonalization work moves to #37, blocked-by #35. We keep this issue `status:blocked-needs-input` until #35 lands.
 
 ---
 
