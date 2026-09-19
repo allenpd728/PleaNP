@@ -160,6 +160,23 @@ lemma stageChain_tail_agree (choices : List (Option Query)) (k : Nat)
         exact hnone j hj (by rw [hc, hpq])
       exact stepStage_agree_other (stageChain choices j) (some p) q (by simpa using hpq)
 
+/-- **Full tail agreement (composed).** If no stage from `k` on chooses
+  `q`, then `q`'s answer at every later stage `j ≥ k` equals its answer at
+  stage `k` — the machine-agreement fact stated in the form the
+  tournament's soundness argument uses ("the stage machine's query is
+  answered the same at the stage it ran and at every later stage"). This
+  composes `stageChain_tail_agree` from `k` up to `j`. -/
+lemma stageChain_answer_stable (choices : List (Option Query)) (k : Nat)
+    (q : Query) (hnone : ∀ i, k ≤ i → choices.getD i none ≠ some q) :
+    ∀ j, k ≤ j → stageChain choices j q = stageChain choices k q := by
+  intro j hj
+  have hstep := stageChain_tail_agree choices k q hnone
+  induction hj with
+  | refl => rfl
+  | @step m hkm ih =>
+      rw [hstep m hkm]
+      exact ih
+
 end DiagonalChain
 
 end Barriers
