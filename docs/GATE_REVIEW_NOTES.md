@@ -351,8 +351,17 @@ longer flagged), so that EXPECTED entry was removed.
 **Sweep lineage:** run=20260913-1020-GY2l (issue #63).
 
 `binder_usage_scan.py` flags `consoleOracleHead_computable`,
-`consoleLang_mem_P_false` (and the §3.3 barrier-consequence lemmas, already
-registered) as referenced by no other scanned declaration. They are the
+`consoleLang_mem_P` (and the §3.3 barrier-consequence lemmas, already
+registered) as referenced by no other scanned declaration.
+
+> **#121 update (2026-09-17).** Issue #121 generalised the A3 membership from
+> the two constant oracles to **every** oracle: `consoleLang_mem_P (A)` proves
+> `consoleLang A ∈ P_A A`, with `consoleRun_halts (A)` generalising the two
+> constant-oracle run lemmas. The `#check` reference lines that used to sit
+> after `consoleLang_mem_P_false` now sit in the general theorem's block, so
+> the register's flagged API name moves from `consoleLang_mem_P_false` to
+> `consoleLang_mem_P` (same intentional-public-API disposition; the constant
+> theorems remain as the `A := fun _ => true/false` instances). They are the
 **intentional public API** of the BGS clause-(a) proof-work module
 (`lean/PleaNP/Barriers/RelativizationProof.lean`, `docs/STATEMENTS/
 Soundness.spec.md`): the total-computability console oracles (A2) and the

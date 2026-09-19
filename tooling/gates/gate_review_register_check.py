@@ -96,7 +96,10 @@ EXPECTED = {
     # one-query-machine lemmas beyond the ┬¦3.3 barrier-consequence set above,
     # intentional public API for the A3/A5 assembly (GATE_REVIEW_NOTES.md ┬¦4).
     ("binder", "RelativizationProof.lean", "consoleOracleHead_computable"),
-    ("binder", "RelativizationProof.lean", "consoleLang_mem_P_false"),
+    # #121 generalised the constant-oracle A3 membership to every oracle
+    # (`consoleLang_mem_P`); the `#check` lines now sit in that block, so the
+    # flagged API name moves from `consoleLang_mem_P_false` to the general one.
+    ("binder", "RelativizationProof.lean", "consoleLang_mem_P"),
     ("binder", "RelativizationProof.lean", "P_subset_NP_console"),
     # DEC-022 ┬¦3.3 paper-statement layout (issue #66): RelativizationProof
     # holds the provable barrier-consequence lemmas, consumed onward by the

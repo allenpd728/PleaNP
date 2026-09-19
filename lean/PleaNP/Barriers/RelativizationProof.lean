@@ -321,15 +321,57 @@ theorem consoleLang_mem_P_false :
         rw [ho]
         rfl
 
--- A3 general milestone (documented, not sorry'd): for any oracle A, the
--- one-query machine's decided language `consoleLang A = { w | A w = true }`
--- is in `P_A A` — the membership statement is the bridge the full
--- `NP^A ⊆ P^A` simulation quotients by. The concrete constant-oracle
--- memberships above (`_true`/`_false`) pin the machine + the two-step
--- mechanism; the arbitrary-`A` proof reduces the run by case analysis on
--- `A w` (yes/no) identically to those concrete cases — the A3-assembly
--- follow-up (issue #63 Pass 3). No `sorry` is introduced: the milestones
--- below are the machine + mechanism landing.
+/-! ## A3 general milestone: `consoleLang A ∈ P_A A` for every oracle (issue #121)
+
+The constant-oracle theorems above reduce the 2-step run by `rfl` because
+the constant function makes the `if A w` in `Oracles.step` reduce
+definitionally. For a **variable** oracle that `if` is stuck, so the run has
+to be computed by case analysis on the oracle's answer and the 2-step
+`EvalsToInTime` chain built explicitly. This is the membership statement the
+full `NP^A ⊆ P^A` simulation quotients by. -/
+
+/-- The one-query machine's 2-step run for an **arbitrary** oracle: it halts
+  with the output stack equal to `[A w]` — the oracle's answer, one query
+  deep. (Generalises `consoleRun_true_halts` / `consoleRun_false_halts`: those
+  are the two branches of the `cases` below.) -/
+theorem consoleRun_halts (A : Oracle QueryType) (w : QueryType) :
+    (consoleRun A w).cfg.l = Option.none ∧
+    (consoleRun A w).cfg.stk consoleOM.k₁ = [A w] := by
+  unfold consoleRun
+  cases h : A w <;>
+    simp [step, initCfg, initList, consoleM, consoleOM, h]
+
+/-- **A3 general milestone**: for every oracle `A`, the one-query machine
+  decides `consoleLang A = { w | A w = true }` in 2 steps — `consoleLang A ∈
+  P^A`. The arbitrary-`A` version of `consoleLang_mem_P_true`/`_false`; the
+  membership is the bridge the full `NP^A ⊆ P^A` simulation quotients by. -/
+theorem consoleLang_mem_P (A : Oracle QueryType) :
+    consoleLang A ∈ P_A (alpha := QueryType) A := by
+  refine ⟨consoleOM, inferInstance, (fun w : QueryType => w),
+    (fun b : Bool => b), consoleM A, Polynomial.C 2, ?_, ?_⟩
+  · rfl
+  · intro w
+    refine ⟨consoleRun A w, ?_⟩
+    constructor
+    · -- The 2-step chain: `rfl`/`simp` cannot close this for a *variable* A
+      -- (the `if A w` in `step` is stuck), so case on the answer and reduce.
+      refine ⟨⟨⟨2, ?_⟩, by norm_num⟩⟩
+      unfold consoleRun
+      cases h : A w <;>
+        simp [Function.iterate_succ_apply, flip, Option.bind, step, initCfg,
+          initList, consoleM, consoleOM, h] <;>
+        rfl
+    · constructor
+      · exact (consoleRun_halts A w).1
+      · have ho := (consoleRun_halts A w).2
+        change outputEncodesChi (fun b : Bool => b) (consoleRun A w)
+          (consoleLang A) w
+        unfold outputEncodesChi consoleLang
+        rw [ho]
+        exact ⟨fun h => h, fun h => h⟩
+
+-- The two constant-oracle memberships are the `A := fun _ => true/false`
+-- instances of the general theorem (kept above as concrete executables).
 #check consoleLang_mem_P_true
 #check consoleLang_mem_P_false
 
