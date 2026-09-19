@@ -33,11 +33,11 @@ These barriers are the map of where P vs NP proof attempts fail. Encoding them f
 ### In scope
 
 - A formalized **barrier library**: relativization, natural proofs, algebrization.
-- A **barrier calculus** (Rung 5, the crown jewel): a `Relativizing` typeclass that propagates through the dependency graph of any lemma built from relativizing pieces, plus a `#barrier_check` elaborator that walks a theorem's dependency closure and reports **"DEAD: this proof relativizes"** or **"Inconclusive."** — turning "does this proof relativize?" from per-paper human judgment into a typechecking question. Unit-tested against the time hierarchy theorem(which relativizes).
-- An **anchor object** (Rung 6): machine-checked P/NP model-equivalence across whichever upstream formalizations land, plus Levin universal searchas an explicit `#eval`-able term behind `P_eq_NP_iff`.The search⟶decision gap(needs self-reducibility + a Hutter-style wrapper) is logged as a scoped open lemma, not a blocker(see DEC-012).
-- A **lower-bound compiler** (Rung 8): Williams' transfer theorem(nontrivial CircuitSAT algorithm for class C ⟹ NEXP ⊄ C) as a Lean elaborator— feed it a verified algorithm + runtime bound, it emits a verified circuit lower bound. Under `PleaNP.Circuits`.
+- A **barrier calculus** (Rung 5, the crown jewel): a `Relativizing` typeclass that propagates through the dependency graph of any lemma built from relativizing pieces, plus a `#barrier_check` elaborator that walks a theorem's dependency closure and reports **"DEAD: this proof relativizes"** or **"Inconclusive."** — turning "does this proof relativize?" from per-paper human judgment into a typechecking question. Unit-tested against the time hierarchy theorem (which relativizes).
+- An **anchor object** (Rung 6): machine-checked P/NP model-equivalence across whichever upstream formalizations land, plus Levin universal search as an explicit `#eval`-able term behind `P_eq_NP_iff`. The search⟶decision gap (needs self-reducibility + a Hutter-style wrapper) is logged as a scoped open lemma, not a blocker (see DEC-012).
+- A **lower-bound compiler** (Rung 8): Williams' transfer theorem (nontrivial CircuitSAT algorithm for class C ⟹ NEXP ⊄ C) as a Lean elaborator — feed it a verified algorithm + runtime bound, it emits a verified circuit lower bound. Under `PleaNP.Barriers`, with the elaborator command `#lower_bound_compile`.
 - Supporting **circuit complexity** (AC⁰, TC⁰, NC, switching lemma, monotone lower bounds) and **proof complexity** (resolution, Frege) needed to state and apply the barriers.
-- An **integrity pipeline** (the "gates")that separates statement formalization from proof search, to structurally prevent the most common failure mode of claimed P vs NP formalizations.
+- An **integrity pipeline** (the "gates") that separates statement formalization from proof search, to structurally prevent the most common failure mode of claimed P vs NP formalizations.
 
 ### Out of scope (deliberately)
 
@@ -50,15 +50,18 @@ These barriers are the map of where P vs NP proof attempts fail. Encoding them f
 PleaNP/
 ├── lean/                # Self-contained Lean 4 / lake project (the library)
 │   ├── PleaNP/
-│   │   ├── Barriers/    # Relativization, NaturalProofs, Algebrization
-│   │   ├── Circuits/    # AC0, TC0, NC, switching lemma, monotone bounds
+│   │   ├── Computability/  # Rung 2: oracle machines, P^A / NP^A, smoke tests
+│   │   ├── Barriers/    # Relativization, natural proofs, algebrization (Lean)
 │   │   ├── Calculus/    # Rung 5: Relativizing typeclass + #barrier_check
-│   │   └── ProofComplexity/
+│   │   ├── Circuits/    # AC0, switching lemma, monotone bounds
+│   │   ├── ProofComplexity/  # Resolution
+│   │   ├── Challenges/  # Comparator-challenge modules (not imported by the root)
+│   │   └── Benchmark/   # Graded benchmark scaffolding
 │   └── tests/
 ├── tooling/             # AI + integrity layer (Python)
-│   ├── retrieval/       # Premise selection (representation experiments)
-│   ├── gates/           # The integrity pipeline
-│   └── audit/           # Gap-audit tooling
+│   ├── gates/           # The integrity pipeline (scanners + specs + fixtures)
+│   ├── galaxy/          # formalization.yaml -> galaxy.html renderer
+│   └── reviews/         # Review-inbox sync (src/reviews/)
 └── docs/                # The spec, roadmap, audit, and decision log
 ```
 
@@ -66,13 +69,48 @@ The `lean/` tree is a clean lake project with no Python dependencies — it can 
 
 ## Current status
 
-**Rung 1 — Gap audit.** See `docs/GAP_AUDIT.md` for the domain-by-domain analysis of Mathlib's current complexity coverage versus what the barrier theorems require.
+See `docs/ROADMAP.md` for the full rung ladder and `docs/SORRY_TRACKER.md`
+for the live `sorry` ledger.
 
+- **Rung 1 — Gap audit: done.** `docs/GAP_AUDIT.md` is the domain-by-domain
+  analysis of Mathlib's current complexity coverage versus what the barrier
+  theorems require, plus the upstream efforts PleaNP tracks.
+- **Rung 2 — Oracle substrate (partly landed).** The oracle-machine and
+  complexity-class layer lives in `lean/PleaNP/Computability/`: `Oracle.lean`,
+  `OracleComplexity.lean`, and `OracleSmoke.lean` build green with zero
+  sorries (the v5 word-query repair, DEC-024). `OracleUpstreamP.lean` carries
+  one tracked, honest `sorry` — the upstream-P-blocked bridge, isolated in its
+  own module so nothing else depends on it. The `P^A ⊆ NP^A` self-check is
+  proved in both directions.
+- **Rung 3 — Barrier theorems: in progress.** The BGS diagonalization chain
+  (`lean/PleaNP/Barriers/Diagonal*.lean`, ~20 modules) is built and
+  `DiagonalUB.lean` is zero-sorry. `Relativization.lean` renders the frozen
+  BGS statement with two tracked `sorry`s for the proofs;
+  `Algebrization.lean` renders the AW09 statement with its consequence proofs
+  in `AlgebrizationProof.lean` (zero-sorry). Natural proofs currently exists as
+  statement/design specs only (`docs/STATEMENTS/NaturalProofs*.md`) — no Lean
+  module yet. See the `sorry` ledger.
+- **Rung 5 — Barrier Calculus: prototype landed.** The `Relativizing`
+  typeclass and `#barrier_check` elaborator live in
+  `lean/PleaNP/Calculus/`, unit-tested against the time-hierarchy theorem. It
+  is meta-level — it does not wait on upstream P/NP.
+- **Rung 6 — Anchor object: blocked on upstream.** Needs two landed P/NP
+  formalizations before the equivalence anchor can be stated.
+- **Rung 8 — Lower-Bound Compiler: skeleton landed.** Williams' transfer
+  theorem is frozen as a statement in `Barriers/WilliamsTransfer.lean`, and the
+  `#lower_bound_compile` elaborator skeleton (Pass 2) lives in
+  `Barriers/LowerBoundCompiler.lean`; see its
+  [`README`](lean/PleaNP/Barriers/LowerBoundCompiler.README.md). The genuine
+  ACC⁰-structure packing (Shah–Shetty Good-SAT) remains a decomposed follow-up,
+  not a `sorry`.
 
+Rungs 4, 7, 9, 10, and 11 are not started.
 
-**Rung 5 — Barrier Calculus (in progress).** The `Relativizing` typeclass + `#barrier_check` elaborator prototype lives in `lean/PleaNP/Calculus/BarrierCalculus.lean`,with the time-hierarchy-theorem unit test. It is meta-level — it does not wait on upstream P/NP. The remaining new rungs(6 Anchor Object, 8 Lower-Bound Compiler) are specced in `docs/ROADMAP.md` (DEC-012.
-
-See `docs/ROADMAP.md` for the full rung ladder.
+**Packaging (DEC-027):** a root `lakefile.lean` repoints the package at `lean/`
+so sibling repos can `require PleaNP from git`. `lean/` remains the
+authoritative build tree (CI, the devcontainer, and `tooling/elantool.sh` all
+run from it); the root file is additive and guarded by
+`tooling/gates/lakefile_sync_check.py`.
 
 **Community status (2026-09-06, DEC-015):** contributions are welcome via
 GitHub issues/PRs (`docs/CONTRIBUTIONS.md`); the multi-agent issue workflow is
