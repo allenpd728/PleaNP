@@ -62,6 +62,15 @@ One JSON object per line; append-only; never rewritten. See HuB's
   - **Integrity gate pipeline** — `tooling/gates/` — hygiene/vacuity/model/unicode/binder scans plus the fixture rule.
   - **Galaxy status page** — `tooling/galaxy/galaxy.html` — the human-facing roll-up.
 
+  **How to arrive at a level for this repo.** The level is not a vibe — it is read off a
+  structure this repo already maintains:
+
+  Derive levels from **`docs/VALIDATION_SUITE.md`** (Typed -> Validated -> Frozen) and the
+  machine-readable `formalization.yaml` `status:` field (whose vocabulary is
+  `statement-rendered` / `rendered-not-frozen` / `validated-in-ci` / `proved`). Those are the
+  authority. Concretely: **Validated** means TRL 5; **Frozen** (gates passed *and* human
+  review) means TRL 8. A module is only *Typed* -> level 2.
+
   PleaNP already tracks deliverable status as an 11-rung ladder in `docs/ROADMAP.md` / `AGENTS.md`. **The rung table stays authoritative**; do not mirror rung numbers into TRL or the two will drift. Name TRL components after the Rungs 5/6/8 deliverables as *capabilities*, and let the rung table say what is in scope and in what order.
 
   **Do not name a component after an internal task or issue.** Name the capability you would
