@@ -36,11 +36,36 @@ One JSON object per line; append-only; never rewritten. See HuB's
   `MULTI_AGENT_WORKFLOW.md`: claim comment older than 1 hour with no activity
   since).
 - `notes` — the same counts as a one-line human-readable summary.
-- `trl` — *only present if* `status/trl.json` exists. TRL is a human judgement
-  about this project's components and cannot be derived from issue counts, so
-  it is never guessed here: absent file means the field is omitted and HuB
-  shows its "no TRL entries" message. To publish TRL, commit
-  `status/trl.json` as `{"components": {"<name>": <0-9>, ...}}`.
+- `trl` — *only present if* `status/trl.json` exists at the repo root. TRL is a human
+  judgement about a component's readiness and cannot be derived from issue counts, so it is
+  never guessed: an absent file means the field is omitted and HuB shows its
+  "No TRL entries" message. **That is the correct state until someone sets real levels**, not
+  a bug to work around.
+
+  What each level means is defined once, for all repos, in HuB's
+  [`PM_STATUS_FRAMEWORK.md`](https://github.com/allenpd728/HuB/blob/main/PM_STATUS_FRAMEWORK.md)
+  §"What TRL means here". Read it before setting a number — in particular: rate the weakest
+  real capability, a component can move *down*, and TRL measures readiness of the *piece*, not
+  confidence in the research hypothesis.
+
+  **To publish:** copy `status/trl.json.template` to `status/trl.json`, replace the `null`s
+  with integers 0–9, and commit on this repo's tracked branch. It appears on the dashboard
+  after the next sweep (up to 30 min, plus ~5 min CDN lag). Existing characters in the log are
+  never rewritten; only new snapshots carry the values.
+
+  **Candidate components for PleaNP** — drawn from this repo's own docs, not invented.
+  Rename, merge, or drop any of these; the list is a starting point, not a contract:
+
+  - **Barrier Calculus** — Rung 5 — `lean/PleaNP/Calculus/`, the `#barrier_check` artifact.
+  - **Lower-Bound Compiler** — Rung 8 — `lean/PleaNP/Barriers/LowerBoundCompiler.lean`.
+  - **Circuit substrate** — `lean/PleaNP/Circuits/` (Basic, AC0, MustRefute).
+  - **Integrity gate pipeline** — `tooling/gates/` — hygiene/vacuity/model/unicode/binder scans plus the fixture rule.
+  - **Galaxy status page** — `tooling/galaxy/galaxy.html` — the human-facing roll-up.
+
+  PleaNP already tracks deliverable status as an 11-rung ladder in `docs/ROADMAP.md` / `AGENTS.md`. **The rung table stays authoritative**; do not mirror rung numbers into TRL or the two will drift. Name TRL components after the Rungs 5/6/8 deliverables as *capabilities*, and let the rung table say what is in scope and in what order.
+
+  **Do not name a component after an internal task or issue.** Name the capability you would
+  hand to someone else — that is what makes the level meaningful to a reader outside this repo.
 
 ## Tests
 
