@@ -1,0 +1,16 @@
+{
+  "components": {
+    "Barrier Calculus": 4,
+    "Lower-Bound Compiler": 2,
+    "Circuit substrate": 5,
+    "Integrity gate pipeline": 5,
+    "Galaxy status page": 4
+  },
+  "_rationale": {
+    "Barrier Calculus": "CI-gated (36 gate references in ci.yml incl. the four-verdict #barrier_check harness) but the rung table still says 'In progress (prototype)' and the Validated bar (must-refute proven, every parameter load-bearing) is not met -- 17 advisory binder REVIEWs -- so level 4, not 5.",
+    "Lower-Bound Compiler": "lean/PleaNP/Barriers/LowerBoundCompiler.lean is 259 lines and still contains 10 sorrys; ROADMAP calls it a placeholder note -- Scaffolded = level 2.",
+    "Circuit substrate": "formalization.yaml records the Rung-4 circuit substrate (typed Boolean gates, P/poly shape, monotone-circuit model) as status: proved, and its declarations are built and gated in CI = level 5. Not 6 because it has not been exercised across the full intended benchmark.",
+    "Integrity gate pipeline": "176 tests pass; the scanners are CI-wired, ship self-tests that must detect planted cases, and the fixture rule is enforced by run_all.py = level 5.",
+    "Galaxy status page": "galaxy.html is regenerated from formalization.yaml and checked by pre_push_check.py / galaxy tests in CI = level 4."
+  }
+}
