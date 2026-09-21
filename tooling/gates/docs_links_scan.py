@@ -105,7 +105,7 @@ def _whitelisted(s: str) -> bool:
     if s == "HUMAN_REVIEW_LAYERS.md":
         return True
     # External/reference-sibling refs: muse provenance, etc.
-    if s.startswith("muse/") or s in ("TASK_WORKFLOW.md",):
+    if s.startswith(("muse/", "rubato/")) or s in ("TASK_WORKFLOW.md",):
         return True
     return False
 

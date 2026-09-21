@@ -87,14 +87,14 @@ The two follow-ups from "what to implement" are now in the repo:
 
 - **.github/workflows/warm-toolchain.yml** — on every push to main,
   builds the multi-stage warm image and pushes two tags to ghcr.io:
-  ghcr.io/allenpd728/pleanp:main and :lean-<sha>. The image bakes
+  ghcr.io/philipdallen/pleanp:main and :lean-<sha>. The image bakes
   in elan + the pinned Lean toolchain and a warm lean/.lake (Mathlib
   oleans fetched once at image build). Also adds an actions/cache step for
   ~/.elan so CI runners restore the toolchain in seconds.
 - **.devcontainer/Dockerfile.warm** — the multi-stage build (builder
   installs elan + Lean + lake exe cache get; runtime stage copies the warm
   ~/.elan and lean/.lake).
-- **For agents:** docker pull ghcr.io/allenpd728/pleanp:main then
+- **For agents:** docker pull ghcr.io/philipdallen/pleanp:main then
   mount the repo — no elan install, no toolchain download, no olean fetch.
 - **Cost:** free for public repos (GHCR + Actions public minutes).
 - **Practical how-to:** docs/TOOLCHAIN_AGENTS.md sec 1.
@@ -115,7 +115,7 @@ machine work. Two stdlib-only tools now compress it:
 **Status (2026-09-13, confirmed live):** Plan E implemented and VERIFIED.
 The warm-toolchain workflow runs on [main, dev] pushes — consecutive runs
 completed `success` (26500ba/329cad7/c3916e5/116aaa6) — and
-`ghcr.io/allenpd728/pleanp:dev` + `:main` are both pullable (docker
+`ghcr.io/philipdallen/pleanp:dev` + `:main` are both pullable (docker
 manifest inspect returns the OCI index). The `ci-toolchain-cache` job
 caches `~/.elan` for CI runners. `tooling/elantool.sh` is live-verified
 (working-docker-daemon detection + AGENTS.md bootstrap fallback);

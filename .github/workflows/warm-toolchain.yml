@@ -5,7 +5,7 @@ name: warm-toolchain-image
 # new agent sandbox (and any human container) skip the elan install + toolchain
 # download + Mathlib olean fetch entirely:
 #
-#   docker pull ghcr.io/allenpd728/pleanp:main
+#   docker pull ghcr.io/philipdallen/pleanp:main
 #   # inside: elan + Lean v4.31.0 + Mathlib oleans pre-fetched into
 #   # /root/.elan AND /workspace/lean/.lake (warm)
 #
@@ -50,7 +50,7 @@ jobs:
       # into the pushed image. Result: pulling the ghcr image gives a warm
       # elan + Lean + Mathlib olean cache with zero network beyond `docker pull`.
       # GHCR requires lowercase repository names; github.repository can be
-      # mixed-case (e.g. allenpd728/PleaNP). Use the lowercase owner + a fixed
+      # mixed-case (e.g. philipdallen/PleaNP). Use the lowercase owner + a fixed
       # image slug (pleanp) instead of github.repository, avoiding expressions
       # in the tags block entirely (expressions there are unreliable).
       - name: Build warm image

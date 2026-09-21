@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/allenpd728/PleaNP/tooling/gates/specs/rendering_disagreement.schema.json",
+  "$id": "https://github.com/philipdallen/PleaNP/tooling/gates/specs/rendering_disagreement.schema.json",
   "title": "Rendering-disagreement review spec",
   "description": "Spec for a human review of a multi-rendering disagreement: 3-5 tiny, independent, concrete probes answerable from basic math/logic against the Lean renderings. One wrong probe = the claim is wrong (blocked).",
   "type": "object",

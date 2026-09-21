@@ -29,8 +29,8 @@ Docker image** (`.devcontainer/Dockerfile.warm`) on every push to `main` and
 pushes it to **GitHub Container Registry**:
 
 ```
-ghcr.io/allenpd728/pleanp:main          # rolling
-ghcr.io/allenpd728/pleanp:lean-<sha>    # per-commit
+ghcr.io/philipdallen/pleanp:main          # rolling
+ghcr.io/philipdallen/pleanp:lean-<sha>    # per-commit
 ```
 
 The image bakes in: Ubuntu + elan + the pinned Lean toolchain **and** a warm
@@ -41,9 +41,9 @@ no olean fetch** beyond `docker pull` itself.
 **For an agent:** in a sandbox with Docker (or any container host):
 
 ```bash
-docker pull ghcr.io/allenpd728/pleanp:main
+docker pull ghcr.io/philipdallen/pleanp:main
 docker run --rm -v "$PWD":/workspaces/PleaNP \
-    -it ghcr.io/allenpd728/pleanp:main
+    -it ghcr.io/philipdallen/pleanp:main
 # inside: cd /workspaces/PleaNP/lean && lake build <module>   # warm, seconds
 ```
 

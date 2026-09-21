@@ -41,7 +41,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 DEFAULT_MIN_RUNS = 2
-REPO = "allenpd728/PleaNP"
+REPO = "philipdallen/PleaNP"
 API = f"https://api.github.com/repos/{REPO}/issues"
 
 # Set via --warn-no-effort: report legacy issues that have no Effort line at

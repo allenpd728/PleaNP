@@ -105,7 +105,7 @@ CI is green. Codespace creation remains blocked on token *scope* (needs
 
 ## Verification notes (how to check without special access)
 
-- CI status: `GET /repos/allenpd728/PleaNP/actions/runs?per_page=5` (public)
+- CI status: `GET /repos/philipdallen/PleaNP/actions/runs?per_page=5` (public)
   or the Actions tab. Look for `conclusion: success` on `main`.
 - Codespace: `GET /user/codespaces` with a repo token once created, or just
   the Codespaces tab.

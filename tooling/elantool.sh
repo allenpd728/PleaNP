@@ -24,7 +24,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-IMAGE_DEFAULT="ghcr.io/allenpd728/pleanp"
+IMAGE_DEFAULT="ghcr.io/philipdallen/pleanp"
 IMAGE_TAG="${PLEANP_LEAN_TAG:-main}"
 IMAGE="${PLEANP_LEAN_IMAGE:-${IMAGE_DEFAULT}:${IMAGE_TAG}}"
 MOUNT_POINT="${PLEANP_LEAN_MOUNT:-/workspace}"

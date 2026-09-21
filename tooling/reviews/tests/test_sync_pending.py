@@ -109,7 +109,7 @@ class TestWorkflowQuery(unittest.TestCase):
             self.skipTest("gh not installed")
         # A comma list of two labels no issue carries both of must be empty.
         r = subprocess.run(
-            ["gh", "issue", "list", "--repo", "allenpd728/PleaNP",
+            ["gh", "issue", "list", "--repo", "philipdallen/PleaNP",
              "--label", "review:pending,review:flagged", "--state", "open",
              "--limit", "5", "--json", "number"],
             capture_output=True, text=True, timeout=60)
