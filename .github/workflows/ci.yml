@@ -10,10 +10,15 @@ on:
   # `main` stays in the list: it is the reviewed branch, and a push there should
   # still be verified. PRs to main also remain gated (issue #104 discusses the
   # trigger policy).
+  #
+  # `dev` was added to `pull_request` for the same reason it was added to `push`:
+  # the audit work landed on `dev` via PR and got NO check runs at all, so a PR
+  # against the integration branch was less verified than a push to it. A branch
+  # that is the destination of most work must gate the PRs that target it.
   push:
     branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
   build:
@@ -154,3 +159,61 @@ jobs:
         run: |
           python3 tooling/galaxy/galaxy.py --repo . --out /tmp/galaxy-ci.html >/dev/null
           cmp /tmp/galaxy-ci.html tooling/galaxy/galaxy.html && echo "galaxy.html regenerable ok"
+
+      # The auditor and hub-sweep suites. These live in tooling/ rather than
+      # python/ because they run against this repo's own tree, and they were
+      # never executed by CI -- so a broken check would have reported "no
+      # findings" and been indistinguishable from a clean repo. The daily
+      # auditor workflow would then have kept passing while auditing nothing.
+      - name: Auditor tests
+        run: python3 tooling/tests/test_auditor.py
+
+      - name: Hub-sweep tests
+        run: python3 tooling/tests/test_hub_sweep.py
+
+      # A test that only passes from the repo root is not a test: the outcome
+      # would depend on the caller's cwd rather than on the code. This bit
+      # test_hub_sweep.py, which passed from /tmp and failed from the repo root
+      # because it passed Path(".") where a tmp_path belonged.
+      - name: Auditor/hub-sweep suites are cwd-independent
+        run: |
+          set -e
+          cd /tmp
+          python3 "$GITHUB_WORKSPACE/tooling/tests/test_auditor.py"
+          python3 "$GITHUB_WORKSPACE/tooling/tests/test_hub_sweep.py"
+
+      # The auditor's own tests must be able to fail, and for the right reason.
+      # If a check were silently broken the suite would pass and the daily audit
+      # would report a clean repo. Blinds the secret scanner in a copy of the
+      # tree (never in place) and requires the tests that constrain it to fire.
+      - name: Auditor tests are not vacuous (mutation check)
+        run: |
+          set -e
+          MUT=$(mktemp -d)
+          trap 'rm -rf "$MUT"' EXIT
+          cp -r "$GITHUB_WORKSPACE"/. "$MUT"/
+          cd "$MUT"
+          python3 - <<'PY'
+          import ast, pathlib, sys
+          p = pathlib.Path("tooling/auditor.py")
+          src = p.read_text()
+          old = r'r"-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP )?PRIVATE KEY-----"'
+          if old not in src:
+              sys.exit("could not locate the private-key pattern to mutate")
+          mutated = src.replace(old, r'r"(?!x)x"', 1)
+          if mutated == src:
+              sys.exit("mutation was a no-op")
+          ast.parse(mutated)   # a mutation that cannot import proves nothing
+          p.write_text(mutated)
+          PY
+          if python3 tooling/tests/test_auditor.py > /tmp/mutated.log 2>&1; then
+            echo "::error::the auditor suite passed with the secret scanner blinded"
+            tail -20 /tmp/mutated.log
+            exit 1
+          fi
+          grep -q "test_private_key_block_is_reported" /tmp/mutated.log || {
+            echo "::error::failed, but not on the test that constrains the mutation"
+            tail -20 /tmp/mutated.log
+            exit 1
+          }
+          echo "auditor suite correctly failed on the blinded-scanner tests"
