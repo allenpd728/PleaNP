@@ -27,6 +27,19 @@ work — lint sweeps, stale references, mechanical hygiene — is deliberately t
 privately in `portfolio-ops`, not filed here. If you find mechanical work, do not file
 it publicly; note it in your run output so it can be routed.
 
+## Branches
+
+`dev` is the working branch — every commit lands there. `main` is a **milestone
+marker**: promoted from `dev` deliberately at milestones, then left to sit still. It is
+not a working branch. Commit to `dev`, never to `main` directly.
+
+If the two ever differ, **`dev` is current.** Everything that reads these repos reads
+`dev`: the claim tooling, the status sweeps, and the HuB dashboard.
+
+**Edit workflows on `dev`.** GitHub fires a `schedule:` trigger only from the default
+branch, and the default branch is `dev` — a workflow edited only on `main` will not run.
+
+
 ## Project overview
 
 PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** of computational complexity theory — the meta-theorems (relativization, natural proofs, algebrization) showing which proof techniques provably cannot resolve P vs NP — plus the circuit-complexity and proof-complexity infrastructure those barriers require.
