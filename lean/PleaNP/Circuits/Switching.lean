@@ -101,13 +101,24 @@ admits a decision tree that reads at most `k` variables along any path: a
 constant needs `0` queries, a bare input needs `1`, and a query adds one level
 over the deeper of its two branches. Counted in *queries*, so `k` is the
 decision-tree depth in the standard sense (the two gate levels of the
-`BoolGate` query encoding are not charged). -/
+`BoolGate` query encoding are not charged).
+
+`weaken` makes the predicate monotone in `k` (a depth-`k` tree is also a
+depth-`k'` tree for `k ≤ k'`), which is the form Pass 3's induction needs —
+the refinement step produces a tree of some bounded depth and must relax it to
+the statement's `≤ k`. -/
 inductive HasDTDepth : {n : Nat} → BoolGate n → Nat → Prop where
   | const (b : Bool) : HasDTDepth (.const b : BoolGate n) 0
   | input (i : Fin n) : HasDTDepth (.input i : BoolGate n) 1
   | branch (i : Fin n) {a b : BoolGate n} {ka kb : Nat} :
       HasDTDepth a ka → HasDTDepth b kb →
       HasDTDepth (.or (.and (.input i) a) (.and (.not (.input i)) b)) (1 + max ka kb)
+  | weaken {c : BoolGate n} {k k' : Nat} : HasDTDepth c k → k ≤ k' → HasDTDepth c k'
+
+/-- Monotonicity of the bounded query depth in its bound. -/
+lemma HasDTDepth.mono {n : Nat} {c : BoolGate n} {k k' : Nat}
+    (h : HasDTDepth c k) (hk : k ≤ k') : HasDTDepth c k' :=
+  .weaken h hk
 
 /-- The shape is the depth-erased reading of `HasDTDepth` (a sanity link
 between the two views of a decision tree). -/
@@ -117,6 +128,7 @@ lemma HasDTDepth.isDecisionTree {n : Nat} {c : BoolGate n} {k : Nat}
   | const b => exact .const b
   | input i => exact .input i
   | branch i _ _ iha ihb => exact .branch i iha ihb
+  | weaken _ _ ih => exact ih
 
 /-- **The decision-tree depth of a circuit:** the least number of queries a
 decision tree computing it needs, an `sInf` over the set of depths witnessed
