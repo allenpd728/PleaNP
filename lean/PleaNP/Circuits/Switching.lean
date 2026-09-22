@@ -52,22 +52,24 @@ noncomputable instance (n : Nat) : Fintype (Restriction n) :=
 /-- A **`p`-random restriction** is a probability distribution over
 `Restriction n` with the distributional laws of "each variable independently
 free with probability `p`, otherwise a uniform Boolean": probability mass one,
-and exactly `C(n,k) p^k (1-p)^(n-k)` mass on restrictions fixing `k`
-variables. The product formula `∏_i (if free then p else (1-p)/2)` is Pass 3's
-canonical witness that this predicate is inhabited; stating the laws rather
-than the formula keeps the switching-lemma statement independent of that
-construction. -/
+and exactly `C(n,k) (1-p)^k p^(n-k)` mass on restrictions fixing `k`
+variables. The free-probability convention is `p` (Håstad's `p`), so the
+number of *fixed* variables is binomial with success probability `1-p`. The
+product formula `∏_i (if free then p else (1-p)/2)` is Pass 3's canonical
+witness that this predicate is inhabited; stating the laws rather than the
+formula keeps the switching-lemma statement independent of that construction. -/
 structure IsRandomRestriction (n : Nat) (p : ℚ) (μ : Restriction n → ℚ) : Prop where
   /-- A probability is non-negative. -/
   nonneg : ∀ r : Restriction n, 0 ≤ μ r
   /-- Total probability mass is one. -/
   sum_one : (∑ r : Restriction n, μ r) = 1
   /-- The **fixed-count distribution**: the mass carried by restrictions that
-    fix exactly `k` variables is `C(n,k) p^k (1-p)^(n-k)`, the binomial law of
-    the number of fixed variables under the product measure. -/
+    fix exactly `k` variables is `C(n,k) (1-p)^k p^(n-k)`, the binomial law of
+    the number of fixed variables when each variable is free with probability
+    `p` (Håstad's convention). -/
   fixedCount_law : ∀ k : Nat,
     (∑ r : Restriction n, if r.fixedCount = k then μ r else 0)
-      = (n.choose k : ℚ) * p ^ k * (1 - p) ^ (n - k)
+      = (n.choose k : ℚ) * (1 - p) ^ k * p ^ (n - k)
 
 namespace BoolGate
 
