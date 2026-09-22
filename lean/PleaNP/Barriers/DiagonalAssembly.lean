@@ -49,12 +49,43 @@ lemma simulate_returns {i k n r} (h : Simulate i k n = some r) :
     r ∈ Nat.Partrec.Code.eval (M_of i) n :=
   evaln_mem_eval (h := h)
 
+/-- **Window stability.** If the `i`-th program returns `r` within `k₁`
+  steps, it still returns `r` within any larger window `k₂`. This is the
+  fact that makes the simulate-or-punt step well defined: a decision the
+  tournament reads inside its window is *stable* — it cannot be un-decided
+  by extending the window, so the diagonalization's "read M_i's answer
+  within p(n)" is not an artifact of the cutoff. -/
+lemma simulate_mono {i k₁ k₂ n r} (h : Simulate i k₁ n = some r) (hk : k₁ ≤ k₂) :
+    Simulate i k₂ n = some r := by
+  unfold Simulate
+  exact Option.mem_def.mp
+    (Nat.Partrec.Code.evaln_mono (c := M_of i) (n := n) hk (Option.mem_def.mpr h))
+
+/-- **The window must exceed the input length.** A program that has
+  returned within `k` steps was run on an input `n < k` (Mathlib's
+  `evaln_bound`). Consequence for the punting strategy: `Simulate i k n`
+  can only decide inputs strictly shorter than its window, so "punt"
+  (`PuntsSlow`) is the only possible outcome for `n ≥ k` — the filler-input
+  side of the simulate-or-punt split. -/
+lemma simulate_bound {i k n r} (h : Simulate i k n = some r) : n < k := by
+  unfold Simulate at h
+  exact Nat.Partrec.Code.evaln_bound (Option.mem_def.mpr h)
+
 /-- The punting strategy made precise: a machine the tournament does NOT
   simulate to a decision within its window is "slow for this window", and
   the diagonalization is free to use a filler input for it. `evaln = none`
   is exactly "no decision within k steps". -/
 def PuntsSlow (i k n : Nat) : Prop :=
   Simulate i k n = none
+
+/-- Contrapositive form of `simulate_bound`: any input at or beyond the
+  window length is necessarily punted — the tournament's filler-input case
+  is forced, not chosen. -/
+lemma punts_of_le_window {i k n : Nat} (hn : k ≤ n) : PuntsSlow i k n := by
+  unfold PuntsSlow Simulate
+  cases h : Nat.Partrec.Code.evaln k (M_of i) n with
+  | none => rfl
+  | some r => exact absurd (Nat.Partrec.Code.evaln_bound (Option.mem_def.mpr h)) (not_lt.mpr hn)
 
 /-- Solved-by-substrate fact that the tournament hands off: with fewer
   than 2^n queries, an unqueried string exists and adding it flips U_B.
