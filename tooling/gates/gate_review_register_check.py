@@ -173,6 +173,13 @@ EXPECTED = {
     # NOTE: depth1_shapes_input is NOT in the register — depth_le_one_shapes
     # references it, so it stops firing.
     ("binder", "AC0.lean", "depth_le_one_shapes"),  # #72 Pass 2 depth-≤1 base case
+    # Issue #157: the leaf-generalized depth ladder states its shapes as
+    # single-binder `∃ a, IsLeaf a ∧ (c = ...)` disjuncts. The binder scanner
+    # over-splits the ∨-separated conjunct list, so it reports a `b`-conjunct
+    # as free of the `a` witness — a false positive, same shape as the
+    # MonotoneApprox `a`/`b` items below. Both conjuncts of each disjunct
+    # mention their witness; demonstrated-intentional.
+    ("binder", "AC0.lean", "a"),
     # Issue #71 Pass 3: the must-refute suite's public API (MustRefute.lean)
     # ŌĆö the validation-suite facts (constructive-universal, empty-not-large,
     # counting baseline) consumed by VALIDATION_SUITE.md and Rung-4 lower
