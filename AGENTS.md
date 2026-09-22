@@ -214,7 +214,7 @@ What changed is only where the commit lands.
 - **Duplicate-work prevention (DEC-026, 2026-09-13):** three rules in
   `docs/MULTI_AGENT_WORKFLOW.md` — (1) the **recent-activity guard** (§Claiming
   step 1): before claiming an `available` item whose subject overlaps a
-  recently-active `claimed` item, check `git log origin/dev` for sibling
+  recently-active `claimed` item, check `git log origin/main` for sibling
   commits in the last ~1h *even when the claim comment is stale* (an agent can be
   mid-session with an aged comment — the #63 duplicate mode); (2) the
   **claim-race rule**: the *earlier* claim comment wins; the later claimant backs
