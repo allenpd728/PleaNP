@@ -77,6 +77,36 @@ flag <why it's wrong>
 The workflow labels the issue (`review:confirmed`+close / `review:flagged`+open)
 and records it. That's the whole interaction.
 
+### Two handlers, one comment — and why that is deliberate
+
+The comment above is handled by **two** independent systems, and you do not need
+to care which one wins:
+
+1. `.github/workflows/review-issue.yml` — the GitHub Action, reacting within
+   seconds. This is the fast path.
+2. The **OpenHands `human-replies` automation** — a second, independent handler
+   on the same `issue_comment` event.
+
+Both do the same thing, and both are **idempotent**: each re-reads the issue's
+labels before acting, so whichever arrives second sees `review:confirmed` or
+`review:flagged` already applied and does nothing. No double comments, no
+double labels.
+
+The redundancy is the point. GitHub Actions minutes are finite, and a workflow
+can be throttled, disabled by a billing limit, or broken by a permissions
+change — any of which would silently stop your review replies from landing. The
+automation survives all three. If you would rather run only one, the automation
+is the more durable of the two.
+
+**Consequence for you: nothing changes.** Comment `confirm` or `flag <reason>`
+and step away.
+
+**One thing the workflow still owns exclusively:** the Action is what files a new
+issue when an agent drops a point into `reviews/pending/*.yaml` (its
+`sync-pending` job). The automation handles your *replies*; it does not create
+new review issues from repo YAML. Keep the Action's `push` trigger enabled for
+that, even if you rely on the automation for the reply side.
+
 **Fallback / machine store (for agents, or if you ever prefer the local
 inbox):** the local `reviews/INBOX.md` + `tooling/reviews/review_inbox.py`
 remain the machine-readable store. Agents use them; you generally won't need
@@ -162,7 +192,6 @@ returns to the agents as 'not yet reviewable' - no intent-ratification anywhere.
 The probes appear inside the review issue body (and in `reviews/INBOX.md`), so
 you answer them the same way: `confirm` when every answer matches your reading;
 `flag <reason>` otherwise (the claim reopens). Nothing else changes.
-
 
 ## Boolean way to think about it (traditional Gate-3 points
 

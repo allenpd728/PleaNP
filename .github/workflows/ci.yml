@@ -1,24 +1,15 @@
 name: CI
 
 on:
-  # `dev` is the integration branch and carries most of the work (116 commits
-  # ahead of main as of 2026-09-16), so it needs CI feedback on push -- not only
-  # at merge time. Before this was added, the build/test workflow had NEVER run
-  # on dev, which let a structurally-broken galaxy check and a stale artifact
-  # accumulate undetected (issue #103).
-  #
-  # `main` stays in the list: it is the reviewed branch, and a push there should
-  # still be verified. PRs to main also remain gated (issue #104 discusses the
-  # trigger policy).
-  #
-  # `dev` was added to `pull_request` for the same reason it was added to `push`:
-  # the audit work landed on `dev` via PR and got NO check runs at all, so a PR
-  # against the integration branch was less verified than a push to it. A branch
-  # that is the destination of most work must gate the PRs that target it.
+  # `main` is the working branch as of 2026-09-22 (`dev` is now a legacy name).
+  # The push trigger keeps it verified: before push-on-main existed, the
+  # build/test workflow had NEVER run on the branch carrying the work, which let
+  # a structurally-broken galaxy check and a stale artifact accumulate
+  # undetected (issue #103). PRs to main are gated too (issue #104).
   push:
-    branches: [main, dev]
+    branches: [main]
   pull_request:
-    branches: [main, dev]
+    branches: [main]
 
 jobs:
   build:
@@ -67,6 +58,10 @@ jobs:
         run: python3 tooling/gates/workflow_scan.py
       - name: Workflow-YAML scan unit tests (regression fixture is the pre-1037101 corruption; #110)
         run: python3 tooling/gates/tests/test_workflow_scan.py
+      - name: Sorry-tracker scan (docs/SORRY_TRACKER.md matches lean/PleaNP/ sorry sites + counts; #127)
+        run: python3 tooling/gates/sorry_tracker_scan.py
+      - name: Sorry-tracker scan unit tests (line/count/site drift + Resolved-row leak; #127)
+        run: python3 tooling/gates/tests/test_sorry_tracker_scan.py
       - name: Prose-corruption scan (the #101 signature; comments, string literals, docs; #101/#112)
         run: python3 tooling/gates/prose_scan.py .
       - name: Prose-corruption scan unit tests (doubles, fusions, tuple false-positives; #101)

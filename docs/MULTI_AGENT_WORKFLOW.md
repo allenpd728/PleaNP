@@ -9,7 +9,7 @@ adds PleaNP-specific rules: the **integrity gates** are mandatory for any
 formal claim, and **community contributions** (Zulip) enter through the same
 issue queue.
 
-> **System of record:** the issue queue plus `git log origin/dev`. Status
+> **System of record:** the issue queue plus `git log origin/main`. Status
 > tables in docs (ROADMAP.md etc.) are caches updated by sweeps and may lag —
 > check the queue and dev history before concluding work is undone.
 
@@ -37,7 +37,7 @@ check in §Claiming has no teeth.
 |---|---|
 | `status:available` | Ready to be claimed. All blockers are `done`. |
 | `status:claimed` | An agent has claimed it. Claim comment is the heartbeat. |
-| `status:done` | Work committed to `dev`. The human reviews on `dev` at leisure; anything needing changes spawns a follow-up task. |
+| `status:done` | Work committed to `main`. The human reviews on `dev` at leisure; anything needing changes spawns a follow-up task. |
 | `status:blocked-needs-input` | Agent could not start or finish; needs human input. |
 | `priority:high` | Jumps the work queue (default order is lowest issue number). |
 | `community-ready` | Good first contribution for external/Zulip community members. |
@@ -57,9 +57,90 @@ its code: a README in the module's directory (usage, API, dependencies) plus a
 test spec in `docs/STATEMENTS/` or `lean/tests/`. The doc is part of the
 Definition of Done, not an afterthought.
 
-Sizing rule: one task = completable in one agent run (well under an hour of
-work). If a task can't be done in one run, it gets decomposed further before
-becoming `available`.
+Sizing rule: one task = completable in **one agent run**. Note what a run now
+means: scheduled OpenHands automation runs are hard-capped at **30 minutes
+wall-clock**, and a run killed at the cap loses everything not already pushed.
+Recon, cloning, and gates consume a large share of that, so **size a task for 20
+minutes of work or less**. If a task can't be done in one run, decompose it
+before it becomes `available`.
+
+**Planning and research are legitimate tasks, not overhead.** When an issue is
+too large or too uncertain to implement in a single run, the right decomposition
+is usually a research or planning issue *first* — an investigation whose
+Definition of Done is a written finding, a decision record, or a freshly filed
+set of smaller issues. A 20-minute run that produces a well-scoped plan for the
+next five issues is a good outcome, not a wasted run. Prefer a short, honest
+research task over a half-finished implementation.
+
+## Automated runs (bounded, 30-minute cap)
+
+Some `status:available` work is picked up by a scheduled automation rather than
+an attended agent. Those runs are hard-capped at **30 minutes** — the platform
+rejects any longer timeout — and a run killed at the cap loses everything not
+already pushed to GitHub. Three rules follow. Attended agents should follow them
+too, because the loss mode is identical.
+
+1. **Push constantly.** Commit and push each coherent step the moment it exists.
+   Unpushed work dies with the sandbox; a pushed partial commit is a resumable
+   checkpoint. Do not accumulate local edits and push once at the end.
+2. **Checkpoint rather than overrun.** If a run cannot finish, push what is
+   complete, then post a comment beginning `<!-- oh-agent -->` `CHECKPOINT`
+   naming the run-id, the pushed SHAs, what is done, what remains, and the next
+   concrete step. Release the claim (restore `status:available`) so the next run
+   can pick it up immediately. A run that claims an issue whose last comment is a
+   `CHECKPOINT` should **continue that work, not re-derive it**. Never use
+   `status:blocked-needs-input` for mere time exhaustion — that label means a
+   human decision is required.
+3. **Mark every agent comment with `<!-- oh-agent -->`.** Claim comments,
+   progress notes, checkpoints, and closing comments alike. This is a
+   machine-readable marker, not decoration: an automation watches issue comments
+   and would otherwise wake on agent output and spend an entire run deciding to
+   do nothing. Omitting it costs a run.
+
+## Writing for the human reviewer
+
+Most issues are resolved without the human reading anything, but every so often
+one stops and waits for a person. When that happens, write for someone who has
+not read the thread. Two conventions make the human's queue scannable without
+anyone spending an agent run to summarise it.
+
+**1. `NEEDS:` — open every `status:blocked-needs-input` comment with it.**
+
+The comment's **first line** must be a single self-contained statement of the one
+thing a human must decide or provide:
+
+```
+NEEDS: choose whether the detector statistic is re-derived per-rung or once
+globally — DEC-030 implies per-rung but the ledger records a single value.
+```
+
+Rules for that line:
+
+- One decision or one piece of information. Not two.
+- Self-contained: it must make sense to a reader who has read nothing else.
+  A pointer ("see above", "as discussed") is not a `NEEDS:` line.
+- Say what you already know and where the ambiguity is, so the human can answer
+  in one message rather than asking a clarifying question.
+
+This is what makes the whole blocker queue readable in one command — see
+`needs-audit.sh` in this repo's tooling, or the recipe in
+`automations/HUMAN_REVIEW.md`. A blocked comment without a `NEEDS:` line is
+considered incomplete.
+
+**2. "Not in my lane" — one line on your final comment, when you saw something.**
+
+When a run finishes, if while working it noticed something outside its own task
+that it did **not** act on, append one line:
+
+```
+Not in my lane: ephapse #21 needs a dependency decision; PleaNP #96 looks like
+a duplicate of #77.
+```
+
+Only if true — never manufacture items to fill it. This costs nothing beyond a
+line on a comment already being written, and it makes the human's periodic scan
+surface cross-cutting problems that no single task owns. It is **not** a sweep:
+do not go looking for things to report, and never let it extend a run.
 
 **Multi-run tasks (adopted 2026-09-12, DEC-023 constraint-density
 learnings — see `docs/LEAN_FORMALIZATION_LESSONS_2026-09-10.md` §4/§6).** Tasks
@@ -85,7 +166,7 @@ multi-pass issue):
    rule applies to passes exactly as to issues: a claimed pass is the single
    `status:claimed` you may hold.
 3. **A pass is done when its end-state is done.** A pass-complete commit is a
-   normal commit on `dev` — it closes only that pass (its own gate evidence
+   normal commit on `main` — it closes only that pass (its own gate evidence
    in the done comment). The *issue* stays open until its final pass reports
    the full gate evidence.
 4. **A pass may only land on the issue's own precedents.** A later pass is
@@ -134,7 +215,7 @@ final pass is done.
    yours belongs to a live sibling — leave it alone.
    **Recent-activity guard (DEC-026):** before claiming an `available` item
    whose subject overlaps a recently-active `claimed` item (same file, same
-   rung, or an adjacent pass), check `git log origin/dev` for sibling commits
+   rung, or an adjacent pass), check `git log origin/main` for sibling commits
    touching that subject in the last ~1h *even if the claim comment is stale*.
    An agent can be mid-session on a pass whose claim comment is merely aged;
    reclaiming it and starting parallel work is the #63-duplicate failure mode.
@@ -177,7 +258,7 @@ final pass is done.
 2. **Pick work.** Any `status:available` issue the agent has enough context to
    start. Default order: lowest issue number first; issues labeled
    `priority:high` jump the queue. Before concluding any work item is undone,
-   check `git log origin/dev` and the issue queue — docs tables lag.
+   check `git log origin/main` and the issue queue — docs tables lag.
 2a. **Filing is not atomic — search, file, search again.** Before filing a new
    task, search open issues for its slug. After filing, search again: if a twin
    with a **lower issue number** now exists, close yours as duplicate.
@@ -198,13 +279,14 @@ final pass is done.
    claim on the same item landed within the last ~30 minutes with a different
    run-id, a sibling won the race — back off, restore `status:available`, and
    pick a different item (see the claim-race rule in §Concurrent-work).
-5. **Do the work; prove the done.** Commit directly to `dev` (no PR — review
-   happens retrospectively on `dev`). **The commit is not done until it is
-   pushed**: run `git push origin dev` before closing the issue — the system of
-   record is `git log origin/dev`, and a sibling agent cannot see, review, or
-   build on a commit that exists only in your local clone. A done comment that
+5. **Do the work; prove the done.** Commit directly to `main`, the working
+   branch and GitHub default (no PR — review happens retrospectively on `main`).
+   **The commit is not done until it is pushed**: run `git push origin main`
+   before closing the issue — the system of record is `git log origin/main`, and
+   a sibling agent cannot see, review, or build on a commit that exists only in
+   your local clone. A done comment that
    cites a local-only commit is a stranded claim (and no sweep will resurrect
-   it, because `origin/dev` has no trace of it). Swap
+   it, because `origin/main` has no trace of it). Swap
    `status:claimed` → `status:done` and close the issue with a comment linking
    the pushed commits (use `git rev-parse HEAD` after pushing, so the link is
    the sha that actually exists on `origin`). **Tasks with
@@ -219,7 +301,7 @@ final pass is done.
      onto the next task, before closing the issue, and before commenting "done".
      A commit that stays local is invisible to every sibling agent and to
      review; it might as well not exist.
-   - On push rejection (non-fast-forward): `git pull --rebase origin dev`,
+   - On push rejection (non-fast-forward): `git pull --rebase origin main`,
      resolve conflicts, push again. Repeat as needed.
    - **Rebase revealed a sibling landed the same work?** Compare the two
      implementations: if yours adds nothing, drop it; if yours genuinely

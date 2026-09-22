@@ -3,6 +3,41 @@
 > Condensed project reference for AI agents working in this repo. Dense by design.
 > For human-readable introductions see `README.md`; for the rung ladder see `docs/ROADMAP.md`.
 
+
+## Portfolio front door — read this before you start work
+
+This repository is one part of a wider portfolio. Before you claim or start work
+here, spend five minutes in **`philipdallen/portfolio-ops`** (private), in this order:
+
+1. `HANDOFF.md` — current portfolio state, what is blocked and on whom.
+2. `EXECUTION_PLAN.md` — the week's priorities and the sequencing principles.
+3. `RISK_REGISTER.md` and `AGENTS.md` — open risks, and the rules that apply to you.
+
+Why this is worth five minutes: it is the only place that records **decisions already
+made** and **work already owned by a human**. Skipping it is how a session redoes
+someone else's work, contradicts a recorded decision, or spends its run on something
+a human must do anyway.
+
+**If you are an unattended automation run, skip this step** — the operating contract
+is already inlined at the top of your prompt, and this orientation is for
+human-directed and ad-hoc sessions.
+
+**Do not confuse the two queues.** Work here is claimed and executed locally. Janitorial
+work — lint sweeps, stale references, mechanical hygiene — is deliberately tracked
+privately in `portfolio-ops`, not filed here. If you find mechanical work, do not file
+it publicly; note it in your run output so it can be routed.
+
+## Branches
+
+`main` is the working branch and the GitHub default — every commit lands here, and it is
+the branch visitors and all tooling read. `dev` also exists and is kept level with `main`;
+it is a legacy name, and nothing should be committed to it. If the two ever differ, treat
+`main` as authoritative.
+
+**Edit workflows on `main`.** A `schedule:` trigger fires only from the default branch, so
+a workflow that exists only on `dev` will not run. The sweep and audit workflows check out
+`main` and push there for the same reason — the status snapshot must land where the default
+branch points, or the dashboard reads a stale log.
 ## Project overview
 
 PleaNP is a Lean 4 / Mathlib project that formalizes the **barrier landscape** of computational complexity theory — the meta-theorems (relativization, natural proofs, algebrization) showing which proof techniques provably cannot resolve P vs NP — plus the circuit-complexity and proof-complexity infrastructure those barriers require.
@@ -142,25 +177,32 @@ and reuse it.
 
 ## Git workflow
 
-**Branch discipline (minimum flow -- mandatory):** All changes go to the `dev` branch first. A *different* agent (or a human) reviews on `dev` before anything is merged to `main`. **Nothing is pushed directly to `main` without review.** This is the integrity architecture applied to the repo itself: the agent that writes a change is not the agent that approves it (the same isolation as Gate 1/Gate 3, one level up).
-**A commit is not complete until it is pushed to `dev`:** `git push origin dev` immediately after every commit, before closing the issue or citing the commit in a done comment. The system of record is `git log origin/dev` — work that exists only in a local clone is invisible to siblings and review, so it counts as undone until pushed.
+**Branch discipline: work on `main`.** `main` is the working branch and the
+GitHub default. Commit and push there directly — `git push origin main`
+immediately after every commit, before closing the issue or citing the commit in
+a done comment. The system of record is `git log origin/main`; work that exists
+only in a local clone is invisible to siblings and counts as undone until pushed.
+
+`dev` still exists as a **legacy name**, kept level with `main`. Do not commit
+to it. (Before 2026-09-22 the flow was `dev`-first with review before `main`;
+that was superseded — see `portfolio-ops` `OPERATING_CADENCE.md` §5.)
 
 ```bash
-# 1. Work on dev (create it from main if needed, else check out the shared dev)
+# 1. Work on main
 git fetch origin
-git checkout dev 2>/dev/null || git checkout -b dev origin/main
+git checkout main
 
 # 2. Commit (identifies as AI agent)
 git -c user.name="openhands" -c user.email="openhands@all-hands.dev" commit -m "message"
 
-# 3. Push to dev for review -- never directly to main
-git push origin dev
-
-# 4. A DIFFERENT agent/human reviews dev, then merges to main:
-# git checkout main && git merge --no-ff dev && git push origin main
+# 3. Push
+git push origin main
 ```
 
-Do not commit to `main` and do not push to `main` from the same session that authored the change. If you find yourself about to `git push origin main`, stop -- push to `dev` instead and hand off for review.
+The integrity control did not disappear with the branch change: the *review
+evidence* requirement still stands (gate commands and their output pasted in the
+done comment), and `needs-review` still marks work that a human must accept.
+What changed is only where the commit lands.
 
 ## Conventions
 
@@ -172,7 +214,7 @@ Do not commit to `main` and do not push to `main` from the same session that aut
 - **Duplicate-work prevention (DEC-026, 2026-09-13):** three rules in
   `docs/MULTI_AGENT_WORKFLOW.md` — (1) the **recent-activity guard** (§Claiming
   step 1): before claiming an `available` item whose subject overlaps a
-  recently-active `claimed` item, check `git log origin/dev` for sibling
+  recently-active `claimed` item, check `git log origin/main` for sibling
   commits in the last ~1h *even when the claim comment is stale* (an agent can be
   mid-session with an aged comment — the #63 duplicate mode); (2) the
   **claim-race rule**: the *earlier* claim comment wins; the later claimant backs
