@@ -301,7 +301,7 @@ final pass is done.
      onto the next task, before closing the issue, and before commenting "done".
      A commit that stays local is invisible to every sibling agent and to
      review; it might as well not exist.
-   - On push rejection (non-fast-forward): `git pull --rebase origin dev`,
+   - On push rejection (non-fast-forward): `git pull --rebase origin main`,
      resolve conflicts, push again. Repeat as needed.
    - **Rebase revealed a sibling landed the same work?** Compare the two
      implementations: if yours adds nothing, drop it; if yours genuinely
