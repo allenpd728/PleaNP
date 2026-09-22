@@ -42,10 +42,32 @@ no olean fetch** beyond `docker pull` itself.
 
 ```bash
 docker pull ghcr.io/philipdallen/pleanp:main
-docker run --rm -v "$PWD":/workspaces/PleaNP \
-    -it ghcr.io/philipdallen/pleanp:main
-# inside: cd /workspaces/PleaNP/lean && lake build <module>   # warm, seconds
+# Mount the repo OVER the image's warm .lake and you shadow it, turning the
+# "no olean fetch" claim into a ~7GB re-download. Instead give .lake its own
+# named volume; on first use Docker seeds it from the image, so the warm cache
+# survives across runs (and across sandboxes, if the volume persists).
+docker run --rm \
+    -v pleanp-lake:/workspaces/PleaNP/lean/.lake \
+    -v "$PWD":/workspaces/PleaNP \
+    -w /workspaces/PleaNP/lean \
+    ghcr.io/philipdallen/pleanp:main bash -lc 'lake build <module>'
 ```
+
+Two sandbox gotchas, both worth one command:
+
+- The daemon is often **not** running even though the `docker` client is
+  installed (`failed to connect to the docker API at unix:///var/run/docker.sock`).
+  Start it first: `sudo -n dockerd > /tmp/dockerd.log 2>&1 &`, then wait a few
+  seconds for `Daemon has completed initialization`. The socket is root-owned, so
+  the `docker` commands themselves need `sudo -n docker ...`.
+- `lake build` in the container only sees the **repo files you mounted**, which
+  is what you want; the toolchain (`~/.elan`) and the oleans come from the image
+  or the volume.
+
+Verifying it is warm: a first `lake build PleaNP.Circuits.Switching` completes in
+~1.5 min on a warm volume and prints `Build completed successfully (8565 jobs)`.
+If instead you see `Attempting to download 8542 file(s)`, the volume was empty or
+shadowed and you are paying the cold fetch.
 
 Because GitHub Packages are unlimited/free for public images and the image
 layer-caches across pulls, this is effectively zero-cost and the closest thing
