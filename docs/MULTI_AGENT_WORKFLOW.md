@@ -286,7 +286,7 @@ final pass is done.
    a sibling agent cannot see, review, or build on a commit that exists only in
    your local clone. A done comment that
    cites a local-only commit is a stranded claim (and no sweep will resurrect
-   it, because `origin/dev` has no trace of it). Swap
+   it, because `origin/main` has no trace of it). Swap
    `status:claimed` → `status:done` and close the issue with a comment linking
    the pushed commits (use `git rev-parse HEAD` after pushing, so the link is
    the sha that actually exists on `origin`). **Tasks with
