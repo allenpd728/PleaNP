@@ -102,6 +102,43 @@ lemma truncate_size_le {n : Nat} (r : Nat) (A : ApproxSet n) :
   unfold sizeOf truncate
   exact Finset.card_filter_le _ _
 
+/-- **The truncated carrier is a subfamily of the `≤ r`-subsets.** Every
+  monomial surviving truncation has cardinality at most `r`, so it lies in
+  the `k`-th powerset layer for `k = m.card ≤ r`. This is the set-theoretic
+  core of the counting bound: it replaces an arbitrary family by one drawn
+  from a set whose cardinality is a function of `n` and `r` alone — the step
+  that makes the approximation countable independently of the circuit. -/
+lemma truncate_subset_powersetCard_biUnion {n r : Nat} (A : ApproxSet n) :
+    truncate r A ⊆ (Finset.range (r + 1)).biUnion
+      (fun k => (Finset.univ : Finset (Fin n)).powersetCard k) := by
+  intro m hm
+  rw [truncate, Finset.mem_filter] at hm
+  rw [Finset.mem_biUnion]
+  exact ⟨m.card, Finset.mem_range.mpr (Nat.lt_succ_of_le hm.2),
+    Finset.mem_powersetCard.mpr ⟨Finset.subset_univ m, rfl⟩⟩
+
+/-- **The Razborov counting bound.** The number of size-`≤ r` monomials in
+  any approximation is at most `∑_{k ≤ r} C(n, k)` — the number of subsets
+  of an `n`-element set of size at most `r`. Crucially this bound depends
+  only on the ambient dimension `n` and the truncation threshold `r`, *not*
+  on the circuit that produced the approximation: it is what lets Pass 3
+  count the monomials a monotone circuit of a given size can expose, and so
+  what makes the CLIQUE pigeonhole go through. -/
+lemma truncate_card_le_sum_choose {n r : Nat} (A : ApproxSet n) :
+    sizeOf (truncate r A) ≤ ∑ k ∈ Finset.range (r + 1), n.choose k := by
+  calc
+    sizeOf (truncate r A)
+        ≤ ((Finset.range (r + 1)).biUnion
+            (fun k => (Finset.univ : Finset (Fin n)).powersetCard k)).card :=
+          Finset.card_le_card (truncate_subset_powersetCard_biUnion A)
+    _ ≤ ∑ k ∈ Finset.range (r + 1),
+          ((Finset.univ : Finset (Fin n)).powersetCard k).card :=
+          Finset.card_biUnion_le
+    _ = ∑ k ∈ Finset.range (r + 1), n.choose k := by
+          apply Finset.sum_congr rfl
+          intro k _
+          rw [Finset.card_powersetCard, Finset.card_univ, Fintype.card_fin]
+
 end ApproxSet
 
 /-!
