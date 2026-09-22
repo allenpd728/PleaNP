@@ -168,8 +168,10 @@ EXPECTED = {
     ("binder", "AC0.lean", "parity_nontrivial"),
     ("binder", "AC0.lean", "parity_notin_AC0_relativizing"),
     # NOTE: depth_eq_zero_iff_input is NOT in the register anymore — #72
-    # Pass 2's not_computes_parity_depth1 references it, so it stops firing.
-    ("binder", "AC0.lean", "not_computes_parity_depth1"),  # #72 Pass 2 depth-1 exclusion
+    # Pass 2's not_computes_parity_depth_le_one references it, so it stops
+    # firing. Likewise `not_computes_parity_depth1` is no longer registered —
+    # the depth-≤1 extension `not_computes_parity_depth_le_one` references it.
+    ("binder", "AC0.lean", "not_computes_parity_depth_le_one"),  # #72 Pass 2 depth-≤1 extension
     # NOTE: depth1_shapes_input is NOT in the register — depth_le_one_shapes
     # references it, so it stops firing.
     ("binder", "AC0.lean", "depth_le_one_shapes"),  # #72 Pass 2 depth-≤1 base case
@@ -209,6 +211,11 @@ EXPECTED = {
     # depth-ladder used).
     ("binder", "MonotoneApprox.lean", "truncate_size_le"),
     ("binder", "MonotoneApprox.lean", "monomialEval_imp_eval"),  # scanner strips the trailing prime
+    # Issue #74 Pass 3 (2026-09-22): the completeness direction + packaged
+    # exactness lemma — `eval_imp_monomialEval` references
+    # `monomialEval_imp_eval`, so only `eval_iff_exists_monomial` stays
+    # flagged (the counting bound's invocation surface).
+    ("binder", "MonotoneApprox.lean", "eval_iff_exists_monomial"),
         # Issue #75 Pass 1: the resolution substrate API (Resolution.lean) —
 
     # `eval` is referenced internally by Clause.eval but the scanner resolves

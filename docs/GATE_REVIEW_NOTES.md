@@ -288,7 +288,14 @@ removed accordingly; the remaining register matches the fired set.
 - `not_computes_parity_depth1` — the #72 Pass 2 depth-1 exclusion: no
   length-2 depth-1 circuit computes parity (the depth-ladder second rung).
   NOT flagged: it uses `depth_eq_zero_iff_input` and closes each two-input
-  shape by decide over the finite `Fin 2 -> Bool` space.
+  shape by decide over the finite `Fin 2 -> Bool` space; and it is itself
+  referenced by `not_computes_parity_depth_le_one`, so it no longer fires
+  as an unreferenced decl either.
+- `not_computes_parity_depth_le_one` — the #72 Pass 2 depth-≤1 extension
+  (2026-09-22): the depth-1 exclusion extended down to depth 0, the form
+  the switching-lemma induction consumes. Flagged as unreferenced public
+  proof-work API (the pattern of the ladder rungs above); registered as
+  demonstrated-intentional.
 - `depth1_shapes_input` — the #72 Pass 1 structural core (2026-09-22): every
   depth-1 circuit is a single gate over input literals (the depth-ladder
   rung between `depth_eq_zero_iff_input` and the exclusion). NOT flagged: it
@@ -367,6 +374,21 @@ lemma `monomialEval_imp_eval` (with its `MonomialEval`-shaped restatement
   membership identities and uses `of_decide_eq_true` on `MonomialEval`), so
   the scanner resolves them. Those three EXPECTED entries were removed, the
   same way #157's depth ladder resolved `depth_eq_zero_iff_input`.
+
+**Update (2026-09-22, #74 Pass 3 item 1 — completeness).** The completeness
+half of approximation-correctness landed:
+`eval_imp_monomialEval` (`g = true` on an assignment forces a produced
+monomial to be satisfied there) and its packaged exactness form
+`eval_iff_exists_monomial` (the approximation's 1-set **is** the gate's
+1-set, the property the counting bound consumes). One register change:
+
+- `eval_iff_exists_monomial` is **new** unreferenced public API awaiting
+  Pass-3's counting bound — added to EXPECTED.
+- `eval_imp_monomialEval` is **not** flagged — it is referenced by
+  `eval_iff_exists_monomial` (the exactness packaging), so the scanner
+  resolves it. `monomialEval_imp_eval` stays registered because its
+  `MonomialEval`-shaped restatement `monomialEval_imp_eval'` is not yet
+  referenced by any scanned declaration.
 
 ## 4. BGS clause-(a) A2/A3 console-oracle API (issue #63)
 

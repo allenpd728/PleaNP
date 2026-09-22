@@ -212,6 +212,56 @@ lemma monomialEval_imp_eval' {n : Nat} (g : MonotoneGate n) {v : Fin n → Bool}
     MonotoneGate.eval g v = true :=
   monomialEval_imp_eval g hm (of_decide_eq_true hv)
 
+/-- **Completeness of the reducer (the 0->1 direction of the monotone
+  approximation).** If a gate evaluates to `true` on an assignment, then
+  some monomial the reducer produces is satisfied there. This is the second
+  half of approximation-correctness: together with `monomialEval_imp_eval`
+  it says the approximation's 1-set *is* the gate's 1-set, which is the
+  property the Razborov counting bound consumes (the counting only counts
+  the produced witness monomials, so it must know every 1 is witnessed).
+  Structural induction on the gate; the OR case splits the disjunction and
+  the AND case pairs the two witness monomials through `smAnd`. -/
+lemma eval_imp_monomialEval {n : Nat} (g : MonotoneGate n) {v : Fin n → Bool}
+    (hv : MonotoneGate.eval g v = true) :
+    ∃ m : Monomial n, m ∈ approximate g ∧ ∀ i ∈ m, v i = true := by
+  induction g with
+  | input i =>
+      exact ⟨{i}, by simp [approximate],
+        by intro j hj; rw [Finset.mem_singleton] at hj; subst hj
+           simpa only [MonotoneGate.eval] using hv⟩
+  | or a b iha ihb =>
+      have hv' : MonotoneGate.eval a v = true ∨ MonotoneGate.eval b v = true := by
+        simpa only [MonotoneGate.eval, Bool.or_eq_true] using hv
+      rcases hv' with ha | hb
+      · obtain ⟨m, hm, hval⟩ := iha ha
+        exact ⟨m, by simpa [approximate] using (sm_or_mem _ _ m).mpr (Or.inl hm), hval⟩
+      · obtain ⟨m, hm, hval⟩ := ihb hb
+        exact ⟨m, by simpa [approximate] using (sm_or_mem _ _ m).mpr (Or.inr hm), hval⟩
+  | and a b iha ihb =>
+      have hv' : MonotoneGate.eval a v = true ∧ MonotoneGate.eval b v = true := by
+        simpa only [MonotoneGate.eval, Bool.and_eq_true] using hv
+      obtain ⟨ma, hma, hvalA⟩ := iha hv'.1
+      obtain ⟨mb, hmb, hvalB⟩ := ihb hv'.2
+      refine ⟨ma ∪ mb,
+        by simpa [approximate] using (sm_and_mem _ _ (ma ∪ mb)).mpr ⟨ma, mb, hma, hmb, rfl⟩, ?_⟩
+      intro i hi
+      rcases Finset.mem_union.mp hi with hiA | hiB
+      · exact hvalA i hiA
+      · exact hvalB i hiB
+
+/-- **Approximation correctness (exactness).** The reducer's approximation
+  has exactly the same 1-set as the gate: a gate is `true` on an assignment
+  iff some produced monomial is satisfied there. This is the packaged form
+  of the two directions (`eval_imp_monomialEval` and
+  `monomialEval_imp_eval`) that Pass 3's counting bound invokes. -/
+lemma eval_iff_exists_monomial {n : Nat} (g : MonotoneGate n) {v : Fin n → Bool} :
+    MonotoneGate.eval g v = true ↔
+      ∃ m : Monomial n, m ∈ approximate g ∧ ∀ i ∈ m, v i = true := by
+  constructor
+  · exact eval_imp_monomialEval g
+  · rintro ⟨m, hm, hval⟩
+    exact monomialEval_imp_eval g hm hval
+
 end Reducer
 
 end Circuits
