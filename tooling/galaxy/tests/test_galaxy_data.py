@@ -113,6 +113,35 @@ class TestSorries(unittest.TestCase):
         md = "|---|---|---|\n| File | What | pending | ... |\n"
         self.assertEqual(galaxy_data.parse_sorries(md), [])
 
+    def test_resolved_row_with_pipe_in_cell_is_not_open_debt(self):
+        # Regression for #127: `{ L | sorry }` in a Resolved row's *What* cell
+        # split on `|` into extra cells and parsed as live debt.
+        md = """## Detailed inventory
+
+| # | File:Line | What it is | Pending on | Priority |
+|---|---|---|---|---|
+| 7 | `A.lean:4` | a real open site. | Upstream P | Medium |
+| 6 | ~~`B.lean:2`~~ **Resolved** — RHS was `{ L | sorry }`. | — | — |
+"""
+        asts = galaxy_data.parse_sorries(md)
+        self.assertEqual([a["label"] for a in asts], ["sorry: A.lean:4"])
+
+    def test_resolved_section_rows_are_not_open_debt(self):
+        md = """## Detailed inventory
+
+| # | File:Line | What it is | Pending on | Priority |
+|---|---|---|---|---|
+| 7 | `A.lean:4` | a real open site. | Upstream P | Medium |
+
+## Resolved
+
+| # | File:Line | What it is | Pending on | Priority |
+|---|---|---|---|---|
+| 6 | `B.lean:2` | closed some time ago. | — | — |
+"""
+        asts = galaxy_data.parse_sorries(md)
+        self.assertEqual([a["label"] for a in asts], ["sorry: A.lean:4"])
+
 
 class TestReviewPoints(unittest.TestCase):
     def test_parses_review_yaml(self):
