@@ -288,6 +288,14 @@ removed accordingly; the remaining register matches the fired set.
   length-2 depth-1 circuit computes parity (the depth-ladder second rung).
   NOT flagged: it uses `depth_eq_zero_iff_input` and closes each two-input
   shape by decide over the finite `Fin 2 -> Bool` space.
+- `depth1_shapes_input` — the #72 Pass 1 structural core (2026-09-22): every
+  depth-1 circuit is a single gate over input literals (the depth-ladder
+  rung between `depth_eq_zero_iff_input` and the exclusion). NOT flagged: it
+  is referenced by `depth_le_one_shapes`, so the scanner resolves it.
+- `depth_le_one_shapes` — the #72 Pass 1 base case (2026-09-22): every
+  depth-≤1 circuit is a gate over input literals, the depth-reduction base
+  case. Flagged as unreferenced public proof-work API (the pattern of the
+  ladder rungs above); registered as demonstrated-intentional.
 - `parity_notin_AC0` itself is NOT flagged anymore — the classification
   theorem references it, so the scanner resolves it.
 

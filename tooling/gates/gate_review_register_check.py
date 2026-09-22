@@ -170,6 +170,9 @@ EXPECTED = {
     # NOTE: depth_eq_zero_iff_input is NOT in the register anymore — #72
     # Pass 2's not_computes_parity_depth1 references it, so it stops firing.
     ("binder", "AC0.lean", "not_computes_parity_depth1"),  # #72 Pass 2 depth-1 exclusion
+    # NOTE: depth1_shapes_input is NOT in the register — depth_le_one_shapes
+    # references it, so it stops firing.
+    ("binder", "AC0.lean", "depth_le_one_shapes"),  # #72 Pass 2 depth-≤1 base case
     # Issue #71 Pass 3: the must-refute suite's public API (MustRefute.lean)
     # ŌĆö the validation-suite facts (constructive-universal, empty-not-large,
     # counting baseline) consumed by VALIDATION_SUITE.md and Rung-4 lower

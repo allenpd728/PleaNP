@@ -204,6 +204,69 @@ theorem not_computes_parity_depth1 :
       rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨ia, rfl⟩
       fin_cases ia <;> decide
 
+/-! ## AC0 lower-bound structural core — the depth-1 gate-shape characterisation
+
+The counting step the switching lemma is *about*, in its base case: **every
+depth-1 circuit is a single gate over input literals**. This is what lets a
+random restriction shrink a circuit by one level — a depth-1 gate has no
+strictly-lower non-input gate to recurse into, so its depth is decided by the
+restriction's action on its literal set alone. It generalises
+`depth_eq_zero_iff_input` one rung and is the structural invariant the Pass-2
+depth-reduction consumes. -/
+
+/-- A `depth c = 1` circuit is exactly one gate over input literals: a negated
+  input, an AND/OR of two inputs, or a negated AND/OR of two inputs. Proved by
+  case on the top gate, using `depth_eq_zero_iff_input` to force each child to
+  a depth-0 input gate. -/
+theorem depth1_shapes_input {n : Nat} (c : BoolGate n) (hc : BoolGate.depth c = 1) :
+    (∃ i : Fin n, c = BoolGate.not (BoolGate.input i)) ∨
+    (∃ i j : Fin n, c = BoolGate.and (BoolGate.input i) (BoolGate.input j)) ∨
+    (∃ i j : Fin n, c = BoolGate.or (BoolGate.input i) (BoolGate.input j)) ∨
+    (∃ i j : Fin n, c = BoolGate.not (BoolGate.and (BoolGate.input i) (BoolGate.input j))) ∨
+    (∃ i j : Fin n, c = BoolGate.not (BoolGate.or (BoolGate.input i) (BoolGate.input j))) := by
+  cases c with
+  | input i => simp only [BoolGate.depth] at hc; omega
+  | and a b =>
+      have h : 1 + max (BoolGate.depth a) (BoolGate.depth b) = 1 := by
+        simpa only [BoolGate.depth] using hc
+      have ha0 : BoolGate.depth a = 0 := by omega
+      have hb0 : BoolGate.depth b = 0 := by omega
+      rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨i, rfl⟩
+      rcases (depth_eq_zero_iff_input b).1 hb0 with ⟨j, rfl⟩
+      exact Or.inr (Or.inl ⟨i, j, rfl⟩)
+  | or a b =>
+      have h : 1 + max (BoolGate.depth a) (BoolGate.depth b) = 1 := by
+        simpa only [BoolGate.depth] using hc
+      have ha0 : BoolGate.depth a = 0 := by omega
+      have hb0 : BoolGate.depth b = 0 := by omega
+      rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨i, rfl⟩
+      rcases (depth_eq_zero_iff_input b).1 hb0 with ⟨j, rfl⟩
+      exact Or.inr (Or.inr (Or.inl ⟨i, j, rfl⟩))
+  | not a =>
+      have h : 1 + BoolGate.depth a = 1 := by
+        simpa only [BoolGate.depth] using hc
+      have ha0 : BoolGate.depth a = 0 := by omega
+      rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨i, rfl⟩
+      exact Or.inl ⟨i, rfl⟩
+
+/-- **Every circuit of depth ≤ 1 is a gate over input literals.** The
+  `depth1_shapes_input` characterisation extended down to depth 0 (a bare
+  input), so a single lemma enumerates all depth-≤1 shapes. This is the
+  induction's base case in the form the Pass-2 depth-reduction consumes: a
+  depth-≤1 circuit has no strictly-lower *non-input* gate to recurse into, so
+  a random restriction decides its depth from its literal set alone. -/
+theorem depth_le_one_shapes {n : Nat} (c : BoolGate n) (hc : BoolGate.depth c ≤ 1) :
+    (∃ i : Fin n, c = BoolGate.input i) ∨
+    (∃ i : Fin n, c = BoolGate.not (BoolGate.input i)) ∨
+    (∃ i j : Fin n, c = BoolGate.and (BoolGate.input i) (BoolGate.input j)) ∨
+    (∃ i j : Fin n, c = BoolGate.or (BoolGate.input i) (BoolGate.input j)) ∨
+    (∃ i j : Fin n, c = BoolGate.not (BoolGate.and (BoolGate.input i) (BoolGate.input j))) ∨
+    (∃ i j : Fin n, c = BoolGate.not (BoolGate.or (BoolGate.input i) (BoolGate.input j))) := by
+  have h01 : BoolGate.depth c = 0 ∨ BoolGate.depth c = 1 := by omega
+  rcases h01 with h0 | h1
+  · exact Or.inl ((depth_eq_zero_iff_input c).1 h0)
+  · exact Or.inr (depth1_shapes_input c h1)
+
 end Circuits
 
 end PleaNP
