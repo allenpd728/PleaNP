@@ -355,6 +355,19 @@ shapes (same register pattern as `y` in `OracleComplexity.lean`).
 to the scan set resolved `Monotone.lean`'s `MonotoneFamily.sizeOf` (no
 longer flagged), so that EXPECTED entry was removed.
 
+**Update (2026-09-22, #74 Pass 3).** Pass 3 added `ApproxSet.truncate` /
+`truncate_size_le` (the Razborov size-`r` closure) and the reducer-soundness
+lemma `monomialEval_imp_eval` (with its `MonomialEval`-shaped restatement
+`monomialEval_imp_eval'`). Two changes to this section's register:
+
+- `truncate_size_le` and `monomialEval_imp_eval` are **new** unreferenced
+  public API awaiting Pass-3's counting bound — added to EXPECTED.
+- `sm_or_mem`, `sm_and_mem`, and `MonomialEval` are **no longer flagged** —
+  `monomialEval_imp_eval` now references all three (it recurses through the
+  membership identities and uses `of_decide_eq_true` on `MonomialEval`), so
+  the scanner resolves them. Those three EXPECTED entries were removed, the
+  same way #157's depth ladder resolved `depth_eq_zero_iff_input`.
+
 ## 4. BGS clause-(a) A2/A3 console-oracle API (issue #63)
 
 **Sweep lineage:** run=20260913-1020-GY2l (issue #63).

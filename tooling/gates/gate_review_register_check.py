@@ -196,13 +196,19 @@ EXPECTED = {
     # register pattern as `y` in OracleComplexity.lean).
     ("binder", "MonotoneApprox.lean", "sm_or_size_le"),
     ("binder", "MonotoneApprox.lean", "sm_and_size_le"),
-    ("binder", "MonotoneApprox.lean", "sm_or_mem"),
-    ("binder", "MonotoneApprox.lean", "sm_and_mem"),
     ("binder", "MonotoneApprox.lean", "approximate_nonempty"),
-    ("binder", "MonotoneApprox.lean", "MonomialEval"),
     ("binder", "MonotoneApprox.lean", "m"),
     ("binder", "MonotoneApprox.lean", "a"),
     ("binder", "MonotoneApprox.lean", "b"),
+    # Issue #74 Pass 3 (2026-09-22): the truncation reducer + reducer
+    # soundness of lean/PleaNP/Circuits/MonotoneApprox.lean — public
+    # proof-work API consumed by the Pass-3 CLIQUE counting bound, not dead
+    # code. NOTE: `sm_or_mem`, `sm_and_mem`, and `MonomialEval` are no longer
+    # flagged — `monomialEval_imp_eval`/`monomialEval_imp_eval'` now reference
+    # them, so those register entries were removed (the pattern the #157
+    # depth-ladder used).
+    ("binder", "MonotoneApprox.lean", "truncate_size_le"),
+    ("binder", "MonotoneApprox.lean", "monomialEval_imp_eval"),  # scanner strips the trailing prime
         # Issue #75 Pass 1: the resolution substrate API (Resolution.lean) —
 
     # `eval` is referenced internally by Clause.eval but the scanner resolves
