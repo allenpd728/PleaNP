@@ -177,25 +177,32 @@ and reuse it.
 
 ## Git workflow
 
-**Branch discipline (minimum flow -- mandatory):** All changes go to the `dev` branch first. A *different* agent (or a human) reviews on `dev` before anything is merged to `main`. **Nothing is pushed directly to `main` without review.** This is the integrity architecture applied to the repo itself: the agent that writes a change is not the agent that approves it (the same isolation as Gate 1/Gate 3, one level up).
-**A commit is not complete until it is pushed to `dev`:** `git push origin dev` immediately after every commit, before closing the issue or citing the commit in a done comment. The system of record is `git log origin/dev` — work that exists only in a local clone is invisible to siblings and review, so it counts as undone until pushed.
+**Branch discipline: work on `main`.** `main` is the working branch and the
+GitHub default. Commit and push there directly — `git push origin main`
+immediately after every commit, before closing the issue or citing the commit in
+a done comment. The system of record is `git log origin/main`; work that exists
+only in a local clone is invisible to siblings and counts as undone until pushed.
+
+`dev` still exists as a **legacy name**, kept level with `main`. Do not commit
+to it. (Before 2026-09-22 the flow was `dev`-first with review before `main`;
+that was superseded — see `portfolio-ops` `OPERATING_CADENCE.md` §5.)
 
 ```bash
-# 1. Work on dev (create it from main if needed, else check out the shared dev)
+# 1. Work on main
 git fetch origin
-git checkout dev 2>/dev/null || git checkout -b dev origin/main
+git checkout main
 
 # 2. Commit (identifies as AI agent)
 git -c user.name="openhands" -c user.email="openhands@all-hands.dev" commit -m "message"
 
-# 3. Push to dev for review -- never directly to main
-git push origin dev
-
-# 4. A DIFFERENT agent/human reviews dev, then merges to main:
-# git checkout main && git merge --no-ff dev && git push origin main
+# 3. Push
+git push origin main
 ```
 
-Do not commit to `main` and do not push to `main` from the same session that authored the change. If you find yourself about to `git push origin main`, stop -- push to `dev` instead and hand off for review.
+The integrity control did not disappear with the branch change: the *review
+evidence* requirement still stands (gate commands and their output pasted in the
+done comment), and `needs-review` still marks work that a human must accept.
+What changed is only where the commit lands.
 
 ## Conventions
 
