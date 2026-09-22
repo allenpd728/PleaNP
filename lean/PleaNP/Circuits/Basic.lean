@@ -29,13 +29,20 @@ namespace PleaNP
 
 namespace Circuits
 
-/-- A Boolean gate term over `n` input variables: an input bit, or an
-  AND/OR/NOT gate over sub-terms. This is the *tree* model of a Boolean
-  circuit (each gate has fan-out sharing elided — the size/depth functions
-  below are structural, and the family shape carries the size/depth
-  quantities every Rung-4 bound quantifies). -/
+/-- A Boolean gate term over `n` input variables: an input bit, a Boolean
+  constant leaf, or an AND/OR/NOT gate over sub-terms. This is the *tree*
+  model of a Boolean circuit (each gate has fan-out sharing elided — the
+  size/depth functions below are structural, and the family shape carries
+  the size/depth quantities every Rung-4 bound quantifies).
+
+  The `const` leaf (issue #157) is the representation prerequisite for the
+  Håstad switching lemma (#72 Pass 1): a random restriction must *fix* a
+  variable to a Boolean constant, and without a constant gate there is no
+  representable result for `Restriction.apply`. Its shape matches the
+  `input` leaf (`size = 1`, `depth = 0`): both are 0-ary leaves. -/
 inductive BoolGate (n : Nat) where
   | input (i : Fin n)      -- reads the i-th input bit
+  | const (b : Bool)       -- constant leaf (the restriction's fixed value)
   | and (a b : BoolGate n) -- AND gate over two sub-circuits
   | or (a b : BoolGate n)  -- OR gate over two sub-circuits
   | not (a : BoolGate n)   -- NOT gate over one sub-circuit
@@ -49,6 +56,7 @@ namespace BoolGate
   Load-bearing: `BoolGate.size` increases strictly through every gate. -/
 def size : {n : Nat} → BoolGate n → Nat
   | _, input _ => 1
+  | _, const _ => 1
   | _, and a b => 1 + size a + size b
   | _, or a b => 1 + size a + size b
   | _, not a => 1 + size a
@@ -58,6 +66,7 @@ def size : {n : Nat} → BoolGate n → Nat
   this quantity. -/
 def depth : {n : Nat} → BoolGate n → Nat
   | _, input _ => 0
+  | _, const _ => 0
   | _, and a b => 1 + max (depth a) (depth b)
   | _, or a b => 1 + max (depth a) (depth b)
   | _, not a => 1 + depth a
@@ -68,6 +77,7 @@ lemma size_pos {n : Nat} (c : BoolGate n) : 0 < size c := by
 lemma depth_size_le {n : Nat} (c : BoolGate n) : depth c < size c := by
   induction c with
   | input i => simp [size, depth]
+  | const b => simp [size, depth]
   | and a b iha ihb =>
       simp [size, depth]
       have ha : depth a < size a + size b :=
@@ -85,6 +95,18 @@ lemma depth_size_le {n : Nat} (c : BoolGate n) : depth c < size c := by
   | not a ih =>
       simp [size, depth]
       omega
+
+end BoolGate
+
+namespace BoolGate
+
+/-- **A leaf** is a 0-ary gate: an input variable or a Boolean constant. The
+  const leaf (issue #157) sits beside `input` as the other depth-0 shape, so
+  the depth ladder's base case is stated over `IsLeaf` rather than `input`
+  alone. -/
+inductive IsLeaf : {n : Nat} → BoolGate n → Prop where
+  | input (i : Fin n) : IsLeaf (.input i)
+  | const (b : Bool) : IsLeaf (.const b)
 
 end BoolGate
 
@@ -157,6 +179,14 @@ example : BoolGate.size and2 = 3 := by
 
 example : BoolGate.depth and2 = 1 := by
   simp [and2, BoolGate.depth]
+
+/-- The constant-`true` circuit (`const true`): size 1, depth 0 — the leaf a
+  random restriction produces when it fixes a variable (#157). -/
+example : BoolGate.size (BoolGate.const true : BoolGate 3) = 1 := by
+  simp [BoolGate.size]
+
+example : BoolGate.depth (BoolGate.const true : BoolGate 3) = 0 := by
+  simp [BoolGate.depth]
 
 /-- The universal property `C_n = F_n` is Large: every n-ary function is a
   member, so `|C_n| = |F_n|` and the fraction inequality is trivially

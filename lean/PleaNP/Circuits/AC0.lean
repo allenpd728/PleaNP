@@ -48,6 +48,7 @@ namespace Circuits
   computes the function we claim. -/
 def BoolGate.eval {n : Nat} : BoolGate n → (Fin n → Bool) → Bool
   | .input i, v => v i
+  | .const b, _ => b
   | .and a b, v => BoolGate.eval a v && BoolGate.eval b v
   | .or a b, v => BoolGate.eval a v || BoolGate.eval b v
   | .not a, v => !(BoolGate.eval a v)
@@ -143,19 +144,23 @@ exclusion of parity and the depth-∞ switching-lemma reduction are the
 follow-up (tracked in #72 Pass 2's continuation).
 -/
 
-/-- A depth-0 circuit is an input gate: `depth c = 0` forces `c = input i`
-  for some variable `i` (every non-input gate has depth at least 1). -/
+/-- A depth-0 circuit is a **leaf**: either an input gate or a constant gate
+  (every non-leaf gate has depth at least 1). Generalized in issue #157 to
+  include the `const` leaf the switching-lemma restriction needs. -/
 theorem depth_eq_zero_iff_input {n : Nat} (c : BoolGate n) :
-    BoolGate.depth c = 0 ↔ ∃ i : Fin n, c = BoolGate.input i := by
+    BoolGate.depth c = 0 ↔ BoolGate.IsLeaf c := by
   constructor
   · intro hd
     cases c with
-    | input i => exact ⟨i, rfl⟩
+    | input i => exact .input i
+    | const b => exact .const b
     | and a b => simp [BoolGate.depth] at hd
     | or a b => simp [BoolGate.depth] at hd
     | not a => simp [BoolGate.depth] at hd
-  · rintro ⟨i, rfl⟩
-    simp [BoolGate.depth]
+  · intro hl
+    cases hl with
+    | input i => simp [BoolGate.depth]
+    | const b => simp [BoolGate.depth]
 
 
 /-! ## AC0 lower-bound structural core -- depth-1 exclusion (issue #72 Pass 2)
@@ -178,31 +183,50 @@ theorem not_computes_parity_depth1 :
       Not (forall v : Fin 2 -> Bool, BoolGate.eval c v = parity 2 v) := by
   intro c hd
   -- Case on the top gate (named binders); depth-1 forces each child to be
-  -- depth-0 (an input gate), after which `decide` closes the concrete
-  -- two-input shape.
+  -- depth-0 (a leaf: input or const), after which `decide` closes the
+  -- concrete shape.
   cases c with
   | input i => simp [BoolGate.depth] at hd
+  | const b => simp [BoolGate.depth] at hd
   | and a b =>
       have hda : 1 + max (BoolGate.depth a) (BoolGate.depth b) = 1 := by
         simpa [BoolGate.depth] using hd
       have ha0 : BoolGate.depth a = 0 := by omega
       have hb0 : BoolGate.depth b = 0 := by omega
-      rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨ia, rfl⟩
-      rcases (depth_eq_zero_iff_input b).1 hb0 with ⟨ib, rfl⟩
-      fin_cases ia <;> fin_cases ib <;> decide
+      have hla := (depth_eq_zero_iff_input a).1 ha0
+      have hlb := (depth_eq_zero_iff_input b).1 hb0
+      cases hla with
+      | input ia =>
+          cases hlb with
+          | input ib => fin_cases ia <;> fin_cases ib <;> decide
+          | const bv => fin_cases ia <;> cases bv <;> decide
+      | const av =>
+          cases hlb with
+          | input ib => cases av <;> fin_cases ib <;> decide
+          | const bv => cases av <;> cases bv <;> decide
   | or a b =>
       have hda : 1 + max (BoolGate.depth a) (BoolGate.depth b) = 1 := by
         simpa [BoolGate.depth] using hd
       have ha0 : BoolGate.depth a = 0 := by omega
       have hb0 : BoolGate.depth b = 0 := by omega
-      rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨ia, rfl⟩
-      rcases (depth_eq_zero_iff_input b).1 hb0 with ⟨ib, rfl⟩
-      fin_cases ia <;> fin_cases ib <;> decide
+      have hla := (depth_eq_zero_iff_input a).1 ha0
+      have hlb := (depth_eq_zero_iff_input b).1 hb0
+      cases hla with
+      | input ia =>
+          cases hlb with
+          | input ib => fin_cases ia <;> fin_cases ib <;> decide
+          | const bv => fin_cases ia <;> cases bv <;> decide
+      | const av =>
+          cases hlb with
+          | input ib => cases av <;> fin_cases ib <;> decide
+          | const bv => cases av <;> cases bv <;> decide
   | not a =>
       have ha0 : BoolGate.depth a = 0 := by
         simpa [BoolGate.depth] using hd
-      rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨ia, rfl⟩
-      fin_cases ia <;> decide
+      have hla := (depth_eq_zero_iff_input a).1 ha0
+      cases hla with
+      | input ia => fin_cases ia <;> decide
+      | const av => cases av <;> decide
 
 /-! ## AC0 lower-bound structural core — the depth-1 gate-shape characterisation
 
@@ -214,57 +238,60 @@ restriction's action on its literal set alone. It generalises
 `depth_eq_zero_iff_input` one rung and is the structural invariant the Pass-2
 depth-reduction consumes. -/
 
-/-- A `depth c = 1` circuit is exactly one gate over input literals: a negated
-  input, an AND/OR of two inputs, or a negated AND/OR of two inputs. Proved by
-  case on the top gate, using `depth_eq_zero_iff_input` to force each child to
-  a depth-0 input gate. -/
+/-- A `depth c = 1` circuit is exactly one gate over leaves: a negated leaf,
+  an AND/OR of two leaves, or a negated AND/OR of two leaves. Proved by case
+  on the top gate, using `depth_eq_zero_iff_input` to force each child to a
+  depth-0 leaf (input or const — the const case added in issue #157). -/
 theorem depth1_shapes_input {n : Nat} (c : BoolGate n) (hc : BoolGate.depth c = 1) :
-    (∃ i : Fin n, c = BoolGate.not (BoolGate.input i)) ∨
-    (∃ i j : Fin n, c = BoolGate.and (BoolGate.input i) (BoolGate.input j)) ∨
-    (∃ i j : Fin n, c = BoolGate.or (BoolGate.input i) (BoolGate.input j)) ∨
-    (∃ i j : Fin n, c = BoolGate.not (BoolGate.and (BoolGate.input i) (BoolGate.input j))) ∨
-    (∃ i j : Fin n, c = BoolGate.not (BoolGate.or (BoolGate.input i) (BoolGate.input j))) := by
+    (∃ a : BoolGate n, BoolGate.IsLeaf a ∧ c = BoolGate.not a) ∨
+    (∃ a b : BoolGate n, BoolGate.IsLeaf a ∧ BoolGate.IsLeaf b ∧ c = BoolGate.and a b) ∨
+    (∃ a b : BoolGate n, BoolGate.IsLeaf a ∧ BoolGate.IsLeaf b ∧ c = BoolGate.or a b) ∨
+    (∃ a b : BoolGate n,
+      BoolGate.IsLeaf a ∧ BoolGate.IsLeaf b ∧ c = BoolGate.not (BoolGate.and a b)) ∨
+    (∃ a b : BoolGate n,
+      BoolGate.IsLeaf a ∧ BoolGate.IsLeaf b ∧ c = BoolGate.not (BoolGate.or a b)) := by
   cases c with
   | input i => simp only [BoolGate.depth] at hc; omega
+  | const b => simp only [BoolGate.depth] at hc; omega
   | and a b =>
       have h : 1 + max (BoolGate.depth a) (BoolGate.depth b) = 1 := by
         simpa only [BoolGate.depth] using hc
       have ha0 : BoolGate.depth a = 0 := by omega
       have hb0 : BoolGate.depth b = 0 := by omega
-      rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨i, rfl⟩
-      rcases (depth_eq_zero_iff_input b).1 hb0 with ⟨j, rfl⟩
-      exact Or.inr (Or.inl ⟨i, j, rfl⟩)
+      exact Or.inr (Or.inl ⟨a, b, (depth_eq_zero_iff_input a).1 ha0,
+        (depth_eq_zero_iff_input b).1 hb0, rfl⟩)
   | or a b =>
       have h : 1 + max (BoolGate.depth a) (BoolGate.depth b) = 1 := by
         simpa only [BoolGate.depth] using hc
       have ha0 : BoolGate.depth a = 0 := by omega
       have hb0 : BoolGate.depth b = 0 := by omega
-      rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨i, rfl⟩
-      rcases (depth_eq_zero_iff_input b).1 hb0 with ⟨j, rfl⟩
-      exact Or.inr (Or.inr (Or.inl ⟨i, j, rfl⟩))
+      exact Or.inr (Or.inr (Or.inl ⟨a, b, (depth_eq_zero_iff_input a).1 ha0,
+        (depth_eq_zero_iff_input b).1 hb0, rfl⟩))
   | not a =>
       have h : 1 + BoolGate.depth a = 1 := by
         simpa only [BoolGate.depth] using hc
       have ha0 : BoolGate.depth a = 0 := by omega
-      rcases (depth_eq_zero_iff_input a).1 ha0 with ⟨i, rfl⟩
-      exact Or.inl ⟨i, rfl⟩
+      exact Or.inl ⟨a, (depth_eq_zero_iff_input a).1 ha0, rfl⟩
 
-/-- **Every circuit of depth ≤ 1 is a gate over input literals.** The
+/-- **Every circuit of depth ≤ 1 is a gate over leaves.** The
   `depth1_shapes_input` characterisation extended down to depth 0 (a bare
-  input), so a single lemma enumerates all depth-≤1 shapes. This is the
-  induction's base case in the form the Pass-2 depth-reduction consumes: a
-  depth-≤1 circuit has no strictly-lower *non-input* gate to recurse into, so
-  a random restriction decides its depth from its literal set alone. -/
+  leaf: input or const), so a single lemma enumerates all depth-≤1 shapes.
+  This is the induction's base case in the form the Pass-2 depth-reduction
+  consumes: a depth-≤1 circuit has no strictly-lower *non-leaf* gate to
+  recurse into, so a random restriction decides its depth from its literal
+  set alone. -/
 theorem depth_le_one_shapes {n : Nat} (c : BoolGate n) (hc : BoolGate.depth c ≤ 1) :
-    (∃ i : Fin n, c = BoolGate.input i) ∨
-    (∃ i : Fin n, c = BoolGate.not (BoolGate.input i)) ∨
-    (∃ i j : Fin n, c = BoolGate.and (BoolGate.input i) (BoolGate.input j)) ∨
-    (∃ i j : Fin n, c = BoolGate.or (BoolGate.input i) (BoolGate.input j)) ∨
-    (∃ i j : Fin n, c = BoolGate.not (BoolGate.and (BoolGate.input i) (BoolGate.input j))) ∨
-    (∃ i j : Fin n, c = BoolGate.not (BoolGate.or (BoolGate.input i) (BoolGate.input j))) := by
+    (∃ a : BoolGate n, BoolGate.IsLeaf a ∧ c = a) ∨
+    (∃ a : BoolGate n, BoolGate.IsLeaf a ∧ c = BoolGate.not a) ∨
+    (∃ a b : BoolGate n, BoolGate.IsLeaf a ∧ BoolGate.IsLeaf b ∧ c = BoolGate.and a b) ∨
+    (∃ a b : BoolGate n, BoolGate.IsLeaf a ∧ BoolGate.IsLeaf b ∧ c = BoolGate.or a b) ∨
+    (∃ a b : BoolGate n,
+      BoolGate.IsLeaf a ∧ BoolGate.IsLeaf b ∧ c = BoolGate.not (BoolGate.and a b)) ∨
+    (∃ a b : BoolGate n,
+      BoolGate.IsLeaf a ∧ BoolGate.IsLeaf b ∧ c = BoolGate.not (BoolGate.or a b)) := by
   have h01 : BoolGate.depth c = 0 ∨ BoolGate.depth c = 1 := by omega
   rcases h01 with h0 | h1
-  · exact Or.inl ((depth_eq_zero_iff_input c).1 h0)
+  · exact Or.inl ⟨c, (depth_eq_zero_iff_input c).1 h0, rfl⟩
   · exact Or.inr (depth1_shapes_input c h1)
 
 end Circuits
