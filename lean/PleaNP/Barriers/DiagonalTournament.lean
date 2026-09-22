@@ -98,6 +98,31 @@ lemma tournament_flip {n : Nat} (s : Finset (Bits n))
   have hflip := U_B_flip_on_add B n x hB
   refine ⟨x, hxnin, hflip.1, hflip.2⟩
 
+/-- The tournament's oracle built as a stage chain: start from `B` and add the
+  chosen query at each stage. Because `addPoint` only ever turns a point true,
+  the chain is monotone in D4's sense — this instantiates `DiagonalStages`'s
+  abstract invariant on the actual D5 tournament step, which is the missing
+  link between the two modules. -/
+def addChain (B : Oracle Query) (xs : Nat → Query) : Nat → Oracle Query
+  | 0 => B
+  | k + 1 => addPoint (addChain B xs k) (xs k)
+
+/-- The `addPoint` chain is monotone: nothing added is ever removed. -/
+lemma addChain_monotone (B : Oracle Query) (xs : Nat → Query) :
+    DiagonalStages.MonotoneChain (addChain B xs) := by
+  intro k q hq
+  exact addPoint_mono (addChain B xs k) (xs k) q hq
+
+/-- Once `U_B` holds at `n` in some stage of the chain, it holds in every
+  later stage — the diagonalization is not undone by later stages. Directly
+  produces the separating oracle's consistency invariant: each stage's witness
+  survives to the limit. -/
+lemma U_B_persists (B : Oracle Query) (xs : Nat → Query) {k j : Nat}
+    (hkj : k ≤ j) {n : Nat} (h : n ∈ U_B (addChain B xs k)) :
+    n ∈ U_B (addChain B xs j) := by
+  obtain ⟨x, hx⟩ := h
+  exact ⟨x, DiagonalStages.mem_preserved (addChain_monotone B xs) k hkj ⟨n, x⟩ hx⟩
+
 end DiagonalTournament
 
 end Barriers
