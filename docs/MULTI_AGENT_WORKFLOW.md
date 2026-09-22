@@ -9,7 +9,7 @@ adds PleaNP-specific rules: the **integrity gates** are mandatory for any
 formal claim, and **community contributions** (Zulip) enter through the same
 issue queue.
 
-> **System of record:** the issue queue plus `git log origin/dev`. Status
+> **System of record:** the issue queue plus `git log origin/main`. Status
 > tables in docs (ROADMAP.md etc.) are caches updated by sweeps and may lag —
 > check the queue and dev history before concluding work is undone.
 
@@ -37,7 +37,7 @@ check in §Claiming has no teeth.
 |---|---|
 | `status:available` | Ready to be claimed. All blockers are `done`. |
 | `status:claimed` | An agent has claimed it. Claim comment is the heartbeat. |
-| `status:done` | Work committed to `dev`. The human reviews on `dev` at leisure; anything needing changes spawns a follow-up task. |
+| `status:done` | Work committed to `main`. The human reviews on `dev` at leisure; anything needing changes spawns a follow-up task. |
 | `status:blocked-needs-input` | Agent could not start or finish; needs human input. |
 | `priority:high` | Jumps the work queue (default order is lowest issue number). |
 | `community-ready` | Good first contribution for external/Zulip community members. |
@@ -166,7 +166,7 @@ multi-pass issue):
    rule applies to passes exactly as to issues: a claimed pass is the single
    `status:claimed` you may hold.
 3. **A pass is done when its end-state is done.** A pass-complete commit is a
-   normal commit on `dev` — it closes only that pass (its own gate evidence
+   normal commit on `main` — it closes only that pass (its own gate evidence
    in the done comment). The *issue* stays open until its final pass reports
    the full gate evidence.
 4. **A pass may only land on the issue's own precedents.** A later pass is
@@ -215,7 +215,7 @@ final pass is done.
    yours belongs to a live sibling — leave it alone.
    **Recent-activity guard (DEC-026):** before claiming an `available` item
    whose subject overlaps a recently-active `claimed` item (same file, same
-   rung, or an adjacent pass), check `git log origin/dev` for sibling commits
+   rung, or an adjacent pass), check `git log origin/main` for sibling commits
    touching that subject in the last ~1h *even if the claim comment is stale*.
    An agent can be mid-session on a pass whose claim comment is merely aged;
    reclaiming it and starting parallel work is the #63-duplicate failure mode.
@@ -258,7 +258,7 @@ final pass is done.
 2. **Pick work.** Any `status:available` issue the agent has enough context to
    start. Default order: lowest issue number first; issues labeled
    `priority:high` jump the queue. Before concluding any work item is undone,
-   check `git log origin/dev` and the issue queue — docs tables lag.
+   check `git log origin/main` and the issue queue — docs tables lag.
 2a. **Filing is not atomic — search, file, search again.** Before filing a new
    task, search open issues for its slug. After filing, search again: if a twin
    with a **lower issue number** now exists, close yours as duplicate.
@@ -279,11 +279,12 @@ final pass is done.
    claim on the same item landed within the last ~30 minutes with a different
    run-id, a sibling won the race — back off, restore `status:available`, and
    pick a different item (see the claim-race rule in §Concurrent-work).
-5. **Do the work; prove the done.** Commit directly to `dev` (no PR — review
-   happens retrospectively on `dev`). **The commit is not done until it is
-   pushed**: run `git push origin dev` before closing the issue — the system of
-   record is `git log origin/dev`, and a sibling agent cannot see, review, or
-   build on a commit that exists only in your local clone. A done comment that
+5. **Do the work; prove the done.** Commit directly to `main`, the working
+   branch and GitHub default (no PR — review happens retrospectively on `main`).
+   **The commit is not done until it is pushed**: run `git push origin main`
+   before closing the issue — the system of record is `git log origin/main`, and
+   a sibling agent cannot see, review, or build on a commit that exists only in
+   your local clone. A done comment that
    cites a local-only commit is a stranded claim (and no sweep will resurrect
    it, because `origin/dev` has no trace of it). Swap
    `status:claimed` → `status:done` and close the issue with a comment linking
