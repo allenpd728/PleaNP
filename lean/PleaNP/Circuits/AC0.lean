@@ -228,6 +228,21 @@ theorem not_computes_parity_depth1 :
       | input ia => fin_cases ia <;> decide
       | const av => cases av <;> decide
 
+/-- **Depth-≤1 parity exclusion.** The `depth = 1` exclusion
+  (`not_computes_parity_depth1`) extended down to depth 0 (a bare leaf: an
+  input projection or a constant), so no circuit of depth at most 1 computes
+  parity at length 2. This is the first rung of the excluded-depth ladder in
+  the form the switching-lemma induction consumes. -/
+theorem not_computes_parity_depth_le_one (c : BoolGate 2) (hd : BoolGate.depth c ≤ 1) :
+    Not (forall v : Fin 2 -> Bool, BoolGate.eval c v = parity 2 v) := by
+  have h01 : BoolGate.depth c = 0 ∨ BoolGate.depth c = 1 := by omega
+  rcases h01 with h0 | h1
+  · have hl := (depth_eq_zero_iff_input c).1 h0
+    cases hl with
+    | input i => fin_cases i <;> decide
+    | const b => cases b <;> decide
+  · exact not_computes_parity_depth1 c h1
+
 /-! ## AC0 lower-bound structural core — the depth-1 gate-shape characterisation
 
 The counting step the switching lemma is *about*, in its base case: **every
