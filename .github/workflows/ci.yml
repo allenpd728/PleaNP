@@ -62,6 +62,10 @@ jobs:
         run: python3 tooling/gates/workflow_scan.py
       - name: Workflow-YAML scan unit tests (regression fixture is the pre-1037101 corruption; #110)
         run: python3 tooling/gates/tests/test_workflow_scan.py
+      - name: Sorry-tracker scan (docs/SORRY_TRACKER.md matches lean/PleaNP/ sorry sites + counts; #127)
+        run: python3 tooling/gates/sorry_tracker_scan.py
+      - name: Sorry-tracker scan unit tests (line/count/site drift + Resolved-row leak; #127)
+        run: python3 tooling/gates/tests/test_sorry_tracker_scan.py
       - name: Prose-corruption scan (the #101 signature; comments, string literals, docs; #101/#112)
         run: python3 tooling/gates/prose_scan.py .
       - name: Prose-corruption scan unit tests (doubles, fusions, tuple false-positives; #101)
