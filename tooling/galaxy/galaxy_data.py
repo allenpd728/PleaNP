@@ -253,12 +253,43 @@ def parse_blockers(blockers_dir: Path) -> list[dict]:
     return asteroids
 
 
+def _is_resolved_row(line: str) -> bool:
+    """A tracker row that is struck through or whose text says Resolved/Removed.
+    Such a row is *not* open proof debt and must never render as an asteroid."""
+    return "~~" in line or "**Resolved" in line or "**Removed" in line
+
+
+def _detailed_inventory_lines(tracker_md: str) -> list[str]:
+    """Only rows under `## Detailed inventory` are active open-debt rows; the
+    `## Summary` counts table and the `## Resolved` / `## Removed` sections are
+    not. When the heading is absent (unit-test fixtures), the whole document is
+    treated as active — marker suppression still applies per row."""
+    lines = tracker_md.splitlines()
+    start = next((i for i, ln in enumerate(lines) if ln.strip() == "## Detailed inventory"), None)
+    if start is None:
+        return lines
+    out = []
+    for ln in lines[start + 1:]:
+        if ln.strip().startswith("## "):
+            break
+        out.append(ln)
+    return out
+
+
 def parse_sorries(tracker_md: str) -> list[dict]:
-    """From docs/SORRY_TRACKER.md rows → asteroids (hygiene debt)."""
+    """From docs/SORRY_TRACKER.md rows → asteroids (hygiene debt).
+
+    Only *open* rows count: Resolved/Removed rows are skipped, and only the
+    `## Detailed inventory` section is read (a Resolved row's cell can contain a
+    literal `|` — e.g. `{ L | sorry }` — which would otherwise split into extra
+    cells and parse as live debt; issue #127).
+    """
     asteroids = []
-    for line in tracker_md.splitlines():
+    for line in _detailed_inventory_lines(tracker_md):
         line = line.strip()
         if not line.startswith("|"):
+            continue
+        if _is_resolved_row(line):
             continue
         cells = [c.strip() for c in line.strip("|").split("|")]
         if len(cells) < 5:

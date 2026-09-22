@@ -4,7 +4,7 @@
 
 **Rule:** every `sorry` in `lean/PleaNP/` must appear in this table.
 
-**Last updated:** 2026-08-21 (v4-completion pass).
+**Last updated:** 2026-09-22 (sorry-tracker scan, issue #127).
 
 ---
 
@@ -16,16 +16,22 @@
 | `lean/PleaNP/Computability/OracleComplexity.lean` | 0 (was 3) | Complexity classes (Rung 2) |
 | `lean/PleaNP/Computability/OracleUpstreamP.lean` | 1 (was 2 — statement-level sorry #6 resolved, see below) | Upstream-P anchor (Rung 2) |
 | `lean/PleaNP/Barriers/Relativization.lean` | 2 | Barrier statement (Rung 3a) |
-| **Total** | **3 open** (6 resolved, 1 removed) | |
+| `lean/PleaNP/Barriers/DiagonalAssembly.lean` | 1 | BGS clause-(b) assembly scaffold (Rung 3a) |
+| **Total** | **4 open** (6 resolved, 1 removed) | |
 
 All remaining sorries are honest pending proofs/compositions. The structural
 self-check `P_A ⊆ NP^A` (#5a/#5b) is now proved in BOTH directions — the v4
 repair is behaviorally verified by the oracle-sensitivity smoke test
-(`lean/PleaNP/Computability/OracleSmoke.lean`). The three remaining sorries are: upstream-P-blocked
+(`lean/PleaNP/Computability/OracleSmoke.lean`). The four remaining sorries are: upstream-P-blocked
 (#7 — in the isolated anchor module; #6's statement-level sorry was resolved
-by `UpstreamPolyTime`) and the BGS proofs (#8, #9). The #36 U_B-machine
+by `UpstreamPolyTime`) and the BGS proofs (#8, #9, #12). The #36 U_B-machine
 bridge + assembly (#10/#10b/#11) were RESOLVED 2026-09-13 —
 `DiagonalUB.lean` is zero-sorry.
+
+The counts here are machine-checked against the code by
+`tooling/gates/sorry_tracker_scan.py` (Tier 1; wired into CI): the set of open
+rows (file:line) must equal the set of `sorry` sites in `lean/PleaNP/`, and the
+per-file/Total counts must agree. Edit this file and the scan together.
 
 `lake build` status: `lean/PleaNP/Computability/Oracle.lean`, `lean/PleaNP/Computability/OracleComplexity.lean`,
 `lean/PleaNP/Computability/OracleSmoke.lean` build green. `lean/PleaNP/Computability/OracleUpstreamP.lean` (1 tracked sorry,
@@ -79,7 +85,7 @@ module is expected to fail the build until upstream P lands.
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
 | 6 | ~~`OracleUpstreamP.lean`~~ **Resolved** (run=20260913-1007-fUj8, issue #40) — the statement-level sorry was filled: the RHS is now the oracle-free `UpstreamPolyTime` recharacterization (`TM2ComputableInPolyTime` membership; `lean/PleaNP/Computability/OracleComplexity.lean`), per Trap 3. The theorem now fully renders P^∅ = P; no Gate-5 concern remains. | — | — |
-| 7 | `OracleUpstreamP.lean:31` | `P_empty_eq_upstream_P_class` — proof of P^∅ = P equality (now between fully-rendered sides). | Upstream P (DEC-003), or an oracle-free recharacterization of the class + the no-query-machine equivalence. | Medium |
+| 7 | `OracleUpstreamP.lean:32` | `P_empty_eq_upstream_P_class` — proof of P^∅ = P equality (now between fully-rendered sides). | Upstream P (DEC-003), or an oracle-free recharacterization of the class + the no-query-machine equivalence. | Medium |
 
 ### Barrier-statement level (Relativization.lean)
 
@@ -92,8 +98,8 @@ module is expected to fail the build until upstream P lands.
 
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 8 | `Relativization.lean:80` | BGS clause (a) proof — equalizing oracle existence. | #5 (done) + PSPACE/QBF + upstream P. | Low (Rung 3 Step 6) |
-| 9 | `Relativization.lean:101` | BGS clause (b) proof — separating oracle existence (diagonalization). | #5 (done) + machine enumeration + diagonalization. | Low (Rung 3 Step 6) |
+| 8 | `Relativization.lean:89` | BGS clause (a) proof — equalizing oracle existence. | #5 (done) + PSPACE/QBF + upstream P. | Low (Rung 3 Step 6) |
+| 9 | `Relativization.lean:110` | BGS clause (b) proof — separating oracle existence (diagonalization). | #5 (done) + machine enumeration + diagonalization. | Low (Rung 3 Step 6) |
 
 
 ### DiagonalAssembly level (DiagonalAssembly.lean, new isolated module - #37 assembly scaffold)
@@ -106,7 +112,7 @@ One tracked sorry:
 
 | # | File:Line | What it is | Pending on | Priority |
 |---|---|---|---|---|
-| 12 | `lean/PleaNP/Barriers/DiagonalAssembly.lean:72` | `exists_separating_oracle_assembly` - the assembled "exists B, P_A B != NP_A B" (the BGS clause-(b) target #9). Needs the Machine-to-Code bridge (#23/#97 gap: poly-time oracle machines into Partrec.Code) plus the stage/tournament composition of the Diagonal* modules. **Re-scoped by #118**: the `DiagonalBridge` note that the bridge was blocked by the uncountability of the oracle space is misplaced — `P_A`/`NP_A` witnesses **pin** `M.oracle = A` (proved: `DiagonalSyntax.mem_P_A_oracle_pinned`), and `DiagonalSyntax.machineEquiv` localizes the uncountable content in the `oracle`/`decode` factors while the program factor is finite (`Fintype` proved). What remains is the routine modeling step: fix a concrete machine family + canonical `decode`, then enumerate. **#120**: the module's `BridgeObstacle` — previously an *unproved* `def : Prop` "documentation marker" (whose bound did not occur in its body, so it asserted nothing) — is now a **proved theorem** (`DiagonalBridge.oracle_uncountable`, `BridgeObstacle`), via `Cardinal.mk_arrow` + `cantor`. | Concrete machine family + canonical `decode` (modeling step, #118) + compose stage_step_exists over the enumeration. | High |
+| 12 | `lean/PleaNP/Barriers/DiagonalAssembly.lean:74` | `exists_separating_oracle_assembly` - the assembled "exists B, P_A B != NP_A B" (the BGS clause-(b) target #9). Needs the Machine-to-Code bridge (#23/#97 gap: poly-time oracle machines into Partrec.Code) plus the stage/tournament composition of the Diagonal* modules. **Re-scoped by #118**: the `DiagonalBridge` note that the bridge was blocked by the uncountability of the oracle space is misplaced — `P_A`/`NP_A` witnesses **pin** `M.oracle = A` (proved: `DiagonalSyntax.mem_P_A_oracle_pinned`), and `DiagonalSyntax.machineEquiv` localizes the uncountable content in the `oracle`/`decode` factors while the program factor is finite (`Fintype` proved). What remains is the routine modeling step: fix a concrete machine family + canonical `decode`, then enumerate. **#120**: the module's `BridgeObstacle` — previously an *unproved* `def : Prop` "documentation marker" (whose bound did not occur in its body, so it asserted nothing) — is now a **proved theorem** (`DiagonalBridge.oracle_uncountable`, `BridgeObstacle`), via `Cardinal.mk_arrow` + `cantor`. | Concrete machine family + canonical `decode` (modeling step, #118) + compose stage_step_exists over the enumeration. | High |
 
 ### Machine-syntax factorization (DiagonalSyntax.lean, new — #118)
 
