@@ -1,6 +1,6 @@
 # PleaNP
 
-A Lean 4 / Mathlib project formalizing the **barrier landscape** of computational complexity theory — the meta-theorems showing which classes of proof techniques *provably cannot* resolve the P vs NP problem — together with the surrounding circuit complexity and proof-complexity infrastructure those barriers require.
+A Lean 4 / Mathlib project building machine-checked infrastructure for the **barrier landscape** of computational complexity theory — the meta-theorems showing which classes of proof techniques *provably cannot* resolve the P vs NP problem — together with the surrounding circuit complexity and proof-complexity infrastructure those barriers require.
 
 > "Plea" — because this is the road we're building toward P vs NP, not the claim we've reached it.
 
