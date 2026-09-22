@@ -107,6 +107,21 @@ The BGS clause-(b) strategy (per `Relativization.proof-strategy.md` §2):
 >   length) — which needs the D3 machine-embedding, not more combinatorics.
 > - **D6** — open; the single tracked `sorry` is
 >   `DiagonalAssembly.exists_separating_oracle_assembly` (SORRY_TRACKER #12).
+>   **Scoping (2026-09-22, run=20260922-1701-k9x2).** The composition does
+>   NOT close from the landed D1–D5 substrate without one further modeling
+>   decision, so it was recorded as a `NEEDS:` blocker on #156 rather than
+>   left as a silent `sorry`. The precise gap is the machine-behaviour half
+>   the D5 row above already names. As stated, the theorem quantifies over
+>   *all* `P_A B` witnesses, and a `MachineCode.simulates` field is part of
+>   the data of a witness, so a proof cannot choose it. Closing D6 requires
+>   fixing, ONCE, a concrete machine family and a canonical `decode`, then
+>   carrying a lemma that each `P_A` witness under that family is correctly
+>   simulated by the `M_of` enumeration *and runs at all* (`∀ i, ∃ k n,
+>   Simulate i k n ≠ none`). The `simulate_bound` fact (`evaln` decisions
+>   require `n < k`) makes the window a function of the input, so the
+>   "punt-into-accept" route alone does not give this. This is the same
+>   modeling step #118 localized; it is a genuine choice, not more
+>   combinatorics.
 
 ### 3.2 Mathlib hooks (verified present, u v4.31.0)
 
