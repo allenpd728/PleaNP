@@ -23,7 +23,7 @@ name: warm-toolchain-image
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
