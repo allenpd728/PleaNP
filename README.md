@@ -4,14 +4,22 @@ A Lean 4 / Mathlib project formalizing the **barrier landscape** of computationa
 
 > "Plea" — because this is the road we're building toward P vs NP, not the claim we've reached it.
 
+> **Status (2026-09-22) — statement catalogue with a working substrate, not a proof library.**
+> The oracle substrate (`P^A ⊆ NP^A`, both directions) and the BGS diagonalization substrate
+> are machine-checked and zero-`sorry`. Relativization is a frozen statement carrying 2 tracked
+> `sorry`s; algebrization is rendered as statement definitions with no theorem yet; natural
+> proofs is scoped in design docs with no Lean artifact yet. **No barrier theorem is proven.**
+> [`docs/SORRY_TRACKER.md`](docs/SORRY_TRACKER.md) tracks every `sorry` and is machine-checked
+> against the code; [`docs/GRANT_READINESS.md`](docs/GRANT_READINESS.md) is the frank gap analysis.
+
 ## At a glance
 
-- **Formalizing proofs that no one has machine-checked yet**: the P vs NP barrier theorems (relativization, natural proofs, algebrization) have no formal proof in any proof assistant — this project builds the missing machine-grounded infrastructure.
+- **Building the missing infrastructure for proofs no one has machine-checked yet**: the P vs NP barrier theorems (relativization, natural proofs, algebrization) have no formal proof in any proof assistant. The machine-grounded oracle/class foundation is complete and zero-`sorry`; the barrier statements are frozen as specs, with the proofs as tracked open work.
 - **A "barrier calculus"**: a `Relativizing` typeclass + `#barrier_check` elaborator that turns "does this proof relativize?" from human judgment into a typechecking question — unit-tested against the time hierarchy theorem.
 - **A lower-bound compiler**: Williams' transfer theorem as a Lean elaborator (verify an algorithm + runtime bound → get a circuit lower bound), plus the supporting circuit- and proof-complexity library.
 
 > Full background below, or jump to [scope & non-scope](#scope-and-non-scope).
->> **Built with agentic AI tooling.** The author specified the architecture and validated the machine-checked proofs; agent-based coding workflows produced and iterated on the Lean formalizations. See commit history.
+>> **Built with agentic AI tooling.** The author specified the architecture, the scope, and the integrity gates that audit AI-produced claims; agent-based coding workflows produced and iterated on the Lean formalizations. The author is not a Lean specialist — the repo's own gates (hygiene, vacuity, model-consistency, lethality, `#barrier_check`) are what make the artifact auditable rather than trusted. See commit history and [`docs/CONTRIBUTIONS.md`](docs/CONTRIBUTIONS.md).
 
 
 ## Why this project exists
@@ -26,13 +34,13 @@ The P vs NP problem has three decades of known **barriers**:
 
 These barriers are the map of where P vs NP proof attempts fail. Encoding them formally turns "don't try these techniques" from folklore into machine-checkable facts — which is the prerequisite for any honest, AI-assisted proof search over the formalized landscape.
 
-**None of these barriers has a machine-checked proof in any proof assistant, in any computational model.** (They've been stated as axioms and sketched as abstract schemes — see `docs/PRIOR_ART.md` — but never proved over real machine-grounded classes.) This project fills that gap by building the missing infrastructure: machine-grounded oracle classes and the barrier theorems on top, so the statements are *provable*, not assumed.
+**None of these barriers has a machine-checked proof in any proof assistant, in any computational model.** (They've been stated as axioms and sketched as abstract schemes — see `docs/PRIOR_ART.md` — but never proved over real machine-grounded classes.) This project is building the missing infrastructure: machine-grounded oracle classes — done — with the barrier theorems on top still open. The statements are now *statable* over real machine-grounded classes, which is the prerequisite for proving them and was itself absent before.
 
 ## Scope and non-scope
 
 ### In scope
 
-- A formalized **barrier library**: relativization, natural proofs, algebrization.
+- A **barrier library** — currently a frozen statement catalogue (relativization, natural proofs, algebrization); the proofs are tracked open work, per the status note above.
 - A **barrier calculus** (Rung 5, the crown jewel): a `Relativizing` typeclass that propagates through the dependency graph of any lemma built from relativizing pieces, plus a `#barrier_check` elaborator that walks a theorem's dependency closure and reports **"DEAD: this proof relativizes"** or **"Inconclusive."** — turning "does this proof relativize?" from per-paper human judgment into a typechecking question. Unit-tested against the time hierarchy theorem (which relativizes).
 - An **anchor object** (Rung 6): machine-checked P/NP model-equivalence across whichever upstream formalizations land, plus Levin universal search as an explicit `#eval`-able term behind `P_eq_NP_iff`. The search⟶decision gap (needs self-reducibility + a Hutter-style wrapper) is logged as a scoped open lemma, not a blocker (see DEC-012).
 - A **lower-bound compiler** (Rung 8): Williams' transfer theorem (nontrivial CircuitSAT algorithm for class C ⟹ NEXP ⊄ C) as a Lean elaborator — feed it a verified algorithm + runtime bound, it emits a verified circuit lower bound. Under `PleaNP.Barriers`, with the elaborator command `#lower_bound_compile`.
