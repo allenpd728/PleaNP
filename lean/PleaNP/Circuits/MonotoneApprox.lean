@@ -89,6 +89,19 @@ lemma sm_and_size_le {n : Nat} (A B : ApproxSet n) :
     _ = A.card * B.card := by
       simp [Finset.card_product]
 
+/-- **Truncation to monomials of size ≤ `r`** — Razborov's closure operation.
+  Keeping only the "small" monomials is what makes the approximation
+  countable, and so what lets the counting bound go through. Truncation can
+  only remove monomials, so it is size-nonincreasing. -/
+def truncate {n : Nat} (r : Nat) (A : ApproxSet n) : ApproxSet n :=
+  A.filter (fun m => m.card ≤ r)
+
+/-- Truncation never grows the carrier: `|truncate r A| ≤ |A|`. -/
+lemma truncate_size_le {n : Nat} (r : Nat) (A : ApproxSet n) :
+    sizeOf (truncate r A) ≤ sizeOf A := by
+  unfold sizeOf truncate
+  exact Finset.card_filter_le _ _
+
 end ApproxSet
 
 /-!
@@ -162,6 +175,42 @@ lemma approximate_nonempty {n : Nat} (g : MonotoneGate n) :
       rcases ihb with ⟨b0, hb0⟩
       refine ⟨a0 ∪ b0, ?_⟩
       exact Finset.mem_image.mpr ⟨(a0, b0), Finset.mem_product.mpr ⟨ha0, hb0⟩, rfl⟩
+
+/-- **Soundness of the reducer (the 1-direction of the monotone
+  approximation).** Every monomial the reducer produces is *consistent* with
+  the circuit: if a monomial in `approximate g` is satisfied by an
+  assignment, then `g` evaluates to `true` there. This is one half of the
+  approximation-correctness the counting consumes (the other half is
+  completeness: `g = true` on an assignment forces some produced monomial to
+  be satisfied there). Stated in the unfolded membership form that the
+  induction uses; `monomialEval_imp_eval'` restates it against `MonomialEval`. -/
+lemma monomialEval_imp_eval {n : Nat} (g : MonotoneGate n) {v : Fin n → Bool}
+    {m : Monomial n} (hm : m ∈ approximate g) (hv : ∀ i ∈ m, v i = true) :
+    MonotoneGate.eval g v = true := by
+  induction g generalizing m with
+  | input i =>
+      simp only [approximate, Finset.mem_singleton] at hm
+      subst hm
+      simp only [MonotoneGate.eval]
+      exact hv i (Finset.mem_singleton_self i)
+  | or a b iha ihb =>
+      rcases (sm_or_mem _ _ m).mp (by simpa [approximate] using hm) with hmA | hmB
+      · simp only [MonotoneGate.eval, Bool.or_eq_true]
+        exact Or.inl (iha hmA hv)
+      · simp only [MonotoneGate.eval, Bool.or_eq_true]
+        exact Or.inr (ihb hmB hv)
+  | and a b iha ihb =>
+      rcases (sm_and_mem _ _ m).mp (by simpa [approximate] using hm) with
+        ⟨a0, b0, ha0, hb0, rfl⟩
+      have hvA : ∀ i ∈ a0, v i = true := fun i hi => hv i (Finset.mem_union_left _ hi)
+      have hvB : ∀ i ∈ b0, v i = true := fun i hi => hv i (Finset.mem_union_right _ hi)
+      simp only [MonotoneGate.eval, Bool.and_eq_true]
+      exact ⟨iha ha0 hvA, ihb hb0 hvB⟩
+
+lemma monomialEval_imp_eval' {n : Nat} (g : MonotoneGate n) {v : Fin n → Bool}
+    {m : Monomial n} (hm : m ∈ approximate g) (hv : MonomialEval m v = true) :
+    MonotoneGate.eval g v = true :=
+  monomialEval_imp_eval g hm (of_decide_eq_true hv)
 
 end Reducer
 
