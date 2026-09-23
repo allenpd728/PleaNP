@@ -17,7 +17,7 @@ minutes with the community cache — no browser, no Codespace, no M4 box:
 
 ```bash
 # 1. elan (Lean version manager)
-curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+tooling/install_elan.sh   # checksum-pinned; see PleaNP #136
 export PATH="$HOME/.elan/bin:$PATH"
 # 2. toolchain + Mathlib precompiled oleans (community Azure cache)
 cd lean && lake exe cache get

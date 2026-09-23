@@ -148,7 +148,7 @@ Scope note (2026-09-06, DEC-012): three components added — Barrier Calculus (R
 **Lean (agent-sandbox bootstrap — DEC-013; no M4 box or Codespace needed):**
 ```bash
 # 1. elan (Lean version manager) — seconds
-curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+tooling/install_elan.sh   # checksum-pinned; see PleaNP #136
 export PATH="$HOME/.elan/bin:$PATH"
 # 2. toolchain + Mathlib precompiled oleans (community Azure cache) — minutes
 cd lean && lake exe cache get
