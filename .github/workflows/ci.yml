@@ -16,9 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install elan
+      - name: Install elan (checksum-pinned; #136)
+        # No curl|sh: tooling/install_elan.sh downloads a tagged release asset
+        # and verifies its SHA-256 before executing it.
         run: |
-          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          tooling/install_elan.sh
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
       - name: Install Lean toolchain
         run: lean --version

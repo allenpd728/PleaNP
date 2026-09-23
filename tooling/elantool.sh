@@ -49,12 +49,12 @@ __image_present() {
 }
 
 __bootstrap_cold() {
-  echo "[elantool] no working docker; doing the AGENTS.md curl-bootstrap"
+  echo "[elantool] no working docker; doing the checksum-pinned elan bootstrap"
   export PATH="$HOME/.elan/bin:$PATH"
   if ! __have elan; then
-    # Match AGENTS.md exactly: pipe the installer into `sh -s -- <args>`.
-    curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
-      | sh -s -- -y --default-toolchain none
+    # No curl|sh (#136): install_elan.sh verifies a pinned SHA-256 before
+    # executing the tagged release asset.
+    "$REPO_ROOT/tooling/install_elan.sh"
     export PATH="$HOME/.elan/bin:$PATH"
   fi
   cd "$REPO_ROOT/lean"
