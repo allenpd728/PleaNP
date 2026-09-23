@@ -43,6 +43,63 @@ check in §Claiming has no teeth.
 | `community-ready` | Good first contribution for external/Zulip community members. |
 | `needs-gate` | Requires integrity-gate review before acceptance (see §Gates). |
 
+## Lifecycle diagrams
+
+Two machines are described in prose above and in `docs/STATEMENTS/LOCAL_AGENT_WORKFLOW.md`.
+They are drawn here so the transitions — including the `review:confirmed` /
+`review:flagged` replies handled by `.github/workflows/review-issue.yml` — can be
+read at a glance rather than reconstructed from the text.
+
+### Task lifecycle (issue labels)
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> available
+    available --> claimed : agent claims<br/>(one atomic label swap + self-assign,<br/>then re-read — run-id in comment)
+    claimed --> available : claim race lost<br/>(sibling run-id landed)<br/>or stale sweep (1h, no activity)
+    claimed --> done : evidence pasted + pushed to main<br/>(gate command + output), issue closed
+    claimed --> blocked_needs_input : spec-level ambiguity<br/>(blockers/open file written)
+    blocked_needs_input --> available : human resolves (blocker closed)
+    done --> [*]
+
+    note right of claimed
+        Claim comment is the heartbeat.
+        One status:claimed per agent at a time.
+    end note
+```
+
+### Proof / claim lifecycle (statement freeze before proof search)
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> spec
+    spec --> rendered_statement : render the claim<br/>(theorem body is a sorry placeholder)
+    rendered_statement --> gates : statement gates<br/>hygiene / vacuity / model-consistency / read-back
+    gates --> rendered_statement : gate fails — revise the rendering<br/>(never edit the spec to match the Lean)
+    gates --> frozen : all statement gates pass
+    frozen --> proof_search : proof search begins<br/>(statement now immutable)
+    proof_search --> gate_pass : zero sorry / admit / axiom<br/>barrier_check not DEAD
+    gate_pass --> [*]
+```
+
+### Review replies (`review-issue.yml`)
+
+Review issues carry `review:pending` and **no `status:` label by design**, so the
+claim protocol never picks them up. The human answers with a comment, and the
+workflow applies the transition.
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> review_pending : point filed in reviews/pending<br/>(issue auto-created)
+    review_pending --> review_confirmed : human comments confirm<br/>labelled + closed
+    review_pending --> review_flagged : human comments flag + reason<br/>labelled, stays open, claim reopens
+    review_confirmed --> [*]
+    review_flagged --> [*]
+```
+
 ## Task definition
 
 Each issue contains:
