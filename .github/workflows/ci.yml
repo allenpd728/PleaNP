@@ -11,6 +11,12 @@ on:
   pull_request:
     branches: [main]
 
+# This workflow only reads the tree (checkout) and runs local gates; it writes
+# nothing back, so the token needs no write scope. Declaring it explicitly
+# stops the job from inheriting the repository/org default (issue #138).
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
