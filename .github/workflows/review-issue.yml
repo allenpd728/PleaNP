@@ -146,16 +146,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Create review issue
+        # Workflow inputs are passed through the step `env:` block and
+        # referenced as "$VAR" in the shell, never interpolated with
+        # `${{ ... }}` inside a `run:` script. Matches the respond job and
+        # clears semgrep run-shell-injection (#137).
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          Q: ${{ github.event.inputs.question }}
+          CLAIM: ${{ github.event.inputs.claim }}
+          SUM: ${{ github.event.inputs.machine_summary }}
+          INFO: ${{ github.event.inputs.informal }}
+          DECL: ${{ github.event.inputs.decl }}
+          EXP: ${{ github.event.inputs.expected }}
+          SPEC: ${{ github.event.inputs.spec }}
         run: |
-          Q="${{ github.event.inputs.question }}"
-          CLAIM="${{ github.event.inputs.claim }}"
-          SUM="${{ github.event.inputs.machine_summary }}"
-          INFO="${{ github.event.inputs.informal }}"
-          DECL="${{ github.event.inputs.decl }}"
-          EXP="${{ github.event.inputs.expected }}"
-          SPEC="${{ github.event.inputs.spec }}"
           CHECKLIST=""
           if [ -n "$SPEC" ] && [ "$SPEC" != none ] && [ -f "tooling/gates/specs/${SPEC}" ]; then
             CHECKLIST=$(python3 tooling/gates/probe_check.py checklist "tooling/gates/specs/${SPEC}" 2>/dev/null | sed 's/^/  /')
@@ -186,7 +191,7 @@ jobs:
           - \`confirm\` —the machine summary matches my intention
           - \`flag <reason>\` — it does not;the claim reopens (reason recorded)"
 
-          gh issue create --repo "${{ github.repository }}" \
+          gh issue create --repo "$REPO" \
             --title "$CLAIM — review" \
             --label "review:pending" \
             --body "$BODY"
