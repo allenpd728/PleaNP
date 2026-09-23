@@ -44,7 +44,7 @@ These barriers are the map of where P vs NP proof attempts fail. Encoding them f
 - A **barrier calculus** (Rung 5, the crown jewel): a `Relativizing` typeclass that propagates through the dependency graph of any lemma built from relativizing pieces, plus a `#barrier_check` elaborator that walks a theorem's dependency closure and reports **"DEAD: this proof relativizes"** or **"Inconclusive."** — turning "does this proof relativize?" from per-paper human judgment into a typechecking question. Unit-tested against the time hierarchy theorem (which relativizes).
 - An **anchor object** (Rung 6): machine-checked P/NP model-equivalence across whichever upstream formalizations land, plus Levin universal search as an explicit `#eval`-able term behind `P_eq_NP_iff`. The search⟶decision gap (needs self-reducibility + a Hutter-style wrapper) is logged as a scoped open lemma, not a blocker (see DEC-012).
 - A **lower-bound compiler** (Rung 8): Williams' transfer theorem (nontrivial CircuitSAT algorithm for class C ⟹ NEXP ⊄ C) as a Lean elaborator — feed it a verified algorithm + runtime bound, it emits a verified circuit lower bound. Under `PleaNP.Barriers`, with the elaborator command `#lower_bound_compile`.
-- Supporting **circuit complexity** (AC⁰, TC⁰, NC, switching lemma, monotone lower bounds) and **proof complexity** (resolution, Frege) needed to state and apply the barriers.
+- Supporting **circuit complexity** (AC⁰, switching lemma, monotone bounds; TC⁰ and NC specified but not yet implemented) and **proof complexity** (resolution; Frege specified but not yet implemented) needed to state and apply the barriers.
 - An **integrity pipeline** (the "gates") that separates statement formalization from proof search, to structurally prevent the most common failure mode of claimed P vs NP formalizations.
 
 ### Out of scope (deliberately)
@@ -59,7 +59,7 @@ PleaNP/
 ├── lean/                # Self-contained Lean 4 / lake project (the library)
 │   ├── PleaNP/
 │   │   ├── Computability/  # Rung 2: oracle machines, P^A / NP^A, smoke tests
-│   │   ├── Barriers/    # Relativization, natural proofs, algebrization (Lean)
+│   │   ├── Barriers/    # Relativization, algebrization (Lean); natural proofs specified, no module yet
 │   │   ├── Calculus/    # Rung 5: Relativizing typeclass + #barrier_check
 │   │   ├── Circuits/    # AC0, switching lemma, monotone bounds
 │   │   ├── ProofComplexity/  # Resolution
